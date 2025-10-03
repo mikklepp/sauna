@@ -10,7 +10,7 @@ import { startOfDay, endOfDay } from 'date-fns';
  * Get the next available time slot for a sauna
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {

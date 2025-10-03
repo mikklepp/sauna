@@ -1,11 +1,10 @@
 import { NextRequest } from 'next/server';
 import { requireClubAuth, requireAdminAuth } from '@/lib/auth';
-import { 
-  parseRequestBody, 
-  successResponse, 
-  errorResponse, 
-  handleApiError,
-  getQueryParam 
+import {
+  parseRequestBody,
+  successResponse,
+  errorResponse,
+  handleApiError
 } from '@/lib/api-utils';
 import { createBoatSchema } from '@/lib/validation';
 import prisma from '@/lib/db';
@@ -49,7 +48,7 @@ export async function POST(request: NextRequest) {
  * GET /api/boats?clubId=xxx
  * Get all boats for a club
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const club = await requireClubAuth();
     

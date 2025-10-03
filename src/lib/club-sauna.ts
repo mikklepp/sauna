@@ -1,4 +1,4 @@
-import { Sauna, SharedReservation, GenderOrder } from '@prisma/client';
+import { Sauna, GenderOrder } from '@prisma/client';
 import { 
   startOfDay, 
   getMonth, 

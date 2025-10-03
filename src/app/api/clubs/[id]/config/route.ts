@@ -9,7 +9,7 @@ import prisma from '@/lib/db';
  * Used for Island Device initialization and user app setup
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {

@@ -1,5 +1,5 @@
 import { Sauna, Reservation } from '@prisma/client';
-import { addHours, startOfHour, addMinutes, isBefore, isAfter } from 'date-fns';
+import { addHours, startOfHour, isBefore, isAfter } from 'date-fns';
 import type { NextAvailableSlot } from '@/types';
 
 /**

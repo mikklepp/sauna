@@ -8,7 +8,7 @@ import prisma from '@/lib/db';
  * Get a specific boat
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -48,7 +48,12 @@ export async function PUT(
   try {
     await requireAdminAuth();
     const boatId = getPathParam(params, 'id');
-    const body = await parseRequestBody(request);
+    const body = await parseRequestBody(request) as {
+      name?: string;
+      membershipNumber?: string;
+      captainName?: string;
+      phoneNumber?: string;
+    };
     
     const existing = await prisma.boat.findUnique({
       where: { id: boatId },
@@ -94,7 +99,7 @@ export async function PUT(
  * Delete a boat (admin only)
  */
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {

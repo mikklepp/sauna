@@ -22,11 +22,17 @@ export async function POST(
   try {
     const club = await requireClubAuth();
     const sharedReservationId = getPathParam(params, 'id');
-    const body = await parseRequestBody(request);
+    const body = await parseRequestBody(request) as {
+      boatId?: string;
+      adults?: number;
+      kids?: number;
+    };
     
     // Validate input
     const validated = joinSharedReservationSchema.parse({
-      ...body,
+      boatId: body.boatId,
+      adults: body.adults,
+      kids: body.kids,
       sharedReservationId,
     });
     

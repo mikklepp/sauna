@@ -8,7 +8,7 @@ import {
   getQueryParam 
 } from '@/lib/api-utils';
 import { createReservationSchema } from '@/lib/validation';
-import { validateTimeSlot, canCancelReservation, isSlotAvailable } from '@/lib/availability';
+import { validateTimeSlot, isSlotAvailable } from '@/lib/availability';
 import prisma from '@/lib/db';
 import { startOfDay, endOfDay, addHours } from 'date-fns';
 

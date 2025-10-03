@@ -11,7 +11,7 @@ import prisma from '@/lib/db';
  * QR code contains: club secret for authentication
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {

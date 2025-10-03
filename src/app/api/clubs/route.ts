@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { requireAdminAuth } from '@/lib/auth';
 import { generateClubSecret } from '@/lib/auth';
-import { parseRequestBody, successResponse, errorResponse, handleApiError } from '@/lib/api-utils';
+import { parseRequestBody, successResponse, handleApiError } from '@/lib/api-utils';
 import { createClubSchema } from '@/lib/validation';
 import prisma from '@/lib/db';
 import { addYears } from 'date-fns';

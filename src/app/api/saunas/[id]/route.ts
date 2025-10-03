@@ -8,7 +8,7 @@ import prisma from '@/lib/db';
  * Get a specific sauna
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -52,7 +52,11 @@ export async function PUT(
   try {
     await requireAdminAuth();
     const saunaId = getPathParam(params, 'id');
-    const body = await parseRequestBody(request);
+    const body = await parseRequestBody(request) as {
+      name?: string;
+      heatingTimeHours?: number;
+      autoClubSaunaEnabled?: boolean;
+    };
     
     const existing = await prisma.sauna.findUnique({
       where: { id: saunaId },
@@ -89,7 +93,7 @@ export async function PUT(
  * Delete a sauna (admin only)
  */
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {

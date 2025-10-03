@@ -8,7 +8,7 @@ import prisma from '@/lib/db';
  * Get a specific club
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -60,7 +60,13 @@ export async function PUT(
   try {
     await requireAdminAuth();
     const clubId = getPathParam(params, 'id');
-    const body = await parseRequestBody(request);
+    const body = await parseRequestBody(request) as {
+      name?: string;
+      logoUrl?: string;
+      primaryColor?: string;
+      secondaryColor?: string;
+      timezone?: string;
+    };
     
     // Check if club exists
     const existing = await prisma.club.findUnique({
@@ -94,7 +100,7 @@ export async function PUT(
  * Delete a club (admin only)
  */
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {

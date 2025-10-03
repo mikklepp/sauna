@@ -8,7 +8,7 @@ import prisma from '@/lib/db';
  * Get a specific island
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -49,7 +49,10 @@ export async function PUT(
   try {
     await requireAdminAuth();
     const islandId = getPathParam(params, 'id');
-    const body = await parseRequestBody(request);
+    const body = await parseRequestBody(request) as {
+      name?: string;
+      numberOfSaunas?: number;
+    };
     
     const existing = await prisma.island.findUnique({
       where: { id: islandId },
@@ -82,7 +85,7 @@ export async function PUT(
  * Delete an island (admin only)
  */
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {

@@ -3,7 +3,7 @@ import { validateCronSecret } from '@/lib/auth';
 import { successResponse, errorResponse, handleApiError, getAuthHeader } from '@/lib/api-utils';
 import { evaluateClubSauna } from '@/lib/club-sauna';
 import prisma from '@/lib/db';
-import { startOfDay, endOfDay, addHours } from 'date-fns';
+import { startOfDay, endOfDay } from 'date-fns';
 
 /**
  * POST /api/cron/evaluate-club-sauna

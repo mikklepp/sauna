@@ -4,7 +4,7 @@ import { successResponse, errorResponse, handleApiError, getAuthHeader } from '@
 import { generateClubSaunaData, isClubSaunaEligibleDate } from '@/lib/club-sauna';
 import prisma from '@/lib/db';
 import { addDays, startOfDay } from 'date-fns';
-import { GenderOrder } from '@prisma/client';
+
 
 /**
  * POST /api/cron/generate-club-sauna
