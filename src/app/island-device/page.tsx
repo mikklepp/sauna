@@ -147,7 +147,7 @@ export default function IslandDevicePage() {
             </Button>
 
             <p className="text-sm text-gray-500">
-              You'll need a device configuration token from the admin portal
+              You&apos;ll need a device configuration token from the admin portal
             </p>
           </div>
         </div>

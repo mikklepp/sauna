@@ -232,7 +232,7 @@ export default function IslandDeviceSetupPage() {
             <strong>Where to get a token?</strong> Admin portal → Islands → Select Island → Generate Device Token
           </p>
           <p>
-            <strong>Token not working?</strong> Ensure the token hasn't expired and belongs to the correct island
+            <strong>Token not working?</strong> Ensure the token hasn&apos;t expired and belongs to the correct island
           </p>
           <p>
             <strong>Want to reconfigure?</strong> Go to Settings → Factory Reset Device

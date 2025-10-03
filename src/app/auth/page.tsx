@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
+export const dynamic = 'force-dynamic';
+
 export default function AuthPage() {
   const router = useRouter();
   const [secret, setSecret] = useState('');
@@ -110,7 +112,7 @@ export default function AuthPage() {
           </form>
 
           <p className="text-xs text-center text-gray-500">
-            Don't have a club secret?{' '}
+            Don&apos;t have a club secret?{' '}
             <a href="#" className="text-blue-600 hover:underline">
               Contact your club administrator
             </a>

@@ -492,7 +492,7 @@ export default function JoinSharedPage() {
                 <Check className="w-8 h-8 text-purple-600" />
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Joined Successfully!</h2>
-              <p className="text-gray-600 mb-6">You're now part of this shared sauna</p>
+              <p className="text-gray-600 mb-6">You&apos;re now part of this shared sauna</p>
 
               <div className="bg-purple-50 rounded-lg p-6 mb-6 text-left max-w-sm mx-auto">
                 <div className="space-y-2">

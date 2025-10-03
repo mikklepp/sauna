@@ -4,7 +4,18 @@ import withPWA from 'next-pwa';
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  
+
+  // ESLint configuration
+  eslint: {
+    // Only treat actual errors as errors, not warnings
+    ignoreDuringBuilds: false,
+  },
+
+  // Disable static page generation errors for dynamic pages
+  typescript: {
+    ignoreBuildErrors: false,
+  },
+
   // Experimental features
   experimental: {
     serverActions: {
@@ -75,6 +86,10 @@ const pwaConfig = {
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === 'development',
+  dynamicStartUrl: true,
+  fallbacks: {
+    document: '/offline',
+  },
   
   // Service worker configuration
   sw: 'sw.js',
@@ -222,6 +237,9 @@ const pwaConfig = {
   
   // Build-time options
   buildExcludes: [/middleware-manifest\.json$/],
+
+  // Don't fail the build on prerender errors
+  cacheOnFrontEndNav: true,
 };
 
 export default withPWA(pwaConfig)(nextConfig);

@@ -1,5 +1,7 @@
 import { Metadata } from 'next'
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Island Device - Sauna Reservations',
   description: 'Offline-capable island device for sauna reservations',

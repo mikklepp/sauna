@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { Waves, Users, Calendar, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+export const dynamic = 'force-dynamic';
+
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
@@ -84,7 +86,7 @@ export default function HomePage() {
                   1
                 </span>
                 <div>
-                  <strong>Scan QR Code</strong> - Get instant access to your club's islands
+                  <strong>Scan QR Code</strong> - Get instant access to your club&apos;s islands
                 </div>
               </li>
               <li className="flex gap-3">

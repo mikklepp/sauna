@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { Building2, MapPin, Waves, Users, Calendar, BarChart3, Settings } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export default function AdminLayout({
   children,
 }: {

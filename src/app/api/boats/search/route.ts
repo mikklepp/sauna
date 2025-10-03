@@ -5,6 +5,8 @@ import { sanitizeSearchQuery } from '@/lib/validation';
 import prisma from '@/lib/db';
 import type { BoatSearchResult } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/boats/search?q=xxx
  * Search boats by name or membership number

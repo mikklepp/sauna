@@ -122,7 +122,7 @@ export default function ReservationsListPage() {
             Back to Saunas
           </Button>
           <h1 className="text-2xl font-bold text-gray-900">{saunaName}</h1>
-          <p className="text-gray-500">Today's Reservations</p>
+          <p className="text-gray-500">Today&apos;s Reservations</p>
         </div>
       </header>
 

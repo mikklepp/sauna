@@ -6,6 +6,8 @@ import { MapPin, Waves, ChevronRight } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
+export const dynamic = 'force-dynamic';
+
 interface IslandData {
   id: string;
   name: string;

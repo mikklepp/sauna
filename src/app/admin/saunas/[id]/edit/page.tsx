@@ -164,7 +164,7 @@ export default function EditSaunaPage() {
                 Enable Auto Club Sauna
               </Label>
               <p className="text-sm text-gray-600 mt-1">
-                Automatically create shared "Club Sauna" reservations during peak season (Jun-Aug daily, May/Sep Fri-Sat)
+                Automatically create shared &ldquo;Club Sauna&rdquo; reservations during peak season (Jun-Aug daily, May/Sep Fri-Sat)
               </p>
             </div>
           </div>
