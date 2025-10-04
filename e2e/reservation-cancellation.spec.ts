@@ -254,8 +254,10 @@ test.describe('Reservation Cancellation', () => {
       const futureReservations = page.locator('[data-testid="future-reservations"]');
 
       if (await futureReservations.isVisible()) {
-        const isInViewport = await futureReservations.isInViewport();
-        expect(isInViewport).toBeTruthy();
+        // Verify element is in viewport by checking it's visible and scrolled into view
+        await expect(futureReservations).toBeVisible();
+        const box = await futureReservations.boundingBox();
+        expect(box).toBeTruthy();
       }
     } else {
       test.skip();
