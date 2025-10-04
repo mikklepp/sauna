@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
       const saunaId = getQueryParam(request, 'saunaId');
       const dateStr = getQueryParam(request, 'date');
 
-      const where: any = {};
+      const where: { saunaId?: string; date?: { gte: Date; lte: Date } } = {};
 
       if (saunaId) {
         where.saunaId = saunaId;

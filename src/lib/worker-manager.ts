@@ -8,12 +8,22 @@
 
 type WorkerType = 'club-sauna-generator' | 'club-sauna-evaluator'
 
+interface WorkerResult {
+  created?: number;
+  skipped?: number;
+  evaluated?: number;
+  cancelled?: number;
+  converted?: number;
+  proceeded?: number;
+  errors?: string[];
+}
+
 interface WorkerStatus {
   type: WorkerType
   worker: Worker | null
   isRunning: boolean
   lastRun?: Date
-  lastResult?: any
+  lastResult?: WorkerResult
   error?: string
 }
 
@@ -110,7 +120,7 @@ class WorkerManager {
   /**
    * Manually trigger a worker to run now
    */
-  async runWorker(type: WorkerType): Promise<any> {
+  async runWorker(type: WorkerType): Promise<WorkerResult> {
     const status = this.workers.get(type)
 
     if (!status || !status.worker) {
@@ -169,7 +179,7 @@ class WorkerManager {
    * Get status of all workers
    */
   getStatus(): Record<WorkerType, Omit<WorkerStatus, 'worker'>> {
-    const status: any = {}
+    const status: Record<string, Omit<WorkerStatus, 'worker'>> = {}
 
     this.workers.forEach((workerStatus, type) => {
       status[type] = {
@@ -181,7 +191,7 @@ class WorkerManager {
       }
     })
 
-    return status
+    return status as Record<WorkerType, Omit<WorkerStatus, 'worker'>>
   }
 
   /**
@@ -254,7 +264,7 @@ export async function initializeWorkers(): Promise<void> {
 /**
  * Run a worker manually (for testing or manual triggers)
  */
-export async function runWorkerNow(type: WorkerType): Promise<any> {
+export async function runWorkerNow(type: WorkerType): Promise<WorkerResult> {
   return workerManager.runWorker(type)
 }
 

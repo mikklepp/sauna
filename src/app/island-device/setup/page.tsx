@@ -10,13 +10,47 @@ import { ArrowLeft, Download, CheckCircle2, AlertCircle, Settings } from 'lucide
 import { initializeDevice } from '@/db/schema'
 import { initializeWorkers } from '@/lib/worker-manager'
 
+interface DeviceConfigResponse {
+  deviceId: string;
+  club: {
+    id: string;
+    name: string;
+    secret: string;
+    logoUrl: string | null;
+    primaryColor: string | null;
+    secondaryColor: string | null;
+    timezone: string;
+  };
+  island: {
+    id: string;
+    name: string;
+    clubId: string;
+    numberOfSaunas: number;
+  };
+  saunas: Array<{
+    id: string;
+    name: string;
+    islandId: string;
+    heatingTimeHours: number;
+    autoClubSaunaEnabled: boolean;
+  }>;
+  boats: Array<{
+    id: string;
+    name: string;
+    clubId: string;
+    membershipNumber: string;
+    captainName: string | null;
+    phoneNumber: string | null;
+  }>;
+}
+
 export default function IslandDeviceSetupPage() {
   const router = useRouter()
   const [step, setStep] = useState<'token' | 'downloading' | 'installing' | 'complete'>('token')
   const [token, setToken] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [deviceConfig, setDeviceConfig] = useState<any>(null)
+  const [deviceConfig, setDeviceConfig] = useState<DeviceConfigResponse | null>(null)
 
   async function handleTokenSubmit(e: React.FormEvent) {
     e.preventDefault()

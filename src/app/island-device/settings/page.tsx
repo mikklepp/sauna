@@ -8,14 +8,38 @@ import { ArrowLeft, RefreshCw, Trash2, Download, CheckCircle2, XCircle, AlertTri
 import { getDeviceConfig, clearDeviceData, updateLastSync, exportDatabase } from '@/db/schema'
 import { getWorkerStatus, runWorkerNow, terminateWorkers } from '@/lib/worker-manager'
 
+interface DeviceConfig {
+  isConfigured: boolean;
+  deviceId?: string;
+  assignedIslandId?: string;
+  lastSyncAt?: string;
+}
+
+interface WorkerResult {
+  created?: number;
+  skipped?: number;
+  evaluated?: number;
+  cancelled?: number;
+  converted?: number;
+}
+
+interface WorkerInfo {
+  isRunning: boolean;
+  lastRun?: Date;
+  lastResult?: WorkerResult;
+  error?: string;
+}
+
+type WorkerStatus = Record<'club-sauna-generator' | 'club-sauna-evaluator', WorkerInfo>;
+
 export default function IslandDeviceSettingsPage() {
   const router = useRouter()
-  const [deviceConfig, setDeviceConfig] = useState<any>(null)
+  const [deviceConfig, setDeviceConfig] = useState<DeviceConfig | null>(null)
   const [syncing, setSyncing] = useState(false)
   const [syncStatus, setSyncStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [syncMessage, setSyncMessage] = useState('')
   const [loading, setLoading] = useState(true)
-  const [workerStatus, setWorkerStatus] = useState<any>(null)
+  const [workerStatus, setWorkerStatus] = useState<WorkerStatus | null>(null)
   const [runningWorker, setRunningWorker] = useState<string | null>(null)
 
   useEffect(() => {

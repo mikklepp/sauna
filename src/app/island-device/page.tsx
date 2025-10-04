@@ -12,7 +12,12 @@ export default function IslandDevicePage() {
   const [loading, setLoading] = useState(true)
   const [isConfigured, setIsConfigured] = useState(false)
   const [isOnline, setIsOnline] = useState(true)
-  const [deviceConfig, setDeviceConfig] = useState<any>(null)
+  const [deviceConfig, setDeviceConfig] = useState<{
+    isConfigured: boolean;
+    deviceId?: string;
+    assignedIslandId?: string;
+    lastSyncAt?: string;
+  } | null>(null)
 
   const checkDeviceStatus = useCallback(async () => {
     try {

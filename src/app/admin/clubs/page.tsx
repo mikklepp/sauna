@@ -1,8 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Plus, Edit, Trash2, QrCode } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+
+interface Island {
+  id: string;
+  name: string;
+}
+
+interface Boat {
+  id: string;
+  name: string;
+}
 
 interface Club {
   id: string;
@@ -14,8 +25,8 @@ interface Club {
   primaryColor: string | null;
   secondaryColor: string | null;
   timezone: string;
-  islands: any[];
-  boats: any[];
+  islands: Island[];
+  boats: Boat[];
 }
 
 export default function ClubsPage() {
@@ -117,10 +128,13 @@ export default function ClubsPage() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       {club.logoUrl && (
-                        <img
+                        <Image
                           src={club.logoUrl}
                           alt={club.name}
+                          width={32}
+                          height={32}
                           className="w-8 h-8 rounded mr-3"
+                          unoptimized
                         />
                       )}
                       <div>

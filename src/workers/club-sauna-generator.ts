@@ -135,17 +135,17 @@ export async function generateClubSaunas(): Promise<{
           syncStatus: 'pending',
         }
 
-        await db.sharedReservations.add(clubSauna as any)
+        await db.sharedReservations.add(clubSauna as LocalSharedReservation)
 
         // Add to sync queue
         await db.syncQueue.add({
+          id: crypto.randomUUID(),
           timestamp: new Date(),
           entityType: 'shared_reservation',
           entityId: clubSauna.id!,
           operation: 'create',
-          data: clubSauna,
-          syncStatus: 'pending',
-        } as any)
+          data: clubSauna as unknown as Record<string, unknown>,
+        })
 
         // eslint-disable-next-line no-console
         console.log(`[Club Sauna Generator] Created for sauna ${sauna.name}`)

@@ -29,7 +29,7 @@ export class SaunaDB extends Dexie {
   syncQueue!: Table<SyncChange>;
   
   // Metadata table for device configuration
-  metadata!: Table<{ key: string; value: any }>;
+  metadata!: Table<{ key: string; value: string | boolean }>;
 
   constructor() {
     super('SaunaReservations');
@@ -163,7 +163,17 @@ export async function clearDeviceData(): Promise<void> {
 /**
  * Export database for debugging
  */
-export async function exportDatabase(): Promise<any> {
+export async function exportDatabase(): Promise<{
+  clubs: LocalClub[];
+  islands: LocalIsland[];
+  saunas: LocalSauna[];
+  boats: LocalBoat[];
+  reservations: LocalReservation[];
+  sharedReservations: LocalSharedReservation[];
+  sharedParticipants: LocalSharedParticipant[];
+  syncQueue: SyncChange[];
+  metadata: Array<{ key: string; value: string | boolean }>;
+}> {
   return {
     clubs: await db.clubs.toArray(),
     islands: await db.islands.toArray(),

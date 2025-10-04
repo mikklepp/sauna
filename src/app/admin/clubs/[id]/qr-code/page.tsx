@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ArrowLeft, Download } from 'lucide-react'
@@ -110,7 +111,7 @@ export default function ClubQRCodePage({ params }: { params: { id: string } }) {
         <div className="flex flex-col items-center space-y-6">
           {qrCodeUrl && (
             <div className="bg-white p-6 rounded-lg border-2 border-gray-200">
-              <img src={qrCodeUrl} alt="Club QR Code" className="w-96 h-96" />
+              <Image src={qrCodeUrl} alt="Club QR Code" width={384} height={384} className="w-96 h-96" unoptimized />
             </div>
           )}
 

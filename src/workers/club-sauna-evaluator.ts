@@ -80,17 +80,17 @@ export async function evaluateClubSaunas(): Promise<EvaluationResult> {
           await db.sharedReservations.update(clubSauna.id, {
             autoCancelledAt: new Date(),
             syncStatus: 'pending',
-          } as any)
+          })
 
           // Add cancellation to sync queue
           await db.syncQueue.add({
+            id: crypto.randomUUID(),
             timestamp: new Date(),
             entityType: 'shared_reservation',
             entityId: clubSauna.id,
             operation: 'update',
-            data: { autoCancelledAt: new Date() },
-            syncStatus: 'pending',
-          } as any)
+            data: { autoCancelledAt: new Date().toISOString() },
+          })
 
           result.cancelled++
 
@@ -131,17 +131,17 @@ export async function evaluateClubSaunas(): Promise<EvaluationResult> {
                 syncStatus: 'pending',
               }
 
-              await db.reservations.add(reservation as any)
+              await db.reservations.add(reservation as LocalReservation)
 
               // Add to sync queue
               await db.syncQueue.add({
+                id: crypto.randomUUID(),
                 timestamp: new Date(),
                 entityType: 'reservation',
                 entityId: reservation.id!,
                 operation: 'create',
-                data: reservation,
-                syncStatus: 'pending',
-              } as any)
+                data: reservation as unknown as Record<string, unknown>,
+              })
 
               // Remove from shared participants
               await db.sharedParticipants.delete(participant.id)
@@ -165,7 +165,7 @@ export async function evaluateClubSaunas(): Promise<EvaluationResult> {
           await db.sharedReservations.update(clubSauna.id, {
             convertedToIndividual: true,
             syncStatus: 'pending',
-          } as any)
+          })
         } else {
           // eslint-disable-next-line no-console
           console.log(

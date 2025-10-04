@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
           entityType: change.entityType,
           entityId: change.entityId,
           operation: change.operation,
-          dataSnapshot: change.data as any,
+          dataSnapshot: change.data,
           status: 'SYNCED',
         };
       }),

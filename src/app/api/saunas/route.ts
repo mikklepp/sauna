@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
 
       // Admin users get all saunas across all clubs
       const islandId = getQueryParam(request, 'islandId');
-      const where: any = {};
+      const where: { islandId?: string } = {};
 
       if (islandId) {
         where.islandId = islandId;
@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
       const islandId = getQueryParam(request, 'islandId');
 
       // Build where clause
-      const where: any = {};
+      const where: { islandId?: string; island?: { clubId: string } } = {};
 
       if (islandId) {
         // Verify island belongs to authenticated club

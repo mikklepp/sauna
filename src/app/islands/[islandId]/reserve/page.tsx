@@ -34,7 +34,10 @@ export default function ReservePage() {
   const [kids, setKids] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [saunaInfo, setSaunaInfo] = useState<any>(null);
+  const [saunaInfo, setSaunaInfo] = useState<{
+    sauna: { id: string; name: string };
+    nextAvailable: { startTime: string; endTime: string };
+  } | null>(null);
 
   const fetchSaunaInfo = useCallback(async () => {
     try {

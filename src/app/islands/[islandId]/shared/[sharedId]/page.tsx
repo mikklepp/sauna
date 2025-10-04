@@ -65,7 +65,7 @@ export default function JoinSharedPage() {
       if (response.ok) {
         const data = await response.json();
         // Find the specific shared reservation
-        const shared = data.data?.find((sr: any) => sr.id === sharedId);
+        const shared = data.data?.find((sr: SharedReservation) => sr.id === sharedId);
         if (shared) {
           setSharedReservation(shared);
         }

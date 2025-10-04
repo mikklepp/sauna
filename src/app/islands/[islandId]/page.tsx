@@ -7,23 +7,44 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { formatTime } from '@/lib/utils';
 
+interface Participant {
+  id: string;
+  adults: number;
+  kids: number;
+  boat: {
+    id: string;
+    name: string;
+  };
+}
+
+interface SharedReservationToday {
+  id: string;
+  name: string;
+  startTime: string;
+  participants: Participant[];
+}
+
+interface CurrentReservation {
+  id: string;
+  startTime: string;
+  endTime: string;
+  boat: {
+    name: string;
+  };
+}
+
 interface Sauna {
   id: string;
   name: string;
   heatingTimeHours: number;
   isCurrentlyReserved: boolean;
-  currentReservation?: any;
+  currentReservation?: CurrentReservation;
   nextAvailable: {
     startTime: string;
     endTime: string;
     reason: string;
   };
-  sharedReservationsToday?: Array<{
-    id: string;
-    name: string;
-    startTime: string;
-    participants: any[];
-  }>;
+  sharedReservationsToday?: SharedReservationToday[];
 }
 
 export default function IslandSaunasPage() {
@@ -51,7 +72,7 @@ export default function IslandSaunasPage() {
 
         // Fetch availability for each sauna
         const saunasWithAvailability = await Promise.all(
-          (saunasData.data || []).map(async (sauna: any) => {
+          (saunasData.data || []).map(async (sauna: { id: string; name: string; heatingTimeHours: number }) => {
             const availRes = await fetch(`/api/saunas/${sauna.id}/next-available`);
             if (availRes.ok) {
               const availData = await availRes.json();

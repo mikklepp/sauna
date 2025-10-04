@@ -239,7 +239,7 @@ export interface CSVBoatRow {
   phoneNumber?: string;
 }
 
-export function validateCSVBoatRow(row: any, rowNumber: number): {
+export function validateCSVBoatRow(row: Record<string, unknown>, rowNumber: number): {
   valid: boolean;
   error?: string;
   data?: CSVBoatRow;

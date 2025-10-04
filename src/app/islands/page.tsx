@@ -29,7 +29,7 @@ export default function IslandsPage() {
       if (response.ok) {
         const data = await response.json();
         // Transform API response to match expected format
-        const transformedIslands = (data.data || []).map((island: any) => ({
+        const transformedIslands = (data.data || []).map((island: IslandData & { _count?: { saunas: number } }) => ({
           ...island,
           numberOfSaunas: island._count?.saunas || island.saunas?.length || 0,
         }));

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -213,11 +214,13 @@ export default function ClubThemePage() {
               <Label htmlFor="logo">Club Logo</Label>
               <div className="mt-2 space-y-3">
                 {logoPreview && (
-                  <div className="flex items-center justify-center p-4 bg-gray-100 rounded-lg">
-                    <img
+                  <div className="flex items-center justify-center p-4 bg-gray-100 rounded-lg relative h-24">
+                    <Image
                       src={logoPreview}
                       alt="Logo preview"
-                      className="max-h-24 max-w-full object-contain"
+                      fill
+                      className="object-contain"
+                      unoptimized
                     />
                   </div>
                 )}
@@ -343,7 +346,9 @@ export default function ClubThemePage() {
               <div className="border rounded-lg p-4 bg-white">
                 <p className="text-sm font-medium text-gray-700 mb-2">Navigation Bar</p>
                 <div className="flex items-center gap-2">
-                  <img src={logoPreview} alt="Logo" className="h-8 object-contain" />
+                  <div className="relative h-8 w-32">
+                    <Image src={logoPreview} alt="Logo" fill className="object-contain object-left" unoptimized />
+                  </div>
                   <span className="font-semibold">{club.name}</span>
                 </div>
               </div>

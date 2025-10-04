@@ -22,8 +22,8 @@ export default function IslandDeviceIslandPage() {
   const islandId = params.islandId as string
 
   const [saunas, setSaunas] = useState<Sauna[]>([])
-  const [island, setIsland] = useState<any>(null)
-  const [club, setClub] = useState<any>(null)
+  const [island, setIsland] = useState<{ id: string; name: string; clubId: string } | null>(null)
+  const [club, setClub] = useState<{ id: string; name: string } | null>(null)
   const [loading, setLoading] = useState(true)
   const [isOnline, setIsOnline] = useState(true)
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle')

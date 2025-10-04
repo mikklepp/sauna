@@ -124,7 +124,7 @@ export interface SyncChange {
   entityType: SyncEntityType;
   entityId: string;
   operation: SyncOperation;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   timestamp: Date;
 }
 
@@ -386,7 +386,7 @@ export interface LocalSharedParticipant {
 // API Response Types
 // ============================================================================
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
