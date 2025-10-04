@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { Waves, Clock, Users, Calendar, ChevronLeft } from 'lucide-react';
+import { Waves, Clock, Users, Calendar } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -11,7 +11,10 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { ClubHeader } from '@/components/club-header';
 import { formatTime } from '@/lib/utils';
+
+export const dynamic = 'force-dynamic';
 
 interface Participant {
   id: string;
@@ -44,6 +47,7 @@ interface Sauna {
   name: string;
   heatingTimeHours: number;
   isCurrentlyReserved: boolean;
+  isClubSauna?: boolean;
   currentReservation?: CurrentReservation;
   nextAvailable: {
     startTime: string;
@@ -51,6 +55,14 @@ interface Sauna {
     reason: string;
   };
   sharedReservationsToday?: SharedReservationToday[];
+}
+
+interface ClubData {
+  id: string;
+  name: string;
+  logoUrl: string | null;
+  primaryColor: string | null;
+  secondaryColor: string | null;
 }
 
 export default function IslandSaunasPage() {
@@ -61,6 +73,7 @@ export default function IslandSaunasPage() {
   const [saunas, setSaunas] = useState<Sauna[]>([]);
   const [loading, setLoading] = useState(true);
   const [islandName, setIslandName] = useState('');
+  const [club, setClub] = useState<ClubData | null>(null);
 
   const fetchSaunas = useCallback(async () => {
     try {
@@ -69,6 +82,11 @@ export default function IslandSaunasPage() {
       if (islandRes.ok) {
         const islandData = await islandRes.json();
         setIslandName(islandData.data.name);
+
+        // Extract club info
+        if (islandData.data.club) {
+          setClub(islandData.data.club);
+        }
       }
 
       // Get saunas with availability
@@ -111,84 +129,89 @@ export default function IslandSaunasPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
-          <p className="text-gray-600">Loading saunas...</p>
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-club-primary"></div>
+          <p className="text-muted-foreground">Loading saunas...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="border-b border-gray-200 bg-white">
-        <div className="container mx-auto px-4 py-4">
-          <Button
-            variant="ghost"
-            onClick={() => router.push('/islands')}
-            className="mb-2"
-          >
-            <ChevronLeft className="mr-1 h-4 w-4" />
-            Back to Islands
-          </Button>
-          <h1 className="text-2xl font-bold text-gray-900">{islandName}</h1>
-          <p className="text-gray-500">Select a sauna to make a reservation</p>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Club Header */}
+      {club && (
+        <ClubHeader
+          clubName={club.name}
+          clubLogo={club.logoUrl}
+          title={islandName}
+          showBack={true}
+          backHref="/islands"
+          primaryColor={club.primaryColor || undefined}
+          secondaryColor={club.secondaryColor || undefined}
+        />
+      )}
 
       {/* Content */}
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-4 py-8">
+        <div className="mb-6 text-center">
+          <p className="text-lg text-gray-600">
+            Select a sauna to make a reservation
+          </p>
+        </div>
+
         <div className="space-y-4">
-          {saunas.map((sauna) => (
+          {saunas.map((sauna, index) => (
             <Card
               key={sauna.id}
-              className="transition-shadow hover:shadow-lg"
+              className="overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl"
               data-testid="sauna-card"
+              style={{
+                animationDelay: `${index * 100}ms`,
+              }}
             >
-              <CardHeader>
+              <CardHeader className="border-b bg-gradient-to-r from-white to-gray-50">
                 <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <Waves className="h-5 w-5 text-blue-600" />
+                  <div className="flex-1">
+                    <CardTitle className="flex items-center gap-2 text-2xl">
+                      <Waves className="h-6 w-6 text-club-primary" />
                       {sauna.name}
                     </CardTitle>
-                    <CardDescription className="mt-1">
-                      {sauna.isCurrentlyReserved ? (
-                        <span className="font-medium text-red-600">
-                          Currently in use
-                        </span>
+                    <CardDescription className="mt-2 flex items-center gap-2">
+                      {sauna.isClubSauna ? (
+                        <span className="badge-club-sauna">Club Sauna</span>
+                      ) : sauna.isCurrentlyReserved ? (
+                        <span className="badge-reserved">Reserved</span>
                       ) : (
-                        <span className="font-medium text-green-600">
-                          Available
-                        </span>
+                        <span className="badge-available">Available</span>
                       )}
                     </CardDescription>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6 pt-6">
                 {/* Next Available Slot */}
-                <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-                  <div className="mb-2 flex items-center justify-between">
+                <div className="rounded-xl border-2 border-club-primary/20 bg-gradient-to-br from-club-primary/5 to-club-primary/10 p-5">
+                  <div className="mb-3 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-blue-600" />
-                      <span className="font-medium text-blue-900">
+                      <Clock className="h-5 w-5 text-club-primary" />
+                      <span className="text-sm font-semibold uppercase tracking-wide text-gray-700">
                         Next Available
                       </span>
                     </div>
-                    <span className="text-lg font-bold text-blue-900">
+                    <span className="text-2xl font-bold text-club-primary">
                       {formatTime(sauna.nextAvailable.startTime)}
                     </span>
                   </div>
                   {sauna.nextAvailable.reason === 'heating' && (
-                    <p className="text-xs text-blue-700">
+                    <p className="mb-3 text-sm text-gray-600">
                       Includes {sauna.heatingTimeHours}h heating time
                     </p>
                   )}
                   <Button
-                    className="mt-3 w-full"
+                    className="w-full bg-club-primary text-white shadow-md transition-all hover:opacity-90 hover:shadow-lg"
+                    size="lg"
                     onClick={() =>
                       router.push(
                         `/islands/${islandId}/reserve?saunaId=${sauna.id}`
@@ -203,27 +226,27 @@ export default function IslandSaunasPage() {
                 {/* Shared Reservations */}
                 {sauna.sharedReservationsToday &&
                   sauna.sharedReservationsToday.length > 0 && (
-                    <div className="border-t pt-4">
-                      <h4 className="mb-3 flex items-center gap-2 font-medium text-gray-900">
-                        <Users className="h-4 w-4" />
-                        Shared Sauna Today
+                    <div className="space-y-3">
+                      <h4 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-gray-700">
+                        <Users className="h-5 w-5 text-club-secondary" />
+                        Club Sauna Today
                       </h4>
                       {sauna.sharedReservationsToday.map((shared) => (
                         <div
                           key={shared.id}
-                          className="rounded-lg border border-purple-200 bg-purple-50 p-4"
+                          className="rounded-xl border-2 border-club-secondary/30 bg-gradient-to-br from-club-secondary/10 to-club-secondary/5 p-4"
                         >
-                          <div className="mb-2 flex items-center justify-between">
+                          <div className="mb-3 flex items-center justify-between">
                             <div>
-                              <p className="font-medium text-purple-900">
-                                {shared.name || 'Shared Sauna'}
+                              <p className="font-semibold text-gray-900">
+                                {shared.name || 'Club Sauna'}
                               </p>
-                              <p className="text-sm text-purple-700">
+                              <p className="text-sm text-gray-600">
                                 Starting at {formatTime(shared.startTime)}
                               </p>
                             </div>
                             <div className="text-right">
-                              <p className="text-sm text-purple-700">
+                              <p className="text-sm font-medium text-club-secondary">
                                 {shared.participants.length}{' '}
                                 {shared.participants.length === 1
                                   ? 'boat'
@@ -233,14 +256,14 @@ export default function IslandSaunasPage() {
                           </div>
                           <Button
                             variant="outline"
-                            className="mt-2 w-full"
+                            className="w-full border-club-secondary/50 text-club-secondary hover:bg-club-secondary/10"
                             onClick={() =>
                               router.push(
                                 `/islands/${islandId}/shared/${shared.id}`
                               )
                             }
                           >
-                            Join Shared Sauna
+                            Join Club Sauna
                           </Button>
                         </div>
                       ))}
@@ -248,18 +271,20 @@ export default function IslandSaunasPage() {
                   )}
 
                 {/* View Reservations Link */}
-                <Button
-                  variant="ghost"
-                  className="w-full"
-                  onClick={() =>
-                    router.push(
-                      `/islands/${islandId}/saunas/${sauna.id}/reservations`
-                    )
-                  }
-                >
-                  <Calendar className="mr-2 h-4 w-4" />
-                  View All Reservations
-                </Button>
+                <div className="border-t pt-4">
+                  <Button
+                    variant="ghost"
+                    className="w-full text-club-primary hover:bg-club-primary/10"
+                    onClick={() =>
+                      router.push(
+                        `/islands/${islandId}/saunas/${sauna.id}/reservations`
+                      )
+                    }
+                  >
+                    <Calendar className="mr-2 h-5 w-5" />
+                    View All Reservations
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}
