@@ -25,23 +25,18 @@ export async function GET(_request: NextRequest) {
             name: true,
           },
         },
+        _count: {
+          select: {
+            saunas: true,
+          },
+        },
       },
       orderBy: {
         name: 'asc',
       },
     });
 
-    // Format response to match expected shape
-    const formatted = islands.map(island => ({
-      id: island.id,
-      name: island.name,
-      clubId: island.clubId,
-      club: island.club,
-      numberOfSaunas: island.saunas.length,
-      saunas: island.saunas,
-    }));
-
-    return successResponse({ data: formatted });
+    return successResponse(islands);
   } catch (error) {
     return handleApiError(error);
   }
