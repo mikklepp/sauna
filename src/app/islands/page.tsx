@@ -32,7 +32,12 @@ export default function IslandsPage() {
       const response = await fetch('/api/islands');
       if (response.ok) {
         const data = await response.json();
-        setIslands(data.data || []);
+        // Transform API response to match expected format
+        const transformedIslands = (data.data || []).map((island: any) => ({
+          ...island,
+          numberOfSaunas: island._count?.saunas || island.saunas?.length || 0,
+        }));
+        setIslands(transformedIslands);
       } else {
         // Redirect to auth if session expired
         router.push('/auth');

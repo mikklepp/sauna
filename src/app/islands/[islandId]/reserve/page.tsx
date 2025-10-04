@@ -141,7 +141,7 @@ export default function ReservePage() {
         <div className="container mx-auto px-4 py-4">
           <Button
             variant="ghost"
-            onClick={() => router.push(`/app/islands/${islandId}`)}
+            onClick={() => router.push(`/islands/${islandId}`)}
             className="mb-2"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
@@ -188,6 +188,8 @@ export default function ReservePage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
+                  data-testid="boat-search-input"
+                  aria-label="Boat name or membership number"
                 />
               </div>
 
@@ -204,6 +206,7 @@ export default function ReservePage() {
                     onClick={() => handleBoatSelect(boat)}
                     disabled={loading}
                     className="w-full text-left p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors disabled:opacity-50"
+                    data-testid="boat-result"
                   >
                     <div className="font-medium text-gray-900">{boat.name}</div>
                     {boat.captainName && (
@@ -345,7 +348,7 @@ export default function ReservePage() {
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Check className="w-8 h-8 text-green-600" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Reservation Confirmed!</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2" data-testid="success-title">Reservation Confirmed!</h2>
               <p className="text-gray-600 mb-6">Your sauna is reserved</p>
 
               <div className="bg-gray-50 rounded-lg p-6 mb-6 text-left max-w-sm mx-auto">
@@ -367,14 +370,14 @@ export default function ReservePage() {
 
               <div className="space-y-3">
                 <Button
-                  onClick={() => router.push(`/app/islands/${islandId}`)}
+                  onClick={() => router.push(`/islands/${islandId}`)}
                   className="w-full max-w-sm"
                 >
                   Back to Saunas
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => router.push(`/app/islands/${islandId}/saunas/${saunaId}/reservations`)}
+                  onClick={() => router.push(`/islands/${islandId}/saunas/${saunaId}/reservations`)}
                   className="w-full max-w-sm"
                 >
                   View All Reservations
