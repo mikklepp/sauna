@@ -115,7 +115,7 @@ export default function ReservationsListPage() {
         <div className="container mx-auto px-4 py-4">
           <Button
             variant="ghost"
-            onClick={() => router.push(`/app/islands/${islandId}`)}
+            onClick={() => router.push(`/islands/${islandId}`)}
             className="mb-2"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
