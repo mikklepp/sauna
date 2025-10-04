@@ -59,56 +59,111 @@ export async function POST(request: NextRequest) {
 
 /**
  * GET /api/shared-reservations?saunaId=xxx&date=xxx
- * Get shared reservations for a sauna on a specific date
+ * Get shared reservations (admin gets all, club users get for specific sauna)
  */
 export async function GET(request: NextRequest) {
   try {
-    const club = await requireClubAuth();
-    
-    const saunaId = getQueryParam(request, 'saunaId');
-    const dateStr = getQueryParam(request, 'date');
-    
-    if (!saunaId) {
-      return errorResponse('saunaId query parameter is required', 400);
-    }
-    
-    // Check if sauna belongs to club
-    const sauna = await prisma.sauna.findUnique({
-      where: { id: saunaId },
-      include: { island: true },
-    });
-    
-    if (!sauna || sauna.island.clubId !== club.id) {
-      return errorResponse('Sauna not found', 404);
-    }
-    
-    // Parse date or use today
-    const date = dateStr ? new Date(dateStr) : new Date();
-    const dayStart = startOfDay(date);
-    const dayEnd = endOfDay(date);
-    
-    // Get shared reservations
-    const sharedReservations = await prisma.sharedReservation.findMany({
-      where: {
-        saunaId,
-        date: {
+    // Try admin auth first
+    try {
+      await requireAdminAuth();
+
+      // Admin users get all shared reservations
+      const saunaId = getQueryParam(request, 'saunaId');
+      const dateStr = getQueryParam(request, 'date');
+
+      const where: any = {};
+
+      if (saunaId) {
+        where.saunaId = saunaId;
+      }
+
+      if (dateStr) {
+        const date = new Date(dateStr);
+        const dayStart = startOfDay(date);
+        const dayEnd = endOfDay(date);
+        where.date = {
           gte: dayStart,
           lte: dayEnd,
-        },
-      },
-      include: {
-        participants: {
-          include: {
-            boat: true,
+        };
+      }
+
+      const sharedReservations = await prisma.sharedReservation.findMany({
+        where,
+        include: {
+          sauna: {
+            include: {
+              island: {
+                include: {
+                  club: {
+                    select: {
+                      name: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          participants: {
+            include: {
+              boat: true,
+            },
           },
         },
-      },
-      orderBy: {
-        startTime: 'asc',
-      },
-    });
-    
-    return successResponse(sharedReservations);
+        orderBy: {
+          date: 'desc',
+        },
+      });
+
+      return successResponse(sharedReservations);
+    } catch {
+      // Fall back to club auth
+      const club = await requireClubAuth();
+
+      const saunaId = getQueryParam(request, 'saunaId');
+      const dateStr = getQueryParam(request, 'date');
+
+      if (!saunaId) {
+        return errorResponse('saunaId query parameter is required', 400);
+      }
+
+      // Check if sauna belongs to club
+      const sauna = await prisma.sauna.findUnique({
+        where: { id: saunaId },
+        include: { island: true },
+      });
+
+      if (!sauna || sauna.island.clubId !== club.id) {
+        return errorResponse('Sauna not found', 404);
+      }
+
+      // Parse date or use today
+      const date = dateStr ? new Date(dateStr) : new Date();
+      const dayStart = startOfDay(date);
+      const dayEnd = endOfDay(date);
+
+      // Get shared reservations
+      const sharedReservations = await prisma.sharedReservation.findMany({
+        where: {
+          saunaId,
+          date: {
+            gte: dayStart,
+            lte: dayEnd,
+          },
+        },
+        include: {
+          participants: {
+            include: {
+              boat: true,
+            },
+          },
+        },
+        orderBy: {
+          startTime: 'asc',
+        },
+      });
+
+      return successResponse(sharedReservations);
+    }
   } catch (error) {
     return handleApiError(error);
   }

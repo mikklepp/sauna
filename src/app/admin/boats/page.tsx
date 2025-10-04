@@ -53,7 +53,8 @@ export default function BoatsPage() {
       setLoading(true)
       const response = await fetch('/api/boats')
       if (!response.ok) throw new Error('Failed to fetch boats')
-      const data = await response.json()
+      const result = await response.json()
+      const data = result.data || result
       setBoats(data)
       setFilteredBoats(data)
     } catch (err) {

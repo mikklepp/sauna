@@ -35,7 +35,8 @@ export default function SaunasPage() {
       setLoading(true)
       const response = await fetch('/api/saunas')
       if (!response.ok) throw new Error('Failed to fetch saunas')
-      const data = await response.json()
+      const result = await response.json()
+      const data = result.data || result
       setSaunas(data)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error')

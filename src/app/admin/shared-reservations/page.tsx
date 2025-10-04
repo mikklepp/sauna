@@ -47,7 +47,8 @@ export default function SharedReservationsPage() {
       setLoading(true)
       const response = await fetch('/api/shared-reservations')
       if (!response.ok) throw new Error('Failed to fetch shared reservations')
-      const data = await response.json()
+      const result = await response.json()
+      const data = result.data || result
       setReservations(data)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error')

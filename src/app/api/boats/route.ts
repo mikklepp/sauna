@@ -46,22 +46,53 @@ export async function POST(request: NextRequest) {
 
 /**
  * GET /api/boats?clubId=xxx
- * Get all boats for a club
+ * Get all boats (admin gets all, club users get their club's boats)
  */
 export async function GET(_request: NextRequest) {
   try {
-    const club = await requireClubAuth();
-    
-    const boats = await prisma.boat.findMany({
-      where: {
-        clubId: club.id,
-      },
-      orderBy: {
-        name: 'asc',
-      },
-    });
-    
-    return successResponse(boats);
+    // Try admin auth first
+    try {
+      await requireAdminAuth();
+
+      // Admin users get all boats across all clubs
+      const boats = await prisma.boat.findMany({
+        include: {
+          club: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+        orderBy: {
+          name: 'asc',
+        },
+      });
+
+      return successResponse(boats);
+    } catch {
+      // Fall back to club auth
+      const club = await requireClubAuth();
+
+      const boats = await prisma.boat.findMany({
+        where: {
+          clubId: club.id,
+        },
+        include: {
+          club: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+        orderBy: {
+          name: 'asc',
+        },
+      });
+
+      return successResponse(boats);
+    }
   } catch (error) {
     return handleApiError(error);
   }

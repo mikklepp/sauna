@@ -45,49 +45,83 @@ export async function POST(request: NextRequest) {
 
 /**
  * GET /api/saunas?islandId=xxx
- * Get all saunas (optionally filtered by island)
+ * Get all saunas (admin gets all, club users get their club's saunas)
  */
 export async function GET(request: NextRequest) {
   try {
-    const club = await requireClubAuth();
-    const islandId = getQueryParam(request, 'islandId');
-    
-    // Build where clause
-    const where: any = {};
-    
-    if (islandId) {
-      // Verify island belongs to authenticated club
-      const island = await prisma.island.findUnique({
-        where: { id: islandId },
-      });
-      
-      if (!island || island.clubId !== club.id) {
-        return errorResponse('Island not found', 404);
+    // Try admin auth first
+    try {
+      await requireAdminAuth();
+
+      // Admin users get all saunas across all clubs
+      const islandId = getQueryParam(request, 'islandId');
+      const where: any = {};
+
+      if (islandId) {
+        where.islandId = islandId;
       }
-      
-      where.islandId = islandId;
-    } else {
-      // Get all saunas for club's islands
-      where.island = {
-        clubId: club.id,
-      };
-    }
-    
-    const saunas = await prisma.sauna.findMany({
-      where,
-      include: {
-        island: {
-          include: {
-            club: true,
+
+      const saunas = await prisma.sauna.findMany({
+        where,
+        include: {
+          island: {
+            include: {
+              club: {
+                select: {
+                  name: true,
+                },
+              },
+            },
           },
         },
-      },
-      orderBy: {
-        name: 'asc',
-      },
-    });
-    
-    return successResponse(saunas);
+        orderBy: {
+          name: 'asc',
+        },
+      });
+
+      return successResponse(saunas);
+    } catch {
+      // Fall back to club auth
+      const club = await requireClubAuth();
+      const islandId = getQueryParam(request, 'islandId');
+
+      // Build where clause
+      const where: any = {};
+
+      if (islandId) {
+        // Verify island belongs to authenticated club
+        const island = await prisma.island.findUnique({
+          where: { id: islandId },
+        });
+
+        if (!island || island.clubId !== club.id) {
+          return errorResponse('Island not found', 404);
+        }
+
+        where.islandId = islandId;
+      } else {
+        // Get all saunas for club's islands
+        where.island = {
+          clubId: club.id,
+        };
+      }
+
+      const saunas = await prisma.sauna.findMany({
+        where,
+        include: {
+          island: {
+            include: {
+              club: true,
+            },
+          },
+        },
+        orderBy: {
+          name: 'asc',
+        },
+      });
+
+      return successResponse(saunas);
+    }
   } catch (error) {
     return handleApiError(error);
   }

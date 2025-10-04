@@ -1,51 +1,92 @@
 import { NextRequest } from 'next/server';
 import { requireAdminAuth } from '@/lib/auth';
-import { parseRequestBody, successResponse, errorResponse, handleApiError, getPathParam } from '@/lib/api-utils';
-import { updateClubThemeSchema } from '@/lib/validation';
+import { parseRequestBody, successResponse, errorResponse, handleApiError } from '@/lib/api-utils';
 import prisma from '@/lib/db';
 
 /**
- * POST /api/clubs/[id]/theme
- * Update club theme (logo, colors) - admin only
+ * GET /api/islands
+ * Get all islands (admin only)
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(_request: NextRequest) {
   try {
     await requireAdminAuth();
-    const clubId = getPathParam(params, 'id');
-    const body = await parseRequestBody(request);
-    
-    // Validate input
-    const validated = updateClubThemeSchema.parse(body);
-    
-    // Check if club exists
-    const existing = await prisma.club.findUnique({
-      where: { id: clubId },
-    });
-    
-    if (!existing) {
-      return errorResponse('Club not found', 404);
-    }
-    
-    // Update theme
-    const updated = await prisma.club.update({
-      where: { id: clubId },
-      data: {
-        logoUrl: validated.logoUrl ?? existing.logoUrl,
-        primaryColor: validated.primaryColor ?? existing.primaryColor,
-        secondaryColor: validated.secondaryColor ?? existing.secondaryColor,
+
+    const islands = await prisma.island.findMany({
+      include: {
+        club: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        saunas: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        name: 'asc',
       },
     });
-    
-    return successResponse({
-      id: updated.id,
-      name: updated.name,
-      logoUrl: updated.logoUrl,
-      primaryColor: updated.primaryColor,
-      secondaryColor: updated.secondaryColor,
+
+    // Format response to match expected shape
+    const formatted = islands.map(island => ({
+      id: island.id,
+      name: island.name,
+      clubId: island.clubId,
+      club: island.club,
+      numberOfSaunas: island.saunas.length,
+      saunas: island.saunas,
+    }));
+
+    return successResponse({ data: formatted });
+  } catch (error) {
+    return handleApiError(error);
+  }
+}
+
+/**
+ * POST /api/islands
+ * Create a new island (admin only)
+ */
+export async function POST(request: NextRequest) {
+  try {
+    await requireAdminAuth();
+    const body = await parseRequestBody<{ name: string; clubId: string }>(request);
+
+    if (!body.name || !body.clubId) {
+      return errorResponse('Name and clubId are required', 400);
+    }
+
+    // Check if club exists
+    const club = await prisma.club.findUnique({
+      where: { id: body.clubId },
     });
+
+    if (!club) {
+      return errorResponse('Club not found', 404);
+    }
+
+    // Create island
+    const island = await prisma.island.create({
+      data: {
+        name: body.name,
+        clubId: body.clubId,
+      },
+      include: {
+        club: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        saunas: true,
+      },
+    });
+
+    return successResponse(island, 201);
   } catch (error) {
     return handleApiError(error);
   }
