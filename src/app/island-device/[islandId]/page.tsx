@@ -41,11 +41,11 @@ export default function IslandDeviceIslandPage() {
 
       // Load data from IndexedDB
       const islandData = await db.islands.get(islandId)
-      setIsland(islandData)
+      setIsland(islandData || null)
 
       if (islandData) {
         const clubData = await db.clubs.get(islandData.clubId)
-        setClub(clubData)
+        setClub(clubData || null)
       }
 
       const saunasData = await db.saunas.where('islandId').equals(islandId).toArray()

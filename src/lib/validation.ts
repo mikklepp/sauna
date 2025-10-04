@@ -266,7 +266,7 @@ export function validateCSVBoatRow(row: Record<string, unknown>, rowNumber: numb
     };
   }
   
-  if (row.phoneNumber) {
+  if (row.phoneNumber && typeof row.phoneNumber === 'string') {
     const phoneValidation = validatePhoneNumber(row.phoneNumber);
     if (!phoneValidation.valid) {
       return {
@@ -281,8 +281,8 @@ export function validateCSVBoatRow(row: Record<string, unknown>, rowNumber: numb
     data: {
       name: row.name.trim(),
       membershipNumber: row.membershipNumber.trim(),
-      captainName: row.captainName?.trim() || undefined,
-      phoneNumber: row.phoneNumber?.trim() || undefined,
+      captainName: typeof row.captainName === 'string' ? row.captainName.trim() : undefined,
+      phoneNumber: typeof row.phoneNumber === 'string' ? row.phoneNumber.trim() : undefined,
     },
   };
 }

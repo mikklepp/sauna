@@ -103,10 +103,10 @@ export async function getDeviceConfig(): Promise<{
   const lastSyncAt = await db.metadata.get('lastSyncAt');
   
   return {
-    isConfigured: isConfigured?.value ?? false,
-    deviceId: deviceId?.value,
-    assignedIslandId: assignedIslandId?.value,
-    lastSyncAt: lastSyncAt?.value,
+    isConfigured: isConfigured?.value === true,
+    deviceId: deviceId?.value as string | undefined,
+    assignedIslandId: assignedIslandId?.value as string | undefined,
+    lastSyncAt: lastSyncAt?.value as string | undefined,
   };
 }
 
