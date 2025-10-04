@@ -44,7 +44,8 @@ export default function EditSaunaPage() {
     try {
       const response = await fetch(`/api/saunas/${saunaId}`)
       if (!response.ok) throw new Error('Failed to fetch sauna')
-      const data = await response.json()
+      const result = await response.json()
+      const data = result.data || result
       setSauna(data)
       setFormData({
         name: data.name,
@@ -114,10 +115,10 @@ export default function EditSaunaPage() {
       <Card className="p-6">
         <h1 className="text-2xl font-bold mb-2">Edit Sauna</h1>
         <p className="text-gray-600 mb-1">
-          Island: {sauna.island.name}
+          Island: {sauna?.island?.name || 'Loading...'}
         </p>
         <p className="text-sm text-gray-500 mb-6">
-          Club: {sauna.island.club.name}
+          Club: {sauna?.island?.club?.name || 'Loading...'}
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-6">

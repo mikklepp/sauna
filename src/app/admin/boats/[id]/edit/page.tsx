@@ -43,7 +43,8 @@ export default function EditBoatPage() {
     try {
       const response = await fetch(`/api/boats/${boatId}`)
       if (!response.ok) throw new Error('Failed to fetch boat')
-      const data = await response.json()
+      const result = await response.json()
+      const data = result.data || result
       setBoat(data)
       setFormData({
         name: data.name,
@@ -125,7 +126,7 @@ export default function EditBoatPage() {
       <Card className="p-6">
         <h1 className="text-2xl font-bold mb-2">Edit Boat</h1>
         <p className="text-gray-600 mb-6">
-          Club: {boat.club.name}
+          Club: {boat?.club?.name || 'Loading...'}
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-6">

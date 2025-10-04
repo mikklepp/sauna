@@ -153,6 +153,7 @@ export default function SaunasPage() {
                   size="sm"
                   className="flex-1"
                   onClick={() => router.push(`/admin/saunas/${sauna.id}/edit`)}
+                  data-testid="edit-sauna-button"
                 >
                   <Pencil className="w-4 h-4 mr-2" />
                   Edit

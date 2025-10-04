@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { requireAdminAuth, requireClubAuth } from '@/lib/auth';
+import { requireAdminAuth, requireClubAuth, getAdminFromSession } from '@/lib/auth';
 import { parseRequestBody, successResponse, errorResponse, handleApiError, getPathParam } from '@/lib/api-utils';
 import prisma from '@/lib/db';
 
@@ -8,30 +8,50 @@ import prisma from '@/lib/db';
  * Get a specific boat
  */
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const club = await requireClubAuth();
     const boatId = getPathParam(params, 'id');
-    
-    const boat = await prisma.boat.findUnique({
-      where: { id: boatId },
-      include: {
-        club: true,
-      },
-    });
-    
-    if (!boat) {
-      return errorResponse('Boat not found', 404);
+
+    // Check if user is admin or has club access
+    const admin = await getAdminFromSession();
+
+    if (admin) {
+      // Admin can access any boat
+      const boat = await prisma.boat.findUnique({
+        where: { id: boatId },
+        include: {
+          club: true,
+        },
+      });
+
+      if (!boat) {
+        return errorResponse('Boat not found', 404);
+      }
+
+      return successResponse(boat);
+    } else {
+      // Not admin, try club auth
+      const club = await requireClubAuth();
+      const boat = await prisma.boat.findUnique({
+        where: { id: boatId },
+        include: {
+          club: true,
+        },
+      });
+
+      if (!boat) {
+        return errorResponse('Boat not found', 404);
+      }
+
+      // Verify boat belongs to authenticated club
+      if (boat.clubId !== club.id) {
+        return errorResponse('Access denied', 403);
+      }
+
+      return successResponse(boat);
     }
-    
-    // Verify boat belongs to authenticated club
-    if (boat.clubId !== club.id) {
-      return errorResponse('Access denied', 403);
-    }
-    
-    return successResponse(boat);
   } catch (error) {
     return handleApiError(error);
   }

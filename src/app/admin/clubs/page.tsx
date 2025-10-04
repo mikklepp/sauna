@@ -113,7 +113,7 @@ export default function ClubsPage() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {clubs.map((club) => (
-                <tr key={club.id} className="hover:bg-gray-50">
+                <tr key={club.id} className="hover:bg-gray-50" data-testid="club-item">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       {club.logoUrl && (

@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { requireAdminAuth, requireClubAuth } from '@/lib/auth';
+import { requireAdminAuth, requireClubAuth, getAdminFromSession } from '@/lib/auth';
 import { parseRequestBody, successResponse, errorResponse, handleApiError, getPathParam } from '@/lib/api-utils';
 import prisma from '@/lib/db';
 
@@ -8,31 +8,53 @@ import prisma from '@/lib/db';
  * Get a specific island
  */
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const club = await requireClubAuth();
     const islandId = getPathParam(params, 'id');
-    
-    const island = await prisma.island.findUnique({
-      where: { id: islandId },
-      include: {
-        club: true,
-        saunas: true,
-      },
-    });
-    
-    if (!island) {
-      return errorResponse('Island not found', 404);
+
+    // Check if user is admin or has club access
+    const admin = await getAdminFromSession();
+
+    if (admin) {
+      // Admin can access any island
+      const island = await prisma.island.findUnique({
+        where: { id: islandId },
+        include: {
+          club: true,
+          saunas: true,
+        },
+      });
+
+      if (!island) {
+        return errorResponse('Island not found', 404);
+      }
+
+      return successResponse(island);
+    } else {
+
+      // Not admin, try club auth
+      const club = await requireClubAuth();
+      const island = await prisma.island.findUnique({
+        where: { id: islandId },
+        include: {
+          club: true,
+          saunas: true,
+        },
+      });
+
+      if (!island) {
+        return errorResponse('Island not found', 404);
+      }
+
+      // Verify island belongs to authenticated club
+      if (island.clubId !== club.id) {
+        return errorResponse('Access denied', 403);
+      }
+
+      return successResponse(island);
     }
-    
-    // Verify island belongs to authenticated club
-    if (island.clubId !== club.id) {
-      return errorResponse('Access denied', 403);
-    }
-    
-    return successResponse(island);
   } catch (error) {
     return handleApiError(error);
   }

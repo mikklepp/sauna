@@ -34,13 +34,21 @@ test.describe('Admin Island Management', () => {
   });
 
   test('should edit an existing island', async ({ page }) => {
-    // Find first island in list
-    const firstIsland = page.locator('[data-testid="island-item"]').first();
-    if (await firstIsland.count() === 0) {
-      test.skip();
+    // Create an island first if none exist
+    const islandCount = await page.locator('[data-testid="island-item"]').count();
+    if (islandCount === 0) {
+      const timestamp = Date.now();
+      await page.getByRole('button', { name: /create island|new island|add island/i }).click();
+      await page.getByLabel(/island name/i).fill(`Test Island ${timestamp}`);
+      await page.getByLabel(/club/i).selectOption({ index: 1 });
+      await page.getByRole('button', { name: /create|save/i }).click();
+      await page.waitForURL(/\/admin\/islands$/);
     }
 
-    await firstIsland.getByRole('button', { name: /edit/i }).click();
+    // Navigate to edit page
+    const firstIsland = page.locator('[data-testid="island-item"]').first();
+    await firstIsland.locator('[data-testid="edit-island-button"]').click();
+    await page.waitForURL(/\/admin\/islands\/.+\/edit/);
 
     // Update name
     const nameField = page.getByLabel(/island name/i);
@@ -51,7 +59,8 @@ test.describe('Admin Island Management', () => {
     // Save
     await page.getByRole('button', { name: /save|update/i }).click();
 
-    // Should show updated name
+    // Wait for navigation and verify
+    await page.waitForURL(/\/admin\/islands$/);
     await expect(page.getByText(newName)).toBeVisible();
   });
 
@@ -118,27 +127,36 @@ test.describe('Admin Sauna Management', () => {
   });
 
   test('should toggle auto Club Sauna on a sauna', async ({ page }) => {
-    const firstSauna = page.locator('[data-testid="sauna-item"]').first();
-    if (await firstSauna.count() === 0) {
-      test.skip();
+    // Create a sauna first if none exist
+    const saunaCount = await page.locator('[data-testid="sauna-item"]').count();
+    if (saunaCount === 0) {
+      const timestamp = Date.now();
+      await page.getByRole('button', { name: /create sauna|new sauna|add sauna/i }).click();
+      await page.getByLabel(/sauna name/i).fill(`Test Sauna ${timestamp}`);
+      await page.getByLabel(/island/i).selectOption({ index: 1 });
+      await page.getByRole('button', { name: /create|save/i }).click();
+      await page.waitForURL(/\/admin\/saunas$/);
     }
 
-    // Look for edit button
-    await firstSauna.getByRole('button', { name: /edit/i }).click();
+    const firstSauna = page.locator('[data-testid="sauna-item"]').first();
+    await firstSauna.locator('[data-testid="edit-sauna-button"]').click();
+    await page.waitForURL(/\/admin\/saunas\/.+\/edit/);
+
+    // Wait for the page to finish loading
+    await page.waitForLoadState('networkidle');
 
     // Find auto Club Sauna checkbox
     const autoClubCheckbox = page.getByLabel(/auto club sauna|enable club sauna/i);
-    if (await autoClubCheckbox.isVisible()) {
-      const wasChecked = await autoClubCheckbox.isChecked();
-      await autoClubCheckbox.click();
+    const wasChecked = await autoClubCheckbox.isChecked();
+    await autoClubCheckbox.click();
 
-      await page.getByRole('button', { name: /save|update/i }).click();
+    await page.getByRole('button', { name: /save|update/i }).click();
 
-      // Verify change
-      await page.waitForTimeout(1000);
-      await firstSauna.getByRole('button', { name: /edit/i }).click();
-      await expect(autoClubCheckbox).toBeChecked({ checked: !wasChecked });
-    }
+    // Verify change - navigate back and check
+    await page.waitForURL(/\/admin\/saunas$/);
+    await page.locator('[data-testid="sauna-item"]').first().locator('[data-testid="edit-sauna-button"]').click();
+    await page.waitForURL(/\/admin\/saunas\/.+\/edit/);
+    await expect(page.getByLabel(/auto club sauna|enable club sauna/i)).toBeChecked({ checked: !wasChecked });
   });
 });
 
@@ -229,12 +247,24 @@ Test CSV Boat,CSV${Date.now()},CSV Captain,555-9999`;
   });
 
   test('should edit a boat', async ({ page }) => {
-    const firstBoat = page.locator('[data-testid="boat-item"]').first();
-    if (await firstBoat.count() === 0) {
-      test.skip();
+    // Create a boat first if none exist
+    const boatCount = await page.locator('[data-testid="boat-item"]').count();
+    if (boatCount === 0) {
+      const timestamp = Date.now();
+      await page.getByRole('button', { name: /create boat|new boat|add boat/i }).click();
+      await page.getByLabel(/boat name/i).fill(`Test Boat ${timestamp}`);
+      await page.getByLabel(/membership number/i).fill(`MEM${timestamp}`);
+      await page.getByLabel(/club/i).selectOption({ index: 1 });
+      await page.getByRole('button', { name: /create|save/i }).click();
+      await page.waitForURL(/\/admin\/boats$/);
     }
 
-    await firstBoat.getByRole('button', { name: /edit/i }).click();
+    const firstBoat = page.locator('[data-testid="boat-item"]').first();
+    await firstBoat.locator('[data-testid="edit-boat-button"]').click();
+    await page.waitForURL(/\/admin\/boats\/.+\/edit/);
+
+    // Wait for the page to finish loading
+    await page.waitForLoadState('networkidle');
 
     const captainField = page.getByLabel(/captain name/i);
     const newCaptainName = `Updated Captain ${Date.now()}`;
@@ -243,6 +273,8 @@ Test CSV Boat,CSV${Date.now()},CSV Captain,555-9999`;
 
     await page.getByRole('button', { name: /save|update/i }).click();
 
+    // Wait for navigation and verify
+    await page.waitForURL(/\/admin\/boats$/);
     await expect(page.getByText(newCaptainName)).toBeVisible();
   });
 
@@ -287,12 +319,19 @@ test.describe('Admin Club Management', () => {
   });
 
   test('should view club QR code', async ({ page }) => {
-    const firstClub = page.locator('[data-testid="club-item"]').first();
-    if (await firstClub.count() === 0) {
+    // Navigate to clubs page
+    await page.goto('/admin/clubs');
+    await page.waitForLoadState('networkidle');
+
+    const clubCount = await page.locator('[data-testid="club-item"]').count();
+
+    if (clubCount === 0) {
       test.skip();
     }
 
+    const firstClub = page.locator('[data-testid="club-item"]').first();
     const qrButton = firstClub.getByRole('button', { name: /qr code|show qr/i });
+
     if (await qrButton.isVisible()) {
       await qrButton.click();
 
@@ -302,12 +341,19 @@ test.describe('Admin Club Management', () => {
   });
 
   test('should access theme editor', async ({ page }) => {
-    const firstClub = page.locator('[data-testid="club-item"]').first();
-    if (await firstClub.count() === 0) {
+    // Navigate to clubs page
+    await page.goto('/admin/clubs');
+    await page.waitForLoadState('networkidle');
+
+    const clubCount = await page.locator('[data-testid="club-item"]').count();
+
+    if (clubCount === 0) {
       test.skip();
     }
 
+    const firstClub = page.locator('[data-testid="club-item"]').first();
     const themeButton = firstClub.getByRole('button', { name: /theme|edit theme/i });
+
     if (await themeButton.isVisible()) {
       await themeButton.click();
 

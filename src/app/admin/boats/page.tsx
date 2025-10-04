@@ -198,7 +198,7 @@ export default function BoatsPage() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredBoats.map((boat) => (
-                <tr key={boat.id} className="hover:bg-gray-50">
+                <tr key={boat.id} className="hover:bg-gray-50" data-testid="boat-item">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <Ship className="w-5 h-5 text-blue-600 mr-2" />
@@ -223,6 +223,7 @@ export default function BoatsPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => router.push(`/admin/boats/${boat.id}/edit`)}
+                        data-testid="edit-boat-button"
                       >
                         <Pencil className="w-4 h-4 mr-1" />
                         Edit

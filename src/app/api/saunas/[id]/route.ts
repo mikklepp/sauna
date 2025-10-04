@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { requireAdminAuth, requireClubAuth } from '@/lib/auth';
+import { requireAdminAuth, requireClubAuth, getAdminFromSession } from '@/lib/auth';
 import { parseRequestBody, successResponse, errorResponse, handleApiError, getPathParam } from '@/lib/api-utils';
 import prisma from '@/lib/db';
 
@@ -8,34 +8,58 @@ import prisma from '@/lib/db';
  * Get a specific sauna
  */
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const club = await requireClubAuth();
     const saunaId = getPathParam(params, 'id');
-    
-    const sauna = await prisma.sauna.findUnique({
-      where: { id: saunaId },
-      include: {
-        island: {
-          include: {
-            club: true,
+
+    // Check if user is admin or has club access
+    const admin = await getAdminFromSession();
+
+    if (admin) {
+      // Admin can access any sauna
+      const sauna = await prisma.sauna.findUnique({
+        where: { id: saunaId },
+        include: {
+          island: {
+            include: {
+              club: true,
+            },
           },
         },
-      },
-    });
-    
-    if (!sauna) {
-      return errorResponse('Sauna not found', 404);
+      });
+
+      if (!sauna) {
+        return errorResponse('Sauna not found', 404);
+      }
+
+      return successResponse(sauna);
+    } else {
+      // Not admin, try club auth
+      const club = await requireClubAuth();
+      const sauna = await prisma.sauna.findUnique({
+        where: { id: saunaId },
+        include: {
+          island: {
+            include: {
+              club: true,
+            },
+          },
+        },
+      });
+
+      if (!sauna) {
+        return errorResponse('Sauna not found', 404);
+      }
+
+      // Verify sauna belongs to authenticated club
+      if (sauna.island.clubId !== club.id) {
+        return errorResponse('Access denied', 403);
+      }
+
+      return successResponse(sauna);
     }
-    
-    // Verify sauna belongs to authenticated club
-    if (sauna.island.clubId !== club.id) {
-      return errorResponse('Access denied', 403);
-    }
-    
-    return successResponse(sauna);
   } catch (error) {
     return handleApiError(error);
   }

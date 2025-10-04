@@ -40,7 +40,8 @@ export default function EditIslandPage() {
     try {
       const response = await fetch(`/api/islands/${islandId}`)
       if (!response.ok) throw new Error('Failed to fetch island')
-      const data = await response.json()
+      const result = await response.json()
+      const data = result.data || result
       setIsland(data)
       setFormData({
         name: data.name,
@@ -109,7 +110,7 @@ export default function EditIslandPage() {
       <Card className="p-6">
         <h1 className="text-2xl font-bold mb-2">Edit Island</h1>
         <p className="text-gray-600 mb-6">
-          Club: {island.club.name}
+          Club: {island?.club?.name || 'Loading...'}
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
