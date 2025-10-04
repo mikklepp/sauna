@@ -1,13 +1,5 @@
 import { test, expect } from '@playwright/test';
-
-// Helper to login as admin
-async function loginAsAdmin(page: any) {
-  await page.goto('/admin/login');
-  await page.getByLabel(/username/i).fill('admin');
-  await page.getByLabel(/password/i).fill('admin123');
-  await page.getByRole('button', { name: /sign in/i }).click();
-  await page.waitForURL(/\/admin/);
-}
+import { loginAsAdmin, getFutureDate } from './helpers/test-data';
 
 test.describe('Shared Reservation - Admin Creation', () => {
   test.beforeEach(async ({ page }) => {

@@ -9,10 +9,28 @@ export const TEST_ADMIN = {
 
 export async function loginAsAdmin(page: any) {
   await page.goto('/admin/login');
+
+  // Fill in credentials
   await page.getByLabel(/username/i).fill(TEST_ADMIN.username);
   await page.getByLabel(/password/i).fill(TEST_ADMIN.password);
+
+  // Wait for the login API call to complete after clicking submit
+  const responsePromise = page.waitForResponse((response: any) =>
+    response.url().includes('/api/auth/admin/login') && response.request().method() === 'POST'
+  );
+
   await page.getByRole('button', { name: /sign in/i }).click();
-  await page.waitForURL(/\/admin/);
+
+  // Wait for the response
+  const response = await responsePromise;
+
+  // Verify successful login
+  if (!response.ok()) {
+    throw new Error(`Login failed with status ${response.status()}`);
+  }
+
+  // Wait for navigation to admin dashboard
+  await page.waitForURL(/\/admin/, { timeout: 10000 });
 }
 
 export function createTestBoat(clubId?: string) {
