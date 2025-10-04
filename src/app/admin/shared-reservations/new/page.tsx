@@ -42,7 +42,8 @@ export default function NewSharedReservationPage() {
     try {
       const response = await fetch('/api/saunas')
       if (!response.ok) throw new Error('Failed to fetch saunas')
-      const data = await response.json()
+      const result = await response.json()
+      const data = result.data || result
       setSaunas(data)
       if (data.length > 0) {
         setFormData(prev => ({ ...prev, saunaId: data[0].id }))
