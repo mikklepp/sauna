@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Building2, MapPin, Waves, Users, Calendar, BarChart3, Settings, LogOut } from 'lucide-react';
 import { AdminAuthGuard } from '@/components/admin-auth-guard';
 
@@ -10,7 +9,6 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
 
   async function handleLogout() {
     try {
