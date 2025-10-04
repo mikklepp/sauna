@@ -35,7 +35,8 @@ export default function NewSaunaPage() {
     try {
       const response = await fetch('/api/islands')
       if (!response.ok) throw new Error('Failed to fetch islands')
-      const data = await response.json()
+      const result = await response.json()
+      const data = result.data || result
       setIslands(data)
       if (data.length > 0) {
         setFormData(prev => ({ ...prev, islandId: data[0].id }))

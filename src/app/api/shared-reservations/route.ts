@@ -108,6 +108,11 @@ export async function GET(request: NextRequest) {
               boat: true,
             },
           },
+          _count: {
+            select: {
+              participants: true,
+            },
+          },
         },
         orderBy: {
           date: 'desc',
@@ -154,6 +159,11 @@ export async function GET(request: NextRequest) {
           participants: {
             include: {
               boat: true,
+            },
+          },
+          _count: {
+            select: {
+              participants: true,
             },
           },
         },

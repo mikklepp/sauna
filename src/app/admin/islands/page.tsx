@@ -34,7 +34,8 @@ export default function IslandsPage() {
       setLoading(true)
       const response = await fetch('/api/islands')
       if (!response.ok) throw new Error('Failed to fetch islands')
-      const data = await response.json()
+      const result = await response.json()
+      const data = result.data || result
       setIslands(data)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error')

@@ -33,7 +33,8 @@ export default function NewBoatPage() {
     try {
       const response = await fetch('/api/clubs')
       if (!response.ok) throw new Error('Failed to fetch clubs')
-      const data = await response.json()
+      const result = await response.json()
+      const data = result.data || result
       setClubs(data)
       if (data.length > 0) {
         setFormData(prev => ({ ...prev, clubId: data[0].id }))
