@@ -85,7 +85,8 @@ export default function IslandsPage() {
               <Card
                 key={island.id}
                 className="hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => router.push(`/app/islands/${island.id}`)}
+                onClick={() => router.push(`/islands/${island.id}`)}
+                data-testid="island-link"
               >
                 <CardHeader>
                   <div className="flex items-start justify-between">

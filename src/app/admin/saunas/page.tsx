@@ -90,7 +90,7 @@ export default function SaunasPage() {
             Manage saunas and their configurations
           </p>
         </div>
-        <Button onClick={() => router.push('/admin/saunas/new')}>
+        <Button onClick={() => router.push("/admin/saunas/new")} data-testid="create-sauna-button">
           <Plus className="w-4 h-4 mr-2" />
           Add Sauna
         </Button>
@@ -103,7 +103,7 @@ export default function SaunasPage() {
           <p className="text-gray-600 mb-6">
             Get started by creating your first sauna
           </p>
-          <Button onClick={() => router.push('/admin/saunas/new')}>
+          <Button onClick={() => router.push("/admin/saunas/new")} data-testid="create-sauna-button">
             <Plus className="w-4 h-4 mr-2" />
             Create Sauna
           </Button>
@@ -111,7 +111,7 @@ export default function SaunasPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {saunas.map((sauna) => (
-            <Card key={sauna.id} className="p-6">
+            <Card key={sauna.id} className="p-6" data-testid="sauna-item">
               <div className="flex justify-between items-start mb-4">
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold mb-1">{sauna.name}</h3>

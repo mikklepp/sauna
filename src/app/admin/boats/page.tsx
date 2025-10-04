@@ -117,7 +117,7 @@ export default function BoatsPage() {
             <Upload className="w-4 h-4 mr-2" />
             Import CSV
           </Button>
-          <Button onClick={() => router.push('/admin/boats/new')}>
+          <Button onClick={() => router.push("/admin/boats/new")} data-testid="create-boat-button">
             <Plus className="w-4 h-4 mr-2" />
             Add Boat
           </Button>
@@ -153,7 +153,7 @@ export default function BoatsPage() {
               <Upload className="w-4 h-4 mr-2" />
               Import CSV
             </Button>
-            <Button onClick={() => router.push('/admin/boats/new')}>
+            <Button onClick={() => router.push("/admin/boats/new")} data-testid="create-boat-button">
               <Plus className="w-4 h-4 mr-2" />
               Add Boat
             </Button>

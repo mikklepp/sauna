@@ -89,7 +89,7 @@ export default function IslandsPage() {
             Manage islands and their sauna configurations
           </p>
         </div>
-        <Button onClick={() => router.push('/admin/islands/new')}>
+        <Button onClick={() => router.push('/admin/islands/new')} data-testid="create-island-button">
           <Plus className="w-4 h-4 mr-2" />
           Add Island
         </Button>
@@ -110,7 +110,7 @@ export default function IslandsPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {islands.map((island) => (
-            <Card key={island.id} className="p-6">
+            <Card key={island.id} className="p-6" data-testid="island-item">
               <div className="flex justify-between items-start mb-4">
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold mb-1">{island.name}</h3>
@@ -138,6 +138,7 @@ export default function IslandsPage() {
                   size="sm"
                   className="flex-1"
                   onClick={() => router.push(`/admin/islands/${island.id}/edit`)}
+                  data-testid="edit-island-button"
                 >
                   <Pencil className="w-4 h-4 mr-2" />
                   Edit
@@ -146,6 +147,7 @@ export default function IslandsPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => handleDelete(island.id, island.name)}
+                  data-testid="delete-island-button"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
