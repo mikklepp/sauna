@@ -60,7 +60,7 @@ export default function ClubsPage() {
       });
 
       if (response.ok) {
-        setClubs(clubs.filter(c => c.id !== id));
+        setClubs(clubs.filter((c) => c.id !== id));
       }
     } catch (error) {
       console.error('Failed to delete club:', error);
@@ -69,7 +69,7 @@ export default function ClubsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex h-screen items-center justify-center">
         <div className="text-lg">Loading...</div>
       </div>
     );
@@ -77,55 +77,59 @@ export default function ClubsPage() {
 
   return (
     <div className="p-8">
-      <div className="flex justify-between items-center mb-8">
+      <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Clubs</h1>
-          <p className="text-gray-500 mt-2">
+          <p className="mt-2 text-gray-500">
             Manage clubs and their configurations
           </p>
         </div>
-        <Button onClick={() => window.location.href = '/admin/clubs/new'}>
-          <Plus className="w-4 h-4 mr-2" />
+        <Button onClick={() => (window.location.href = '/admin/clubs/new')}>
+          <Plus className="mr-2 h-4 w-4" />
           Create Club
         </Button>
       </div>
 
       {clubs.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-12 text-center">
-          <p className="text-gray-500 mb-4">No clubs yet</p>
-          <Button onClick={() => window.location.href = '/admin/clubs/new'}>
+        <div className="rounded-lg bg-white p-12 text-center shadow">
+          <p className="mb-4 text-gray-500">No clubs yet</p>
+          <Button onClick={() => (window.location.href = '/admin/clubs/new')}>
             Create Your First Club
           </Button>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="overflow-hidden rounded-lg bg-white shadow">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Name
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Secret
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Valid Until
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Islands
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Boats
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 bg-white">
               {clubs.map((club) => (
-                <tr key={club.id} className="hover:bg-gray-50" data-testid="club-item">
-                  <td className="px-6 py-4 whitespace-nowrap">
+                <tr
+                  key={club.id}
+                  className="hover:bg-gray-50"
+                  data-testid="club-item"
+                >
+                  <td className="whitespace-nowrap px-6 py-4">
                     <div className="flex items-center">
                       {club.logoUrl && (
                         <Image
@@ -133,7 +137,7 @@ export default function ClubsPage() {
                           alt={club.name}
                           width={32}
                           height={32}
-                          className="w-8 h-8 rounded mr-3"
+                          className="mr-3 h-8 w-8 rounded"
                           unoptimized
                         />
                       )}
@@ -147,42 +151,46 @@ export default function ClubsPage() {
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <code className="text-sm text-gray-900 bg-gray-100 px-2 py-1 rounded">
+                  <td className="whitespace-nowrap px-6 py-4">
+                    <code className="rounded bg-gray-100 px-2 py-1 text-sm text-gray-900">
                       {club.secret}
                     </code>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                     {new Date(club.secretValidUntil).toLocaleDateString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                     {club.islands.length}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                     {club.boats.length}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                     <div className="flex justify-end gap-2">
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => window.location.href = `/admin/clubs/${club.id}/qr-code`}
+                        onClick={() =>
+                          (window.location.href = `/admin/clubs/${club.id}/qr-code`)
+                        }
                       >
-                        <QrCode className="w-4 h-4" />
+                        <QrCode className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => window.location.href = `/admin/clubs/${club.id}/edit`}
+                        onClick={() =>
+                          (window.location.href = `/admin/clubs/${club.id}/edit`)
+                        }
                       >
-                        <Edit className="w-4 h-4" />
+                        <Edit className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => deleteClub(club.id)}
                       >
-                        <Trash2 className="w-4 h-4 text-red-600" />
+                        <Trash2 className="h-4 w-4 text-red-600" />
                       </Button>
                     </div>
                   </td>

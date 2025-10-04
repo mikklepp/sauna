@@ -1,6 +1,16 @@
 import { NextRequest } from 'next/server';
-import { requireAdminAuth, requireClubAuth, getAdminFromSession } from '@/lib/auth';
-import { parseRequestBody, successResponse, errorResponse, handleApiError, getPathParam } from '@/lib/api-utils';
+import {
+  requireAdminAuth,
+  requireClubAuth,
+  getAdminFromSession,
+} from '@/lib/auth';
+import {
+  parseRequestBody,
+  successResponse,
+  errorResponse,
+  handleApiError,
+  getPathParam,
+} from '@/lib/api-utils';
 import prisma from '@/lib/db';
 
 /**
@@ -68,23 +78,26 @@ export async function PUT(
   try {
     await requireAdminAuth();
     const boatId = getPathParam(params, 'id');
-    const body = await parseRequestBody(request) as {
+    const body = (await parseRequestBody(request)) as {
       name?: string;
       membershipNumber?: string;
       captainName?: string;
       phoneNumber?: string;
     };
-    
+
     const existing = await prisma.boat.findUnique({
       where: { id: boatId },
     });
-    
+
     if (!existing) {
       return errorResponse('Boat not found', 404);
     }
-    
+
     // If updating membership number, check for duplicates
-    if (body.membershipNumber && body.membershipNumber !== existing.membershipNumber) {
+    if (
+      body.membershipNumber &&
+      body.membershipNumber !== existing.membershipNumber
+    ) {
       const duplicate = await prisma.boat.findFirst({
         where: {
           clubId: existing.clubId,
@@ -92,12 +105,15 @@ export async function PUT(
           id: { not: boatId },
         },
       });
-      
+
       if (duplicate) {
-        return errorResponse('A boat with this membership number already exists', 409);
+        return errorResponse(
+          'A boat with this membership number already exists',
+          409
+        );
       }
     }
-    
+
     const updated = await prisma.boat.update({
       where: { id: boatId },
       data: {
@@ -107,7 +123,7 @@ export async function PUT(
         phoneNumber: body.phoneNumber,
       },
     });
-    
+
     return successResponse(updated);
   } catch (error) {
     return handleApiError(error);
@@ -125,19 +141,19 @@ export async function DELETE(
   try {
     await requireAdminAuth();
     const boatId = getPathParam(params, 'id');
-    
+
     const existing = await prisma.boat.findUnique({
       where: { id: boatId },
     });
-    
+
     if (!existing) {
       return errorResponse('Boat not found', 404);
     }
-    
+
     await prisma.boat.delete({
       where: { id: boatId },
     });
-    
+
     return successResponse({ message: 'Boat deleted successfully' });
   } catch (error) {
     return handleApiError(error);

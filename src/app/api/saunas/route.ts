@@ -1,6 +1,12 @@
 import { NextRequest } from 'next/server';
 import { requireAdminAuth, requireClubAuth } from '@/lib/auth';
-import { parseRequestBody, successResponse, errorResponse, handleApiError, getQueryParam } from '@/lib/api-utils';
+import {
+  parseRequestBody,
+  successResponse,
+  errorResponse,
+  handleApiError,
+  getQueryParam,
+} from '@/lib/api-utils';
 import { createSaunaSchema } from '@/lib/validation';
 import prisma from '@/lib/db';
 
@@ -12,19 +18,19 @@ export async function POST(request: NextRequest) {
   try {
     await requireAdminAuth();
     const body = await parseRequestBody(request);
-    
+
     // Validate input
     const validated = createSaunaSchema.parse(body);
-    
+
     // Check if island exists
     const island = await prisma.island.findUnique({
       where: { id: validated.islandId },
     });
-    
+
     if (!island) {
       return errorResponse('Island not found', 404);
     }
-    
+
     // Create sauna
     const sauna = await prisma.sauna.create({
       data: validated,
@@ -36,7 +42,7 @@ export async function POST(request: NextRequest) {
         },
       },
     });
-    
+
     return successResponse(sauna, 201);
   } catch (error) {
     return handleApiError(error);

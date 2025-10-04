@@ -5,7 +5,13 @@ import { QrCode, Key } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 
 export const dynamic = 'force-dynamic';
 
@@ -72,7 +78,7 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50 to-white p-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-blue-50 to-white p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Member Access</CardTitle>
@@ -92,10 +98,10 @@ export default function AuthPage() {
                 alert('QR scanner would open here');
               }}
             >
-              <QrCode className="w-5 h-5 mr-2" />
+              <QrCode className="mr-2 h-5 w-5" />
               Scan QR Code
             </Button>
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="mt-2 text-sm text-gray-500">
               Use your device camera to scan club QR code
             </p>
           </div>
@@ -116,7 +122,7 @@ export default function AuthPage() {
             <div className="space-y-2">
               <Label htmlFor="secret">Club Secret</Label>
               <div className="relative">
-                <Key className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                <Key className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
                   id="secret"
                   type="text"
@@ -130,7 +136,7 @@ export default function AuthPage() {
             </div>
 
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+              <div className="rounded-md border border-red-200 bg-red-50 p-3">
                 <p className="text-sm text-red-600">{error}</p>
               </div>
             )}
@@ -140,7 +146,7 @@ export default function AuthPage() {
             </Button>
           </form>
 
-          <p className="text-xs text-center text-gray-500">
+          <p className="text-center text-xs text-gray-500">
             Don&apos;t have a club secret?{' '}
             <a href="#" className="text-blue-600 hover:underline">
               Contact your club administrator

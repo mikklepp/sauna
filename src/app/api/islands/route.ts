@@ -1,6 +1,15 @@
 import { NextRequest } from 'next/server';
-import { requireAdminAuth, getAdminFromSession, getClubFromSession } from '@/lib/auth';
-import { parseRequestBody, successResponse, errorResponse, handleApiError } from '@/lib/api-utils';
+import {
+  requireAdminAuth,
+  getAdminFromSession,
+  getClubFromSession,
+} from '@/lib/auth';
+import {
+  parseRequestBody,
+  successResponse,
+  errorResponse,
+  handleApiError,
+} from '@/lib/api-utils';
 import prisma from '@/lib/db';
 
 /**
@@ -61,7 +70,9 @@ export async function GET(_request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     await requireAdminAuth();
-    const body = await parseRequestBody<{ name: string; clubId: string }>(request);
+    const body = await parseRequestBody<{ name: string; clubId: string }>(
+      request
+    );
 
     if (!body.name || !body.clubId) {
       return errorResponse('Name and clubId are required', 400);

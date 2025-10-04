@@ -1,13 +1,13 @@
-import type { 
-  Club, 
-  Island, 
-  Sauna, 
-  Boat, 
-  Reservation, 
+import type {
+  Club,
+  Island,
+  Sauna,
+  Boat,
+  Reservation,
   SharedReservation,
   SharedReservationParticipant,
   ReservationStatus,
-  GenderOrder 
+  GenderOrder,
 } from '@prisma/client';
 
 // ============================================================================
@@ -110,11 +110,11 @@ export interface SaunaAvailability {
 // Sync Types (for Island Device)
 // ============================================================================
 
-export type SyncEntityType = 
-  | 'reservation' 
-  | 'shared_reservation' 
-  | 'shared_participant' 
-  | 'boat' 
+export type SyncEntityType =
+  | 'reservation'
+  | 'shared_reservation'
+  | 'shared_participant'
+  | 'boat'
   | 'sauna';
 
 export type SyncOperation = 'create' | 'update' | 'delete';
@@ -161,11 +161,11 @@ export interface SaunaAnnualReport {
   saunaId: string;
   saunaName: string;
   year: number;
-  
+
   // Individual reservations (for invoicing)
   totalHoursReserved: number;
   totalIndividualReservations: number;
-  
+
   // Party size
   individualAdults: number;
   individualKids: number;
@@ -173,13 +173,13 @@ export interface SaunaAnnualReport {
   sharedKids: number;
   totalAdults: number;
   totalKids: number;
-  
+
   // Unique boats
   uniqueBoatsTotal: number;
   uniqueBoatsIndividual: number;
   uniqueBoatsShared: number;
   uniqueBoatsBoth: number;
-  
+
   // Monthly breakdown (optional)
   monthlyData?: MonthlyReportData[];
 }
@@ -198,16 +198,16 @@ export interface BoatAnnualReport {
   boatName: string;
   membershipNumber: string;
   year: number;
-  
+
   // Individual reservations (for invoicing)
   totalIndividualReservations: number;
   totalHoursReserved: number;
-  
+
   // Shared participation (separate, not for invoicing)
   totalSharedParticipations: number;
   sharedAdults: number;
   sharedKids: number;
-  
+
   // Per island breakdown
   perIslandData: {
     islandId: string;
@@ -221,12 +221,12 @@ export interface ClubAnnualReport {
   clubId: string;
   clubName: string;
   year: number;
-  
+
   totalSaunas: number;
   totalBoats: number;
   totalReservations: number;
   totalSharedReservations: number;
-  
+
   saunaReports: SaunaAnnualReport[];
 }
 

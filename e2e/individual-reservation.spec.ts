@@ -18,7 +18,7 @@ test.describe('Individual Reservation Flow', () => {
     // Try to find and click on an island
     const islandLink = page.locator('[data-testid="island-link"]').first();
 
-    if (await islandLink.count() > 0) {
+    if ((await islandLink.count()) > 0) {
       await islandLink.click();
       await expect(page).toHaveURL(/\/islands\/[^/]+/);
     } else {
@@ -31,7 +31,7 @@ test.describe('Individual Reservation Flow', () => {
     // Navigate to a specific island (assumes there's test data)
     const islandLink = page.locator('[data-testid="island-link"]').first();
 
-    if (await islandLink.count() === 0) {
+    if ((await islandLink.count()) === 0) {
       test.skip();
     }
 
@@ -53,7 +53,7 @@ test.describe('Individual Reservation Flow', () => {
     // Navigate to island
     const islandLink = page.locator('[data-testid="island-link"]').first();
 
-    if (await islandLink.count() === 0) {
+    if ((await islandLink.count()) === 0) {
       test.skip();
     }
 
@@ -61,7 +61,9 @@ test.describe('Individual Reservation Flow', () => {
     await page.waitForURL(/\/islands\/[^/]+/);
 
     // Click "Make Reservation" on first sauna
-    const reserveButton = page.getByRole('button', { name: /make reservation|book sauna|reserve/i }).first();
+    const reserveButton = page
+      .getByRole('button', { name: /make reservation|book sauna|reserve/i })
+      .first();
     await reserveButton.click();
 
     // Step 1: Should show sauna selection confirmation
@@ -77,7 +79,7 @@ test.describe('Individual Reservation Flow', () => {
 
     // Select first boat from results
     const firstBoat = page.locator('[data-testid="boat-option"]').first();
-    if (await firstBoat.count() > 0) {
+    if ((await firstBoat.count()) > 0) {
       await firstBoat.click();
     } else {
       // Try clicking any visible boat option
@@ -106,7 +108,9 @@ test.describe('Individual Reservation Flow', () => {
     await expect(page.getByText(/\d+\s*adults/i)).toBeVisible();
 
     // Confirm reservation
-    await page.getByRole('button', { name: /confirm|book now|create reservation/i }).click();
+    await page
+      .getByRole('button', { name: /confirm|book now|create reservation/i })
+      .click();
 
     // Should show success message or redirect to reservations list
     await expect(
@@ -114,11 +118,13 @@ test.describe('Individual Reservation Flow', () => {
     ).toBeVisible({ timeout: 10000 });
   });
 
-  test('should prevent booking when boat already has reservation today', async ({ page }) => {
+  test('should prevent booking when boat already has reservation today', async ({
+    page,
+  }) => {
     // This test assumes we can create a reservation first, then try to book again with same boat
     const islandLink = page.locator('[data-testid="island-link"]').first();
 
-    if (await islandLink.count() === 0) {
+    if ((await islandLink.count()) === 0) {
       test.skip();
     }
 
@@ -126,7 +132,9 @@ test.describe('Individual Reservation Flow', () => {
     await page.waitForURL(/\/islands\/[^/]+/);
 
     // Make first reservation
-    const reserveButton = page.getByRole('button', { name: /make reservation|book sauna|reserve/i }).first();
+    const reserveButton = page
+      .getByRole('button', { name: /make reservation|book sauna|reserve/i })
+      .first();
     await reserveButton.click();
 
     const boatSearch = page.getByPlaceholder(/search.*boat|enter boat name/i);
@@ -137,8 +145,8 @@ test.describe('Individual Reservation Flow', () => {
     const firstBoat = page.locator('[data-testid="boat-option"]').first();
     let boatName = '';
 
-    if (await firstBoat.count() > 0) {
-      boatName = await firstBoat.textContent() || '';
+    if ((await firstBoat.count()) > 0) {
+      boatName = (await firstBoat.textContent()) || '';
       await firstBoat.click();
     }
 
@@ -146,7 +154,9 @@ test.describe('Individual Reservation Flow', () => {
     await adultsField.fill('2');
 
     await page.getByRole('button', { name: /continue|next/i }).click();
-    await page.getByRole('button', { name: /confirm|book now|create reservation/i }).click();
+    await page
+      .getByRole('button', { name: /confirm|book now|create reservation/i })
+      .click();
 
     await page.waitForTimeout(1000);
 
@@ -154,7 +164,9 @@ test.describe('Individual Reservation Flow', () => {
     await page.goto('/'); // Go back
     await islandLink.click();
 
-    const reserveButton2 = page.getByRole('button', { name: /make reservation|book sauna|reserve/i }).first();
+    const reserveButton2 = page
+      .getByRole('button', { name: /make reservation|book sauna|reserve/i })
+      .first();
     await reserveButton2.click();
 
     const boatSearch2 = page.getByPlaceholder(/search.*boat|enter boat name/i);
@@ -163,7 +175,7 @@ test.describe('Individual Reservation Flow', () => {
 
     // Try to select same boat again
     const sameBoat = page.locator('[data-testid="boat-option"]').first();
-    if (await sameBoat.count() > 0) {
+    if ((await sameBoat.count()) > 0) {
       await sameBoat.click();
 
       // Should show error message
@@ -173,10 +185,12 @@ test.describe('Individual Reservation Flow', () => {
     }
   });
 
-  test('should display next available time correctly when sauna is in use', async ({ page }) => {
+  test('should display next available time correctly when sauna is in use', async ({
+    page,
+  }) => {
     const islandLink = page.locator('[data-testid="island-link"]').first();
 
-    if (await islandLink.count() === 0) {
+    if ((await islandLink.count()) === 0) {
       test.skip();
     }
 
@@ -188,20 +202,27 @@ test.describe('Individual Reservation Flow', () => {
 
     if (await inUseText.isVisible()) {
       // Should show next available time
-      await expect(page.getByText(/next available|available at/i)).toBeVisible();
+      await expect(
+        page.getByText(/next available|available at/i)
+      ).toBeVisible();
 
       // Time should be in the future and at top of hour
-      const timeText = await page.locator('[data-testid="next-available-time"]').first().textContent();
+      const timeText = await page
+        .locator('[data-testid="next-available-time"]')
+        .first()
+        .textContent();
 
       // Basic validation: should contain a time format (HH:MM or similar)
       expect(timeText).toMatch(/\d{1,2}:\d{2}|noon|midnight/i);
     }
   });
 
-  test('should show heating time when sauna is not in use', async ({ page }) => {
+  test('should show heating time when sauna is not in use', async ({
+    page,
+  }) => {
     const islandLink = page.locator('[data-testid="island-link"]').first();
 
-    if (await islandLink.count() === 0) {
+    if ((await islandLink.count()) === 0) {
       test.skip();
     }
 
@@ -213,7 +234,9 @@ test.describe('Individual Reservation Flow', () => {
 
     if (await availableText.isVisible()) {
       // Should show next available time accounting for heating
-      const nextAvailableTime = page.locator('[data-testid="next-available-time"]').first();
+      const nextAvailableTime = page
+        .locator('[data-testid="next-available-time"]')
+        .first();
 
       if (await nextAvailableTime.isVisible()) {
         const timeText = await nextAvailableTime.textContent();
@@ -227,14 +250,16 @@ test.describe('Individual Reservation Flow', () => {
   test('should validate party size minimum', async ({ page }) => {
     const islandLink = page.locator('[data-testid="island-link"]').first();
 
-    if (await islandLink.count() === 0) {
+    if ((await islandLink.count()) === 0) {
       test.skip();
     }
 
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+/);
 
-    const reserveButton = page.getByRole('button', { name: /make reservation|book sauna|reserve/i }).first();
+    const reserveButton = page
+      .getByRole('button', { name: /make reservation|book sauna|reserve/i })
+      .first();
     await reserveButton.click();
 
     const boatSearch = page.getByPlaceholder(/search.*boat|enter boat name/i);
@@ -242,7 +267,7 @@ test.describe('Individual Reservation Flow', () => {
     await page.waitForTimeout(500);
 
     const firstBoat = page.locator('[data-testid="boat-option"]').first();
-    if (await firstBoat.count() > 0) {
+    if ((await firstBoat.count()) > 0) {
       await firstBoat.click();
     }
 
@@ -256,7 +281,9 @@ test.describe('Individual Reservation Flow', () => {
     const isDisabled = await continueButton.isDisabled();
     if (!isDisabled) {
       await continueButton.click();
-      await expect(page.getByText(/at least.*1.*adult|minimum.*adult/i)).toBeVisible();
+      await expect(
+        page.getByText(/at least.*1.*adult|minimum.*adult/i)
+      ).toBeVisible();
     } else {
       expect(isDisabled).toBeTruthy();
     }

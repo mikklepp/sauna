@@ -7,10 +7,12 @@ Phase 2 is now **100% complete** with all API endpoints implemented and tested. 
 ## Complete API Endpoint List (35 Total)
 
 ### Authentication (2 endpoints)
+
 1. ✅ `POST /api/auth/validate-club-secret` - Validate club secret and create session
 2. ✅ `POST /api/auth/admin/login` - Admin login
 
 ### Clubs (7 endpoints)
+
 3. ✅ `GET /api/clubs` - List all clubs (admin)
 4. ✅ `POST /api/clubs` - Create club (admin)
 5. ✅ `GET /api/clubs/[id]` - Get club details
@@ -21,6 +23,7 @@ Phase 2 is now **100% complete** with all API endpoints implemented and tested. 
 10. ✅ `POST /api/clubs/[id]/theme` - Update club theme
 
 ### Islands (5 endpoints)
+
 11. ✅ `GET /api/islands` - List islands
 12. ✅ `POST /api/islands` - Create island (admin)
 13. ✅ `GET /api/islands/[id]` - Get island details
@@ -28,6 +31,7 @@ Phase 2 is now **100% complete** with all API endpoints implemented and tested. 
 15. ✅ `DELETE /api/islands/[id]` - Delete island (admin)
 
 ### Saunas (6 endpoints)
+
 16. ✅ `GET /api/saunas` - List saunas
 17. ✅ `POST /api/saunas` - Create sauna (admin)
 18. ✅ `GET /api/saunas/[id]` - Get sauna details
@@ -36,6 +40,7 @@ Phase 2 is now **100% complete** with all API endpoints implemented and tested. 
 21. ✅ `GET /api/saunas/[id]/next-available` - Get next available slot
 
 ### Boats (7 endpoints)
+
 22. ✅ `GET /api/boats` - List boats
 23. ✅ `POST /api/boats` - Create boat (admin)
 24. ✅ `GET /api/boats/[id]` - Get boat details
@@ -46,35 +51,42 @@ Phase 2 is now **100% complete** with all API endpoints implemented and tested. 
 29. ✅ `POST /api/boats/bulk-import` - Bulk import from CSV (admin)
 
 ### Reservations (4 endpoints)
+
 30. ✅ `POST /api/reservations` - Create individual reservation
 31. ✅ `GET /api/reservations` - Get reservations for sauna/date
 32. ✅ `GET /api/reservations/[id]` - Get specific reservation
 33. ✅ `DELETE /api/reservations/[id]` - Cancel reservation
 
 ### Shared Reservations (3 endpoints)
+
 34. ✅ `POST /api/shared-reservations` - Create shared reservation (admin)
 35. ✅ `GET /api/shared-reservations` - Get shared reservations
 36. ✅ `POST /api/shared-reservations/[id]/join` - Join shared reservation
 
 ### Cron Jobs (2 endpoints)
+
 37. ✅ `POST /api/cron/generate-club-sauna` - Generate Club Sauna (00:00)
 38. ✅ `POST /api/cron/evaluate-club-sauna` - Evaluate Club Sauna (20:00)
 
 ### Reports (2 endpoints)
+
 39. ✅ `GET /api/reports/sauna/[id]?year=2024` - Annual sauna report
 40. ✅ `GET /api/reports/boat/[id]?year=2024` - Annual boat report
 
 ### Sync (2 endpoints - Island Device)
+
 41. ✅ `POST /api/sync/push` - Push changes from Island Device
 42. ✅ `GET /api/sync/pull/[islandId]` - Pull changes to Island Device
 
 ## Files Created (42 files)
 
 ### Core Libraries (2 files)
+
 1. `src/lib/auth.ts` - Complete authentication system
 2. `src/lib/api-utils.ts` - API helper functions
 
 ### API Routes (40 files)
+
 3. `src/app/api/auth/validate-club-secret/route.ts`
 4. `src/app/api/auth/admin/login/route.ts`
 5. `src/app/api/clubs/route.ts`
@@ -106,6 +118,7 @@ Phase 2 is now **100% complete** with all API endpoints implemented and tested. 
 ## Business Logic Implemented
 
 ### ✅ Authentication & Authorization
+
 - Club secret validation with expiry checking
 - Admin password authentication
 - JWT session management with cookies
@@ -113,6 +126,7 @@ Phase 2 is now **100% complete** with all API endpoints implemented and tested. 
 - Cron secret protection
 
 ### ✅ Reservation Management
+
 - Individual reservation creation with all validations
 - 15-minute cancellation cutoff enforcement
 - Next available slot calculation with heating time
@@ -120,35 +134,41 @@ Phase 2 is now **100% complete** with all API endpoints implemented and tested. 
 - Time slot validation (top of hour)
 
 ### ✅ Shared Reservations
+
 - Admin-only creation with gender scheduling
 - User joining with conflict checks
 - Participant management
 - Daily limit enforcement across both types
 
 ### ✅ Daily Limit Enforcement
+
 - One reservation per boat per island per day
 - Checks both individual AND shared participation
 - Prevents conflicts across reservation types
 
 ### ✅ Boat Management
+
 - Smart search with name prioritization
 - Membership number uniqueness validation
 - Bulk CSV import with validation
 - Complete CRUD operations
 
 ### ✅ Club Sauna Automation
+
 - Midnight generation for eligible dates
 - 20:00 evaluation with 3-boat rule
 - Automatic participant conversion
 - Season-based eligibility (high + shoulder)
 
 ### ✅ Reporting
+
 - Annual sauna reports (hours, adults, kids, unique boats)
 - Annual boat reports (individual + shared breakdown)
 - Clear separation of invoicing vs tracking metrics
 - Per-island breakdowns
 
 ### ✅ Island Device Sync
+
 - Push changes from device (authoritative)
 - Pull changes from backend
 - Conflict resolution (device wins)
@@ -165,6 +185,7 @@ Phase 2 is now **100% complete** with all API endpoints implemented and tested. 
 ## Key Features
 
 ### Security
+
 - JWT-based session management
 - Cookie-based authentication
 - Admin-only endpoints protected
@@ -172,6 +193,7 @@ Phase 2 is now **100% complete** with all API endpoints implemented and tested. 
 - Cron job secret protection
 
 ### Data Validation
+
 - Zod schemas for all inputs
 - UUID format validation
 - Membership number uniqueness
@@ -179,6 +201,7 @@ Phase 2 is now **100% complete** with all API endpoints implemented and tested. 
 - CSV validation for bulk import
 
 ### Error Handling
+
 - Consistent error response format
 - Detailed error messages
 - Proper HTTP status codes
@@ -186,6 +209,7 @@ Phase 2 is now **100% complete** with all API endpoints implemented and tested. 
 - Validation error formatting
 
 ### Performance
+
 - Efficient database queries
 - Proper indexes used
 - Transaction support for bulk operations
@@ -194,6 +218,7 @@ Phase 2 is now **100% complete** with all API endpoints implemented and tested. 
 ## API Testing Guide
 
 ### Authentication
+
 ```bash
 # Validate club secret
 curl -X POST http://localhost:3000/api/auth/validate-club-secret \
@@ -207,6 +232,7 @@ curl -X POST http://localhost:3000/api/auth/admin/login \
 ```
 
 ### Reservations
+
 ```bash
 # Create reservation
 curl -X POST http://localhost:3000/api/reservations \
@@ -230,6 +256,7 @@ curl -X DELETE http://localhost:3000/api/reservations/RESERVATION_UUID \
 ```
 
 ### Boats
+
 ```bash
 # Search boats
 curl "http://localhost:3000/api/boats/search?q=sea" \
@@ -253,6 +280,7 @@ curl -X POST http://localhost:3000/api/boats/bulk-import \
 ```
 
 ### Shared Reservations
+
 ```bash
 # Create shared reservation (admin)
 curl -X POST http://localhost:3000/api/shared-reservations \
@@ -280,6 +308,7 @@ curl -X POST http://localhost:3000/api/shared-reservations/SHARED_UUID/join \
 ```
 
 ### Reports
+
 ```bash
 # Sauna annual report
 curl "http://localhost:3000/api/reports/sauna/SAUNA_UUID?year=2024" \
@@ -291,6 +320,7 @@ curl "http://localhost:3000/api/reports/boat/BOAT_UUID?year=2024" \
 ```
 
 ### Sync (Island Device)
+
 ```bash
 # Push changes from device
 curl -X POST http://localhost:3000/api/sync/push \
@@ -316,6 +346,7 @@ curl "http://localhost:3000/api/sync/pull/ISLAND_UUID?since=2024-01-15T00:00:00Z
 ## Next Phase: Admin Portal & User UI
 
 Phase 3 will build on this complete API to create:
+
 - Admin Portal with all management interfaces
 - User Web App with reservation flows
 - Island Device PWA interface

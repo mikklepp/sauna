@@ -5,6 +5,7 @@ End-to-end tests for the Sauna Reservation System using Playwright.
 ## Test Coverage
 
 ### Admin Authentication (`admin-auth.spec.ts`)
+
 - Login form display
 - Invalid credentials handling
 - Successful login flow
@@ -14,12 +15,14 @@ End-to-end tests for the Sauna Reservation System using Playwright.
 - Registration flow
 
 ### Admin Management (`admin-management.spec.ts`)
+
 - **Island Management**: Create, edit, delete islands
 - **Sauna Management**: Create saunas, toggle auto Club Sauna feature
 - **Boat Management**: Create, edit, delete boats, CSV import, search functionality
 - **Club Management**: View QR codes, access theme editor
 
 ### Individual Reservations (`individual-reservation.spec.ts`)
+
 - Island selection
 - Sauna availability display
 - Complete reservation workflow (boat search, party size, confirmation)
@@ -29,6 +32,7 @@ End-to-end tests for the Sauna Reservation System using Playwright.
 - Party size validation
 
 ### Shared Reservations (`shared-reservation.spec.ts`)
+
 - Admin creation of shared reservations
 - Editing and deleting shared reservations
 - User joining shared reservations
@@ -38,6 +42,7 @@ End-to-end tests for the Sauna Reservation System using Playwright.
 - Club Sauna auto-creation settings
 
 ### Reservation Cancellation (`reservation-cancellation.spec.ts`)
+
 - Display reservations list
 - Cancel future reservations
 - 15-minute cancellation cutoff enforcement
@@ -49,30 +54,36 @@ End-to-end tests for the Sauna Reservation System using Playwright.
 ## Running Tests
 
 ### Prerequisites
+
 1. Ensure the database is set up and seeded with test data
 2. Make sure all environment variables are configured
 
 ### Run all tests
+
 ```bash
 npm run test:e2e
 ```
 
 ### Run tests with UI
+
 ```bash
 npm run test:e2e:ui
 ```
 
 ### Run specific test file
+
 ```bash
 npx playwright test e2e/admin-auth.spec.ts
 ```
 
 ### Run tests in headed mode (see browser)
+
 ```bash
 npx playwright test --headed
 ```
 
 ### Run tests for specific browser
+
 ```bash
 npx playwright test --project=chromium
 npx playwright test --project=firefox
@@ -80,6 +91,7 @@ npx playwright test --project=webkit
 ```
 
 ### Debug tests
+
 ```bash
 npx playwright test --debug
 ```
@@ -87,6 +99,7 @@ npx playwright test --debug
 ## Test Data
 
 Tests assume the following seed data exists:
+
 - Admin user: username `admin`, password `admin123`
 - At least one club
 - At least one island
@@ -96,6 +109,7 @@ Tests assume the following seed data exists:
 ## Test Structure
 
 Each test file follows this pattern:
+
 1. **Setup** (`beforeEach`): Navigate to relevant page or login
 2. **Test cases**: Exercise specific functionality
 3. **Assertions**: Verify expected behavior
@@ -104,6 +118,7 @@ Each test file follows this pattern:
 ## Test Helpers
 
 Helper functions are available in `e2e/helpers/test-data.ts`:
+
 - `loginAsAdmin()`: Quick admin login
 - `createTestBoat()`: Generate unique boat test data
 - `createTestIsland()`: Generate unique island test data
@@ -113,6 +128,7 @@ Helper functions are available in `e2e/helpers/test-data.ts`:
 ## CI/CD Integration
 
 E2E tests run automatically on:
+
 - Push to `main` or `develop` branches
 - Pull requests targeting `main` or `develop`
 

@@ -1,10 +1,17 @@
 import { NextRequest } from 'next/server';
 import { validateCronSecret } from '@/lib/auth';
-import { successResponse, errorResponse, handleApiError, getAuthHeader } from '@/lib/api-utils';
-import { generateClubSaunaData, isClubSaunaEligibleDate } from '@/lib/club-sauna';
+import {
+  successResponse,
+  errorResponse,
+  handleApiError,
+  getAuthHeader,
+} from '@/lib/api-utils';
+import {
+  generateClubSaunaData,
+  isClubSaunaEligibleDate,
+} from '@/lib/club-sauna';
 import prisma from '@/lib/db';
 import { addDays, startOfDay } from 'date-fns';
-
 
 /**
  * POST /api/cron/generate-club-sauna
@@ -16,17 +23,17 @@ export async function POST(request: NextRequest) {
     // Validate cron secret
     const authHeader = getAuthHeader(request);
     const secret = authHeader?.replace('Bearer ', '');
-    
+
     if (!validateCronSecret(secret || '')) {
       return errorResponse('Unauthorized', 401);
     }
-    
+
     // Get tomorrow's date (cron runs at midnight, so we generate for the next day)
     const tomorrow = addDays(startOfDay(new Date()), 1);
-    
+
     // Check if tomorrow is eligible for Club Sauna
     const eligibility = isClubSaunaEligibleDate(tomorrow);
-    
+
     if (!eligibility.eligible) {
       return successResponse({
         message: 'Date is not eligible for Club Sauna',
@@ -34,7 +41,7 @@ export async function POST(request: NextRequest) {
         generated: [],
       });
     }
-    
+
     // Get all saunas with auto Club Sauna enabled
     const eligibleSaunas = await prisma.sauna.findMany({
       where: {
@@ -48,9 +55,9 @@ export async function POST(request: NextRequest) {
         },
       },
     });
-    
+
     const generated = [];
-    
+
     for (const sauna of eligibleSaunas) {
       // Check if Club Sauna already exists for this date
       const existing = await prisma.sharedReservation.findFirst({
@@ -64,17 +71,19 @@ export async function POST(request: NextRequest) {
 
       if (existing) {
         // eslint-disable-next-line no-console
-        console.log(`Club Sauna already exists for sauna ${sauna.name} on ${tomorrow.toISOString()}`);
+        console.log(
+          `Club Sauna already exists for sauna ${sauna.name} on ${tomorrow.toISOString()}`
+        );
         continue;
       }
-      
+
       // Generate Club Sauna data
       const clubSaunaData = generateClubSaunaData(sauna, tomorrow);
-      
+
       if (!clubSaunaData) {
         continue;
       }
-      
+
       // Create shared reservation
       const sharedReservation = await prisma.sharedReservation.create({
         data: {
@@ -89,7 +98,7 @@ export async function POST(request: NextRequest) {
           createdBy: 'system',
         },
       });
-      
+
       generated.push({
         sharedReservationId: sharedReservation.id,
         saunaId: sauna.id,
@@ -100,9 +109,11 @@ export async function POST(request: NextRequest) {
       });
 
       // eslint-disable-next-line no-console
-      console.log(`Generated Club Sauna for ${sauna.name} on ${tomorrow.toISOString()}`);
+      console.log(
+        `Generated Club Sauna for ${sauna.name} on ${tomorrow.toISOString()}`
+      );
     }
-    
+
     return successResponse({
       message: 'Club Sauna generation completed',
       date: tomorrow.toISOString(),

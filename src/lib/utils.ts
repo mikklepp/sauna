@@ -26,6 +26,9 @@ export function formatDateTime(date: Date | string): string {
   return `${formatDate(date)} ${formatTime(date)}`;
 }
 
-export function formatTimeRange(start: Date | string, end: Date | string): string {
+export function formatTimeRange(
+  start: Date | string,
+  end: Date | string
+): string {
   return `${formatTime(start)} - ${formatTime(end)}`;
 }

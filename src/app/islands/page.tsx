@@ -3,7 +3,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { MapPin, Waves, ChevronRight } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 export const dynamic = 'force-dynamic';
@@ -29,10 +35,12 @@ export default function IslandsPage() {
       if (response.ok) {
         const data = await response.json();
         // Transform API response to match expected format
-        const transformedIslands = (data.data || []).map((island: IslandData & { _count?: { saunas: number } }) => ({
-          ...island,
-          numberOfSaunas: island._count?.saunas || island.saunas?.length || 0,
-        }));
+        const transformedIslands = (data.data || []).map(
+          (island: IslandData & { _count?: { saunas: number } }) => ({
+            ...island,
+            numberOfSaunas: island._count?.saunas || island.saunas?.length || 0,
+          })
+        );
         setIslands(transformedIslands);
       } else {
         // Redirect to auth if session expired
@@ -51,9 +59,9 @@ export default function IslandsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
           <p className="text-gray-600">Loading islands...</p>
         </div>
       </div>
@@ -63,10 +71,10 @@ export default function IslandsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
+      <header className="border-b border-gray-200 bg-white">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center gap-2">
-            <Waves className="w-8 h-8 text-blue-600" />
+            <Waves className="h-8 w-8 text-blue-600" />
             <h1 className="text-2xl font-bold text-gray-900">Select Island</h1>
           </div>
         </div>
@@ -76,9 +84,9 @@ export default function IslandsPage() {
       <main className="container mx-auto px-4 py-8">
         {islands.length === 0 ? (
           <Card>
-            <CardContent className="text-center py-12">
-              <MapPin className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500 mb-4">No islands available</p>
+            <CardContent className="py-12 text-center">
+              <MapPin className="mx-auto mb-4 h-16 w-16 text-gray-300" />
+              <p className="mb-4 text-gray-500">No islands available</p>
               <Button variant="outline" onClick={() => router.push('/auth')}>
                 Back to Login
               </Button>
@@ -89,24 +97,25 @@ export default function IslandsPage() {
             {islands.map((island) => (
               <Card
                 key={island.id}
-                className="hover:shadow-lg transition-shadow cursor-pointer"
+                className="cursor-pointer transition-shadow hover:shadow-lg"
                 onClick={() => router.push(`/islands/${island.id}`)}
                 data-testid="island-link"
               >
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-100 rounded-lg">
-                        <MapPin className="w-6 h-6 text-blue-600" />
+                      <div className="rounded-lg bg-blue-100 p-2">
+                        <MapPin className="h-6 w-6 text-blue-600" />
                       </div>
                       <div>
                         <CardTitle className="text-xl">{island.name}</CardTitle>
                         <CardDescription>
-                          {island.numberOfSaunas} {island.numberOfSaunas === 1 ? 'sauna' : 'saunas'}
+                          {island.numberOfSaunas}{' '}
+                          {island.numberOfSaunas === 1 ? 'sauna' : 'saunas'}
                         </CardDescription>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-gray-400" />
+                    <ChevronRight className="h-5 w-5 text-gray-400" />
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -116,7 +125,7 @@ export default function IslandsPage() {
                         key={sauna.id}
                         className="flex items-center gap-2 text-sm text-gray-600"
                       >
-                        <Waves className="w-4 h-4" />
+                        <Waves className="h-4 w-4" />
                         <span>{sauna.name}</span>
                       </div>
                     ))}

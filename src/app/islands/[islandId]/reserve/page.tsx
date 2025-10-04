@@ -3,7 +3,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { ChevronLeft, Search, Check } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,10 +28,10 @@ export default function ReservePage() {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
-  
+
   const islandId = params.islandId as string;
   const saunaId = searchParams.get('saunaId') || '';
-  
+
   const [step, setStep] = useState<Step>('boat');
   const [searchQuery, setSearchQuery] = useState('');
   const [boats, setBoats] = useState<Boat[]>([]);
@@ -58,7 +64,9 @@ export default function ReservePage() {
     }
 
     try {
-      const response = await fetch(`/api/boats/search?q=${encodeURIComponent(searchQuery)}`);
+      const response = await fetch(
+        `/api/boats/search?q=${encodeURIComponent(searchQuery)}`
+      );
       if (response.ok) {
         const data = await response.json();
         setBoats(data.data || []);
@@ -140,52 +148,71 @@ export default function ReservePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
+      <header className="border-b border-gray-200 bg-white">
         <div className="container mx-auto px-4 py-4">
           <Button
             variant="ghost"
             onClick={() => router.push(`/islands/${islandId}`)}
             className="mb-2"
           >
-            <ChevronLeft className="w-4 h-4 mr-1" />
+            <ChevronLeft className="mr-1 h-4 w-4" />
             Back
           </Button>
           <h1 className="text-2xl font-bold text-gray-900">Make Reservation</h1>
-          {saunaInfo && (
-            <p className="text-gray-500">{saunaInfo.sauna.name}</p>
-          )}
+          {saunaInfo && <p className="text-gray-500">{saunaInfo.sauna.name}</p>}
         </div>
       </header>
 
       {/* Progress Indicator */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="border-b border-gray-200 bg-white">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between max-w-md mx-auto">
-            <StepIndicator active={step === 'boat'} completed={['party-size', 'confirm', 'success'].includes(step)} number={1} label="Boat" />
-            <div className="flex-1 h-0.5 bg-gray-200 mx-2">
-              <div className={`h-full transition-all ${['party-size', 'confirm', 'success'].includes(step) ? 'bg-blue-600' : 'bg-gray-200'}`} />
+          <div className="mx-auto flex max-w-md items-center justify-between">
+            <StepIndicator
+              active={step === 'boat'}
+              completed={['party-size', 'confirm', 'success'].includes(step)}
+              number={1}
+              label="Boat"
+            />
+            <div className="mx-2 h-0.5 flex-1 bg-gray-200">
+              <div
+                className={`h-full transition-all ${['party-size', 'confirm', 'success'].includes(step) ? 'bg-blue-600' : 'bg-gray-200'}`}
+              />
             </div>
-            <StepIndicator active={step === 'party-size'} completed={['confirm', 'success'].includes(step)} number={2} label="Party" />
-            <div className="flex-1 h-0.5 bg-gray-200 mx-2">
-              <div className={`h-full transition-all ${['confirm', 'success'].includes(step) ? 'bg-blue-600' : 'bg-gray-200'}`} />
+            <StepIndicator
+              active={step === 'party-size'}
+              completed={['confirm', 'success'].includes(step)}
+              number={2}
+              label="Party"
+            />
+            <div className="mx-2 h-0.5 flex-1 bg-gray-200">
+              <div
+                className={`h-full transition-all ${['confirm', 'success'].includes(step) ? 'bg-blue-600' : 'bg-gray-200'}`}
+              />
             </div>
-            <StepIndicator active={step === 'confirm'} completed={step === 'success'} number={3} label="Confirm" />
+            <StepIndicator
+              active={step === 'confirm'}
+              completed={step === 'success'}
+              number={3}
+              label="Confirm"
+            />
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <main className="container mx-auto px-4 py-8 max-w-2xl">
+      <main className="container mx-auto max-w-2xl px-4 py-8">
         {/* Step 1: Boat Selection */}
         {step === 'boat' && (
           <Card>
             <CardHeader>
               <CardTitle>Select Your Boat</CardTitle>
-              <CardDescription>Search by boat name or membership number</CardDescription>
+              <CardDescription>
+                Search by boat name or membership number
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="relative">
-                <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
                   placeholder="Search boats..."
                   value={searchQuery}
@@ -197,29 +224,35 @@ export default function ReservePage() {
               </div>
 
               {error && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                <div className="rounded-md border border-red-200 bg-red-50 p-3">
                   <p className="text-sm text-red-600">{error}</p>
                 </div>
               )}
 
-              <div className="space-y-2 max-h-96 overflow-y-auto">
+              <div className="max-h-96 space-y-2 overflow-y-auto">
                 {boats.map((boat) => (
                   <button
                     key={boat.id}
                     onClick={() => handleBoatSelect(boat)}
                     disabled={loading}
-                    className="w-full text-left p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors disabled:opacity-50"
+                    className="w-full rounded-lg border border-gray-200 p-4 text-left transition-colors hover:border-blue-500 hover:bg-blue-50 disabled:opacity-50"
                     data-testid="boat-result"
                   >
                     <div className="font-medium text-gray-900">{boat.name}</div>
                     {boat.captainName && (
-                      <div className="text-sm text-gray-600">Captain: {boat.captainName}</div>
+                      <div className="text-sm text-gray-600">
+                        Captain: {boat.captainName}
+                      </div>
                     )}
-                    <div className="text-sm text-gray-500">#{boat.membershipNumber}</div>
+                    <div className="text-sm text-gray-500">
+                      #{boat.membershipNumber}
+                    </div>
                   </button>
                 ))}
                 {searchQuery.length >= 2 && boats.length === 0 && (
-                  <p className="text-center text-gray-500 py-8">No boats found</p>
+                  <p className="py-8 text-center text-gray-500">
+                    No boats found
+                  </p>
                 )}
               </div>
             </CardContent>
@@ -231,12 +264,18 @@ export default function ReservePage() {
           <Card>
             <CardHeader>
               <CardTitle>Party Size</CardTitle>
-              <CardDescription>How many people will be using the sauna?</CardDescription>
+              <CardDescription>
+                How many people will be using the sauna?
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <div className="font-medium text-gray-900">{selectedBoat.name}</div>
-                <div className="text-sm text-gray-500">#{selectedBoat.membershipNumber}</div>
+              <div className="rounded-lg bg-gray-50 p-4">
+                <div className="font-medium text-gray-900">
+                  {selectedBoat.name}
+                </div>
+                <div className="text-sm text-gray-500">
+                  #{selectedBoat.membershipNumber}
+                </div>
               </div>
 
               <div className="space-y-4">
@@ -268,7 +307,11 @@ export default function ReservePage() {
               </div>
 
               <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setStep('boat')} className="flex-1">
+                <Button
+                  variant="outline"
+                  onClick={() => setStep('boat')}
+                  className="flex-1"
+                >
                   Back
                 </Button>
                 <Button
@@ -288,7 +331,9 @@ export default function ReservePage() {
           <Card>
             <CardHeader>
               <CardTitle>Confirm Reservation</CardTitle>
-              <CardDescription>Please review your reservation details</CardDescription>
+              <CardDescription>
+                Please review your reservation details
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
@@ -299,8 +344,9 @@ export default function ReservePage() {
 
                 <div className="border-b pb-3">
                   <div className="text-sm text-gray-500">Time</div>
-                  <div className="font-medium text-lg">
-                    {formatTime(saunaInfo.nextAvailable.startTime)} - {formatTime(saunaInfo.nextAvailable.endTime)}
+                  <div className="text-lg font-medium">
+                    {formatTime(saunaInfo.nextAvailable.startTime)} -{' '}
+                    {formatTime(saunaInfo.nextAvailable.endTime)}
                   </div>
                 </div>
 
@@ -308,9 +354,13 @@ export default function ReservePage() {
                   <div className="text-sm text-gray-500">Boat</div>
                   <div className="font-medium">{selectedBoat.name}</div>
                   {selectedBoat.captainName && (
-                    <div className="text-sm text-gray-600">Captain: {selectedBoat.captainName}</div>
+                    <div className="text-sm text-gray-600">
+                      Captain: {selectedBoat.captainName}
+                    </div>
                   )}
-                  <div className="text-sm text-gray-500">#{selectedBoat.membershipNumber}</div>
+                  <div className="text-sm text-gray-500">
+                    #{selectedBoat.membershipNumber}
+                  </div>
                 </div>
 
                 <div>
@@ -323,13 +373,17 @@ export default function ReservePage() {
               </div>
 
               {error && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                <div className="rounded-md border border-red-200 bg-red-50 p-3">
                   <p className="text-sm text-red-600">{error}</p>
                 </div>
               )}
 
               <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setStep('party-size')} className="flex-1">
+                <Button
+                  variant="outline"
+                  onClick={() => setStep('party-size')}
+                  className="flex-1"
+                >
                   Back
                 </Button>
                 <Button
@@ -347,18 +401,25 @@ export default function ReservePage() {
         {/* Step 4: Success */}
         {step === 'success' && selectedBoat && saunaInfo && (
           <Card>
-            <CardContent className="text-center py-12">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Check className="w-8 h-8 text-green-600" />
+            <CardContent className="py-12 text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+                <Check className="h-8 w-8 text-green-600" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2" data-testid="success-title">Reservation Confirmed!</h2>
-              <p className="text-gray-600 mb-6">Your sauna is reserved</p>
+              <h2
+                className="mb-2 text-2xl font-bold text-gray-900"
+                data-testid="success-title"
+              >
+                Reservation Confirmed!
+              </h2>
+              <p className="mb-6 text-gray-600">Your sauna is reserved</p>
 
-              <div className="bg-gray-50 rounded-lg p-6 mb-6 text-left max-w-sm mx-auto">
+              <div className="mx-auto mb-6 max-w-sm rounded-lg bg-gray-50 p-6 text-left">
                 <div className="space-y-2">
                   <div>
                     <span className="text-sm text-gray-500">Time:</span>
-                    <div className="font-medium">{formatTime(saunaInfo.nextAvailable.startTime)}</div>
+                    <div className="font-medium">
+                      {formatTime(saunaInfo.nextAvailable.startTime)}
+                    </div>
                   </div>
                   <div>
                     <span className="text-sm text-gray-500">Duration:</span>
@@ -380,7 +441,11 @@ export default function ReservePage() {
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => router.push(`/islands/${islandId}/saunas/${saunaId}/reservations`)}
+                  onClick={() =>
+                    router.push(
+                      `/islands/${islandId}/saunas/${saunaId}/reservations`
+                    )
+                  }
                   className="w-full max-w-sm"
                 >
                   View All Reservations
@@ -394,15 +459,31 @@ export default function ReservePage() {
   );
 }
 
-function StepIndicator({ active, completed, number, label }: { active: boolean; completed: boolean; number: number; label: string }) {
+function StepIndicator({
+  active,
+  completed,
+  number,
+  label,
+}: {
+  active: boolean;
+  completed: boolean;
+  number: number;
+  label: string;
+}) {
   return (
     <div className="flex flex-col items-center">
-      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-medium transition-colors ${
-        completed ? 'bg-blue-600 text-white' : active ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
-      }`}>
-        {completed ? <Check className="w-5 h-5" /> : number}
+      <div
+        className={`flex h-10 w-10 items-center justify-center rounded-full font-medium transition-colors ${
+          completed
+            ? 'bg-blue-600 text-white'
+            : active
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-200 text-gray-600'
+        }`}
+      >
+        {completed ? <Check className="h-5 w-5" /> : number}
       </div>
-      <span className="text-xs mt-1 text-gray-600">{label}</span>
+      <span className="mt-1 text-xs text-gray-600">{label}</span>
     </div>
   );
 }

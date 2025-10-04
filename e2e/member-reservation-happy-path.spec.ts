@@ -16,7 +16,12 @@ test.describe('Member Individual Reservation - Happy Path', () => {
     await page.waitForURL(/\/islands/, { timeout: 10000 });
 
     // Wait for islands to load
-    await page.waitForSelector('[data-testid="island-link"], :text("No islands available")', { timeout: 5000 }).catch(() => {});
+    await page
+      .waitForSelector(
+        '[data-testid="island-link"], :text("No islands available")',
+        { timeout: 5000 }
+      )
+      .catch(() => {});
 
     const islandLinks = page.locator('[data-testid="island-link"]');
     const islandCount = await islandLinks.count();
@@ -36,12 +41,16 @@ test.describe('Member Individual Reservation - Happy Path', () => {
         await page.waitForLoadState('networkidle');
 
         // Wait for sauna cards to load
-        await page.waitForSelector('[data-testid="sauna-card"]', { timeout: 5000 }).catch(() => {});
+        await page
+          .waitForSelector('[data-testid="sauna-card"]', { timeout: 5000 })
+          .catch(() => {});
 
         const saunaCards = page.locator('[data-testid="sauna-card"]');
-        if (await saunaCards.count() > 0) {
+        if ((await saunaCards.count()) > 0) {
           // Click the Reserve button on the first sauna
-          const reserveButton = saunaCards.first().getByRole('button', { name: /reserve this time/i });
+          const reserveButton = saunaCards
+            .first()
+            .getByRole('button', { name: /reserve this time/i });
           if (await reserveButton.isVisible()) {
             await reserveButton.click();
             await page.waitForURL(/\/islands\/[^/]+\/reserve/);
@@ -58,7 +67,9 @@ test.describe('Member Individual Reservation - Happy Path', () => {
     return false;
   }
 
-  test('should navigate to reservation page when clicking Reserve button', async ({ page }) => {
+  test('should navigate to reservation page when clicking Reserve button', async ({
+    page,
+  }) => {
     const found = await navigateToReservePage(page);
     if (!found) {
       test.skip();
@@ -86,7 +97,7 @@ test.describe('Member Individual Reservation - Happy Path', () => {
     const boatResults = page.locator('[data-testid="boat-result"]');
     const noResults = page.getByText(/no boats found/i);
 
-    const hasResults = await boatResults.count() > 0;
+    const hasResults = (await boatResults.count()) > 0;
     const hasNoResultsMsg = await noResults.isVisible().catch(() => false);
 
     expect(hasResults || hasNoResultsMsg).toBeTruthy();
@@ -107,13 +118,15 @@ test.describe('Member Individual Reservation - Happy Path', () => {
     const boatResults = page.locator('[data-testid="boat-result"]');
     const noResults = page.getByText(/no boats found/i);
 
-    const hasResults = await boatResults.count() > 0;
+    const hasResults = (await boatResults.count()) > 0;
     const hasNoResultsMsg = await noResults.isVisible().catch(() => false);
 
     expect(hasResults || hasNoResultsMsg).toBeTruthy();
   });
 
-  test('should allow selecting party size (adults and kids)', async ({ page }) => {
+  test('should allow selecting party size (adults and kids)', async ({
+    page,
+  }) => {
     const found = await navigateToReservePage(page);
     if (!found) {
       test.skip();
@@ -125,7 +138,7 @@ test.describe('Member Individual Reservation - Happy Path', () => {
     await page.waitForTimeout(500); // Wait for debounced search
 
     const boatResults = page.locator('[data-testid="boat-result"]');
-    if (await boatResults.count() === 0) {
+    if ((await boatResults.count()) === 0) {
       test.skip();
     }
 
@@ -140,7 +153,7 @@ test.describe('Member Individual Reservation - Happy Path', () => {
 
     await Promise.race([
       adultsInput.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {}),
-      errorMsg.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {})
+      errorMsg.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {}),
     ]);
 
     // Check if we hit daily limit error
@@ -174,7 +187,7 @@ test.describe('Member Individual Reservation - Happy Path', () => {
     await page.waitForTimeout(500); // Wait for debounced search
 
     const boatResults = page.locator('[data-testid="boat-result"]');
-    if (await boatResults.count() === 0) {
+    if ((await boatResults.count()) === 0) {
       test.skip();
     }
 
@@ -186,7 +199,7 @@ test.describe('Member Individual Reservation - Happy Path', () => {
 
     await Promise.race([
       adultsInput.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {}),
-      errorMsg.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {})
+      errorMsg.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {}),
     ]);
 
     // Check if we hit daily limit error
@@ -205,15 +218,21 @@ test.describe('Member Individual Reservation - Happy Path', () => {
     await continueButton.click();
 
     // Step 3: Confirm reservation
-    const confirmButton = page.getByRole('button', { name: /confirm reservation/i });
+    const confirmButton = page.getByRole('button', {
+      name: /confirm reservation/i,
+    });
     await confirmButton.click();
 
     // Step 4: Should see success message
-    await expect(page.getByTestId('success-title')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId('success-title')).toBeVisible({
+      timeout: 10000,
+    });
     await expect(page.getByText(/reservation confirmed/i)).toBeVisible();
   });
 
-  test('should display reservation in list after creation', async ({ page }) => {
+  test('should display reservation in list after creation', async ({
+    page,
+  }) => {
     const found = await navigateToReservePage(page);
     if (!found) {
       test.skip();
@@ -259,8 +278,10 @@ test.describe('Member Individual Reservation - Happy Path', () => {
       const errorMsg = page.getByText(/already has a reservation/i);
 
       await Promise.race([
-        adultsInput.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {}),
-        errorMsg.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {})
+        adultsInput
+          .waitFor({ state: 'visible', timeout: 5000 })
+          .catch(() => {}),
+        errorMsg.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {}),
       ]);
 
       // Check if we get a daily limit error
@@ -286,7 +307,9 @@ test.describe('Member Individual Reservation - Happy Path', () => {
       const continueButton = page.getByRole('button', { name: /continue/i });
       await continueButton.click();
 
-      const confirmButton = page.getByRole('button', { name: /confirm reservation/i });
+      const confirmButton = page.getByRole('button', {
+        name: /confirm reservation/i,
+      });
       await confirmButton.click();
 
       // Wait for either success page or error on confirmation page
@@ -294,8 +317,12 @@ test.describe('Member Individual Reservation - Happy Path', () => {
       const confirmErrorMsg = page.getByText(/already has a reservation/i);
 
       await Promise.race([
-        successTitle.waitFor({ state: 'visible', timeout: 10000 }).catch(() => {}),
-        confirmErrorMsg.waitFor({ state: 'visible', timeout: 10000 }).catch(() => {})
+        successTitle
+          .waitFor({ state: 'visible', timeout: 10000 })
+          .catch(() => {}),
+        confirmErrorMsg
+          .waitFor({ state: 'visible', timeout: 10000 })
+          .catch(() => {}),
       ]);
 
       // Check if we succeeded
@@ -313,7 +340,9 @@ test.describe('Member Individual Reservation - Happy Path', () => {
     }
 
     // Click "View All Reservations" button from success page
-    const viewReservationsButton = page.getByRole('button', { name: /view all reservations/i });
+    const viewReservationsButton = page.getByRole('button', {
+      name: /view all reservations/i,
+    });
     await viewReservationsButton.click();
 
     // Wait for reservations page to load
@@ -321,7 +350,9 @@ test.describe('Member Individual Reservation - Happy Path', () => {
     await page.waitForLoadState('networkidle');
 
     // Should see "Upcoming" heading (indicates reservations are displayed)
-    await expect(page.getByRole('heading', { name: /upcoming/i })).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('heading', { name: /upcoming/i })).toBeVisible({
+      timeout: 5000,
+    });
 
     // Verify our reservation is in the list (check for boat name)
     if (boatName) {

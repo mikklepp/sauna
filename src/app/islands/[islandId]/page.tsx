@@ -3,7 +3,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Waves, Clock, Users, Calendar, ChevronLeft } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { formatTime } from '@/lib/utils';
 
@@ -51,7 +57,7 @@ export default function IslandSaunasPage() {
   const router = useRouter();
   const params = useParams();
   const islandId = params.islandId as string;
-  
+
   const [saunas, setSaunas] = useState<Sauna[]>([]);
   const [loading, setLoading] = useState(true);
   const [islandName, setIslandName] = useState('');
@@ -72,14 +78,22 @@ export default function IslandSaunasPage() {
 
         // Fetch availability for each sauna
         const saunasWithAvailability = await Promise.all(
-          (saunasData.data || []).map(async (sauna: { id: string; name: string; heatingTimeHours: number }) => {
-            const availRes = await fetch(`/api/saunas/${sauna.id}/next-available`);
-            if (availRes.ok) {
-              const availData = await availRes.json();
-              return { ...sauna, ...availData.data };
+          (saunasData.data || []).map(
+            async (sauna: {
+              id: string;
+              name: string;
+              heatingTimeHours: number;
+            }) => {
+              const availRes = await fetch(
+                `/api/saunas/${sauna.id}/next-available`
+              );
+              if (availRes.ok) {
+                const availData = await availRes.json();
+                return { ...sauna, ...availData.data };
+              }
+              return sauna;
             }
-            return sauna;
-          })
+          )
         );
 
         setSaunas(saunasWithAvailability);
@@ -97,9 +111,9 @@ export default function IslandSaunasPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
           <p className="text-gray-600">Loading saunas...</p>
         </div>
       </div>
@@ -109,14 +123,14 @@ export default function IslandSaunasPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
+      <header className="border-b border-gray-200 bg-white">
         <div className="container mx-auto px-4 py-4">
           <Button
             variant="ghost"
             onClick={() => router.push('/islands')}
             className="mb-2"
           >
-            <ChevronLeft className="w-4 h-4 mr-1" />
+            <ChevronLeft className="mr-1 h-4 w-4" />
             Back to Islands
           </Button>
           <h1 className="text-2xl font-bold text-gray-900">{islandName}</h1>
@@ -128,19 +142,27 @@ export default function IslandSaunasPage() {
       <main className="container mx-auto px-4 py-6">
         <div className="space-y-4">
           {saunas.map((sauna) => (
-            <Card key={sauna.id} className="hover:shadow-lg transition-shadow" data-testid="sauna-card">
+            <Card
+              key={sauna.id}
+              className="transition-shadow hover:shadow-lg"
+              data-testid="sauna-card"
+            >
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div>
                     <CardTitle className="flex items-center gap-2">
-                      <Waves className="w-5 h-5 text-blue-600" />
+                      <Waves className="h-5 w-5 text-blue-600" />
                       {sauna.name}
                     </CardTitle>
                     <CardDescription className="mt-1">
                       {sauna.isCurrentlyReserved ? (
-                        <span className="text-red-600 font-medium">Currently in use</span>
+                        <span className="font-medium text-red-600">
+                          Currently in use
+                        </span>
                       ) : (
-                        <span className="text-green-600 font-medium">Available</span>
+                        <span className="font-medium text-green-600">
+                          Available
+                        </span>
                       )}
                     </CardDescription>
                   </div>
@@ -148,11 +170,13 @@ export default function IslandSaunasPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Next Available Slot */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
+                <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                  <div className="mb-2 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-blue-600" />
-                      <span className="font-medium text-blue-900">Next Available</span>
+                      <Clock className="h-4 w-4 text-blue-600" />
+                      <span className="font-medium text-blue-900">
+                        Next Available
+                      </span>
                     </div>
                     <span className="text-lg font-bold text-blue-900">
                       {formatTime(sauna.nextAvailable.startTime)}
@@ -164,8 +188,12 @@ export default function IslandSaunasPage() {
                     </p>
                   )}
                   <Button
-                    className="w-full mt-3"
-                    onClick={() => router.push(`/islands/${islandId}/reserve?saunaId=${sauna.id}`)}
+                    className="mt-3 w-full"
+                    onClick={() =>
+                      router.push(
+                        `/islands/${islandId}/reserve?saunaId=${sauna.id}`
+                      )
+                    }
                     data-testid="reserve-button"
                   >
                     Reserve This Time
@@ -173,51 +201,63 @@ export default function IslandSaunasPage() {
                 </div>
 
                 {/* Shared Reservations */}
-                {sauna.sharedReservationsToday && sauna.sharedReservationsToday.length > 0 && (
-                  <div className="border-t pt-4">
-                    <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                      <Users className="w-4 h-4" />
-                      Shared Sauna Today
-                    </h4>
-                    {sauna.sharedReservationsToday.map((shared) => (
-                      <div
-                        key={shared.id}
-                        className="bg-purple-50 border border-purple-200 rounded-lg p-4"
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <div>
-                            <p className="font-medium text-purple-900">
-                              {shared.name || 'Shared Sauna'}
-                            </p>
-                            <p className="text-sm text-purple-700">
-                              Starting at {formatTime(shared.startTime)}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm text-purple-700">
-                              {shared.participants.length} {shared.participants.length === 1 ? 'boat' : 'boats'}
-                            </p>
-                          </div>
-                        </div>
-                        <Button
-                          variant="outline"
-                          className="w-full mt-2"
-                          onClick={() => router.push(`/islands/${islandId}/shared/${shared.id}`)}
+                {sauna.sharedReservationsToday &&
+                  sauna.sharedReservationsToday.length > 0 && (
+                    <div className="border-t pt-4">
+                      <h4 className="mb-3 flex items-center gap-2 font-medium text-gray-900">
+                        <Users className="h-4 w-4" />
+                        Shared Sauna Today
+                      </h4>
+                      {sauna.sharedReservationsToday.map((shared) => (
+                        <div
+                          key={shared.id}
+                          className="rounded-lg border border-purple-200 bg-purple-50 p-4"
                         >
-                          Join Shared Sauna
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                          <div className="mb-2 flex items-center justify-between">
+                            <div>
+                              <p className="font-medium text-purple-900">
+                                {shared.name || 'Shared Sauna'}
+                              </p>
+                              <p className="text-sm text-purple-700">
+                                Starting at {formatTime(shared.startTime)}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm text-purple-700">
+                                {shared.participants.length}{' '}
+                                {shared.participants.length === 1
+                                  ? 'boat'
+                                  : 'boats'}
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            className="mt-2 w-full"
+                            onClick={() =>
+                              router.push(
+                                `/islands/${islandId}/shared/${shared.id}`
+                              )
+                            }
+                          >
+                            Join Shared Sauna
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                 {/* View Reservations Link */}
                 <Button
                   variant="ghost"
                   className="w-full"
-                  onClick={() => router.push(`/islands/${islandId}/saunas/${sauna.id}/reservations`)}
+                  onClick={() =>
+                    router.push(
+                      `/islands/${islandId}/saunas/${sauna.id}/reservations`
+                    )
+                  }
                 >
-                  <Calendar className="w-4 h-4 mr-2" />
+                  <Calendar className="mr-2 h-4 w-4" />
                   View All Reservations
                 </Button>
               </CardContent>

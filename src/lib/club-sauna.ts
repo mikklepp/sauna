@@ -1,21 +1,21 @@
 import { Sauna, GenderOrder } from '@prisma/client';
-import { 
-  startOfDay, 
-  getMonth, 
-  getDay, 
-  setHours, 
+import {
+  startOfDay,
+  getMonth,
+  getDay,
+  setHours,
   setMinutes,
-  addHours 
+  addHours,
 } from 'date-fns';
-import type { 
-  ClubSaunaEligibility, 
+import type {
+  ClubSaunaEligibility,
   ClubSaunaEvaluation,
-  SharedReservationWithParticipants 
+  SharedReservationWithParticipants,
 } from '@/types';
 
 /**
  * Check if a date is eligible for Club Sauna auto-generation
- * 
+ *
  * Rules:
  * - High Season: Every day in June (6), July (7), August (8)
  * - Shoulder Season: Every Friday (5) and Saturday (6) in May (5) and September (9)
@@ -26,23 +26,23 @@ export function isClubSaunaEligibleDate(date: Date): {
 } {
   const month = getMonth(date) + 1; // getMonth returns 0-11, we want 1-12
   const dayOfWeek = getDay(date); // 0 = Sunday, 6 = Saturday
-  
+
   // High Season: June, July, August (months 6, 7, 8)
   if (month >= 6 && month <= 8) {
     return { eligible: true, season: 'high' };
   }
-  
+
   // Shoulder Season: Fridays and Saturdays in May and September
   if ((month === 5 || month === 9) && (dayOfWeek === 5 || dayOfWeek === 6)) {
     return { eligible: true, season: 'shoulder' };
   }
-  
+
   return { eligible: false };
 }
 
 /**
  * Generate Club Sauna shared reservations for eligible saunas on a given date
- * 
+ *
  * Default Schedule:
  * - Women: 21:00 - 22:00 (1 hour)
  * - Men: 22:00 - 23:00 (1 hour)
@@ -65,16 +65,16 @@ export function generateClubSaunaData(
   if (!sauna.autoClubSaunaEnabled) {
     return null;
   }
-  
+
   // Check if date is eligible
   const eligibility = isClubSaunaEligibleDate(date);
   if (!eligibility.eligible) {
     return null;
   }
-  
+
   // Create start time at 21:00 on the given date
   const startTime = setHours(setMinutes(startOfDay(date), 0), 21);
-  
+
   return {
     saunaId: sauna.id,
     date: startOfDay(date),
@@ -89,7 +89,7 @@ export function generateClubSaunaData(
 
 /**
  * Evaluate a Club Sauna shared reservation and determine if it should be cancelled
- * 
+ *
  * Rules:
  * - Run at 20:00 on the day of the event
  * - If < 3 boats signed up: Cancel and convert participants to individual reservations
@@ -100,14 +100,14 @@ export function evaluateClubSauna(
 ): ClubSaunaEvaluation {
   const participantCount = sharedReservation.participants.length;
   const shouldCancel = participantCount < 3;
-  
+
   // If we should cancel, generate conversions for participants
   const conversions: ClubSaunaEvaluation['conversions'] = [];
-  
+
   if (shouldCancel && participantCount > 0) {
     // Women first (21:00-22:00), Men second (22:00-23:00)
     const baseTime = sharedReservation.startTime;
-    
+
     // Convert first participant to 21:00-22:00 (women's slot)
     if (sharedReservation.participants[0]) {
       conversions.push({
@@ -116,7 +116,7 @@ export function evaluateClubSauna(
         endTime: addHours(baseTime, 1),
       });
     }
-    
+
     // Convert second participant to 22:00-23:00 (men's slot)
     if (sharedReservation.participants[1]) {
       conversions.push({
@@ -125,11 +125,11 @@ export function evaluateClubSauna(
         endTime: addHours(baseTime, 2),
       });
     }
-    
+
     // Note: If only 1 or 2 participants, some slots remain available
     // Third+ participants shouldn't exist since we cancel at < 3
   }
-  
+
   return {
     sharedReservationId: sharedReservation.id,
     participantCount,
@@ -146,13 +146,15 @@ export function getEligibleSaunasForDate(
   date: Date
 ): ClubSaunaEligibility[] {
   const eligibility = isClubSaunaEligibleDate(date);
-  
-  return saunas.map(sauna => ({
+
+  return saunas.map((sauna) => ({
     saunaId: sauna.id,
     isEligible: sauna.autoClubSaunaEnabled && eligibility.eligible,
     date,
-    reason: eligibility.eligible 
-      ? (eligibility.season === 'high' ? 'high_season' : 'shoulder_season')
+    reason: eligibility.eligible
+      ? eligibility.season === 'high'
+        ? 'high_season'
+        : 'shoulder_season'
       : 'not_eligible',
   }));
 }
@@ -167,7 +169,7 @@ export function conflictsWithClubSauna(
 ): boolean {
   // Club Sauna runs 21:00-23:00 (2 hours)
   const clubSaunaEnd = addHours(clubSaunaStartTime, 2);
-  
+
   return (
     (startTime >= clubSaunaStartTime && startTime < clubSaunaEnd) ||
     (endTime > clubSaunaStartTime && endTime <= clubSaunaEnd) ||
@@ -188,7 +190,7 @@ export function getClubSaunaEvaluationTime(date: Date): Date {
 export function isClubSaunaEvaluationTime(now: Date = new Date()): boolean {
   const hour = now.getHours();
   const minute = now.getMinutes();
-  
+
   // Run at 20:00 (8:00 PM)
   // We check for hour === 20 and minute in 0-5 range to allow for some timing flexibility
   return hour === 20 && minute >= 0 && minute < 5;
@@ -200,7 +202,7 @@ export function isClubSaunaEvaluationTime(now: Date = new Date()): boolean {
 export function isMidnight(now: Date = new Date()): boolean {
   const hour = now.getHours();
   const minute = now.getMinutes();
-  
+
   // Run at 00:00 (midnight)
   // Check for hour === 0 and minute in 0-5 range
   return hour === 0 && minute >= 0 && minute < 5;

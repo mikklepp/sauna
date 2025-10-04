@@ -30,7 +30,12 @@ describe('calculateNextAvailable', () => {
         updatedAt: new Date(),
       };
 
-      const result = calculateNextAvailable(mockSauna, currentReservation, [], now);
+      const result = calculateNextAvailable(
+        mockSauna,
+        currentReservation,
+        [],
+        now
+      );
 
       expect(result.startTime).toEqual(new Date('2025-01-15T15:00:00'));
       expect(result.endTime).toEqual(new Date('2025-01-15T16:00:00'));
@@ -53,7 +58,12 @@ describe('calculateNextAvailable', () => {
         updatedAt: new Date(),
       };
 
-      const result = calculateNextAvailable(mockSauna, currentReservation, [], now);
+      const result = calculateNextAvailable(
+        mockSauna,
+        currentReservation,
+        [],
+        now
+      );
 
       expect(result.startTime).toEqual(new Date('2025-01-15T16:00:00'));
       expect(result.endTime).toEqual(new Date('2025-01-15T17:00:00'));
@@ -92,7 +102,12 @@ describe('calculateNextAvailable', () => {
         },
       ];
 
-      const result = calculateNextAvailable(mockSauna, currentReservation, futureReservations, now);
+      const result = calculateNextAvailable(
+        mockSauna,
+        currentReservation,
+        futureReservations,
+        now
+      );
 
       expect(result.startTime).toEqual(new Date('2025-01-15T16:00:00'));
       expect(result.endTime).toEqual(new Date('2025-01-15T17:00:00'));
@@ -130,7 +145,12 @@ describe('calculateNextAvailable', () => {
         },
       ];
 
-      const result = calculateNextAvailable(mockSauna, null, futureReservations, now);
+      const result = calculateNextAvailable(
+        mockSauna,
+        null,
+        futureReservations,
+        now
+      );
 
       expect(result.startTime).toEqual(new Date('2025-01-15T17:00:00'));
       expect(result.endTime).toEqual(new Date('2025-01-15T18:00:00'));

@@ -1,7 +1,12 @@
 import { NextRequest } from 'next/server';
 import { hashPassword, setAdminSessionCookie } from '@/lib/auth';
 import prisma from '@/lib/db';
-import { parseRequestBody, successResponse, errorResponse, handleApiError } from '@/lib/api-utils';
+import {
+  parseRequestBody,
+  successResponse,
+  errorResponse,
+  handleApiError,
+} from '@/lib/api-utils';
 
 /**
  * POST /api/auth/admin/register
@@ -24,7 +29,10 @@ export async function POST(request: NextRequest) {
     const adminCount = await prisma.adminUser.count();
 
     if (adminCount > 0) {
-      return errorResponse('Admin registration is disabled. Please contact an existing administrator.', 403);
+      return errorResponse(
+        'Admin registration is disabled. Please contact an existing administrator.',
+        403
+      );
     }
 
     // Validate username

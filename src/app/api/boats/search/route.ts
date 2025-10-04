@@ -1,6 +1,11 @@
 import { NextRequest } from 'next/server';
 import { requireClubAuth } from '@/lib/auth';
-import { successResponse, errorResponse, handleApiError, getQueryParam } from '@/lib/api-utils';
+import {
+  successResponse,
+  errorResponse,
+  handleApiError,
+  getQueryParam,
+} from '@/lib/api-utils';
 import { sanitizeSearchQuery } from '@/lib/validation';
 import prisma from '@/lib/db';
 import type { BoatSearchResult } from '@/types';
@@ -16,30 +21,30 @@ export async function GET(request: NextRequest) {
   try {
     const club = await requireClubAuth();
     const query = getQueryParam(request, 'q');
-    
+
     if (!query) {
       return errorResponse('Search query (q) is required', 400);
     }
-    
+
     const sanitizedQuery = sanitizeSearchQuery(query);
-    
+
     // Get all boats for the club
     const boats = await prisma.boat.findMany({
       where: {
         clubId: club.id,
       },
     });
-    
+
     // Score and filter boats
     const results: BoatSearchResult[] = [];
-    
+
     for (const boat of boats) {
       let matchScore = 0;
       let matchType: 'name' | 'membership' | null = null;
-      
+
       const boatName = boat.name.toLowerCase();
       const membershipNumber = boat.membershipNumber.toLowerCase();
-      
+
       // Exact name match (highest priority)
       if (boatName === sanitizedQuery) {
         matchScore = 100;
@@ -70,7 +75,7 @@ export async function GET(request: NextRequest) {
         matchScore = 60;
         matchType = 'membership';
       }
-      
+
       if (matchType) {
         results.push({
           id: boat.id,
@@ -83,7 +88,7 @@ export async function GET(request: NextRequest) {
         });
       }
     }
-    
+
     // Sort by match score (descending) and then by name
     results.sort((a, b) => {
       if (b.matchScore !== a.matchScore) {
@@ -91,10 +96,10 @@ export async function GET(request: NextRequest) {
       }
       return a.name.localeCompare(b.name);
     });
-    
+
     // Limit to top 20 results
     const limitedResults = results.slice(0, 20);
-    
+
     return successResponse(limitedResults);
   } catch (error) {
     return handleApiError(error);

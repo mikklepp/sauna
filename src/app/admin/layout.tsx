@@ -1,7 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { Building2, MapPin, Waves, Users, Calendar, BarChart3, Settings, LogOut } from 'lucide-react';
+import {
+  Building2,
+  MapPin,
+  Waves,
+  Users,
+  Calendar,
+  BarChart3,
+  Settings,
+  LogOut,
+} from 'lucide-react';
 import { AdminAuthGuard } from '@/components/admin-auth-guard';
 
 export default function AdminLayout({
@@ -9,7 +18,6 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-
   async function handleLogout() {
     try {
       const response = await fetch('/api/auth/admin/logout', {
@@ -29,55 +37,68 @@ export default function AdminLayout({
     <AdminAuthGuard>
       <div className="flex h-screen bg-gray-50">
         {/* Sidebar */}
-        <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
+        <aside className="flex w-64 flex-col border-r border-gray-200 bg-white">
           <div className="p-6">
             <h1 className="text-2xl font-bold text-gray-900">Admin Portal</h1>
-            <p className="text-sm text-gray-500 mt-1">Sauna Reservations</p>
+            <p className="mt-1 text-sm text-gray-500">Sauna Reservations</p>
           </div>
 
-          <nav className="px-4 space-y-1 flex-1">
-            <NavLink href="/admin" icon={<BarChart3 className="w-5 h-5" />}>
+          <nav className="flex-1 space-y-1 px-4">
+            <NavLink href="/admin" icon={<BarChart3 className="h-5 w-5" />}>
               Dashboard
             </NavLink>
-            <NavLink href="/admin/clubs" icon={<Building2 className="w-5 h-5" />}>
+            <NavLink
+              href="/admin/clubs"
+              icon={<Building2 className="h-5 w-5" />}
+            >
               Clubs
             </NavLink>
-            <NavLink href="/admin/islands" icon={<MapPin className="w-5 h-5" />}>
+            <NavLink
+              href="/admin/islands"
+              icon={<MapPin className="h-5 w-5" />}
+            >
               Islands
             </NavLink>
-            <NavLink href="/admin/saunas" icon={<Waves className="w-5 h-5" />}>
+            <NavLink href="/admin/saunas" icon={<Waves className="h-5 w-5" />}>
               Saunas
             </NavLink>
-            <NavLink href="/admin/boats" icon={<Users className="w-5 h-5" />}>
+            <NavLink href="/admin/boats" icon={<Users className="h-5 w-5" />}>
               Boats
             </NavLink>
-            <NavLink href="/admin/shared-reservations" icon={<Calendar className="w-5 h-5" />}>
+            <NavLink
+              href="/admin/shared-reservations"
+              icon={<Calendar className="h-5 w-5" />}
+            >
               Shared Reservations
             </NavLink>
-            <NavLink href="/admin/reports" icon={<BarChart3 className="w-5 h-5" />}>
+            <NavLink
+              href="/admin/reports"
+              icon={<BarChart3 className="h-5 w-5" />}
+            >
               Reports
             </NavLink>
-            <NavLink href="/admin/settings" icon={<Settings className="w-5 h-5" />}>
+            <NavLink
+              href="/admin/settings"
+              icon={<Settings className="h-5 w-5" />}
+            >
               Settings
             </NavLink>
           </nav>
 
           {/* Logout button at bottom */}
-          <div className="p-4 border-t border-gray-200">
+          <div className="border-t border-gray-200 p-4">
             <button
               onClick={handleLogout}
-              className="flex items-center gap-3 w-full px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+              className="flex w-full items-center gap-3 rounded-lg px-4 py-2 text-gray-700 transition-colors hover:bg-gray-100"
             >
-              <LogOut className="w-5 h-5" />
+              <LogOut className="h-5 w-5" />
               <span>Logout</span>
             </button>
           </div>
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-auto">
-          {children}
-        </main>
+        <main className="flex-1 overflow-auto">{children}</main>
       </div>
     </AdminAuthGuard>
   );
@@ -95,7 +116,7 @@ function NavLink({
   return (
     <Link
       href={href}
-      className="flex items-center gap-3 px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+      className="flex items-center gap-3 rounded-lg px-4 py-2 text-gray-700 transition-colors hover:bg-gray-100"
     >
       {icon}
       <span>{children}</span>

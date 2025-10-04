@@ -8,11 +8,15 @@ test.describe('Shared Reservation - Admin Creation', () => {
   });
 
   test('should display shared reservations list', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: /shared.*reservations/i })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /shared.*reservations/i })
+    ).toBeVisible();
   });
 
   test('should create a new shared reservation', async ({ page }) => {
-    await page.getByRole('button', { name: /create.*shared|new.*shared|add.*shared/i }).click();
+    await page
+      .getByRole('button', { name: /create.*shared|new.*shared|add.*shared/i })
+      .click();
 
     // Select sauna
     const saunaSelect = page.getByLabel(/sauna/i);
@@ -35,7 +39,9 @@ test.describe('Shared Reservation - Admin Creation', () => {
     await malesDurationField.fill('2');
 
     // Set females duration
-    const femalesDurationField = page.getByLabel(/females.*duration|women.*hours/i);
+    const femalesDurationField = page.getByLabel(
+      /females.*duration|women.*hours/i
+    );
     await femalesDurationField.fill('2');
 
     // Set gender order
@@ -55,13 +61,17 @@ test.describe('Shared Reservation - Admin Creation', () => {
     await page.getByRole('button', { name: /create|save/i }).click();
 
     // Should show success or see in list
-    await expect(page.getByText(/success|created/i)).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText(/success|created/i)).toBeVisible({
+      timeout: 10000,
+    });
   });
 
   test('should edit a shared reservation', async ({ page }) => {
-    const firstShared = page.locator('[data-testid="shared-reservation-item"]').first();
+    const firstShared = page
+      .locator('[data-testid="shared-reservation-item"]')
+      .first();
 
-    if (await firstShared.count() === 0) {
+    if ((await firstShared.count()) === 0) {
       test.skip();
     }
 
@@ -80,7 +90,9 @@ test.describe('Shared Reservation - Admin Creation', () => {
 
   test('should delete a shared reservation', async ({ page }) => {
     // Create one to delete
-    await page.getByRole('button', { name: /create.*shared|new.*shared/i }).click();
+    await page
+      .getByRole('button', { name: /create.*shared|new.*shared/i })
+      .click();
 
     const saunaSelect = page.getByLabel(/sauna/i);
     await saunaSelect.selectOption({ index: 1 }); // Select first non-empty option
@@ -104,7 +116,10 @@ test.describe('Shared Reservation - Admin Creation', () => {
     await page.waitForTimeout(1000);
 
     // Find and delete
-    const toDelete = page.locator(`text=${testName}`).locator('..').locator('..');
+    const toDelete = page
+      .locator(`text=${testName}`)
+      .locator('..')
+      .locator('..');
     await toDelete.getByRole('button', { name: /delete/i }).click();
 
     await page.getByRole('button', { name: /confirm|yes|delete/i }).click();
@@ -118,10 +133,12 @@ test.describe('Shared Reservation - User Joining', () => {
     await page.goto('/');
   });
 
-  test('should display shared reservation option on island view', async ({ page }) => {
+  test('should display shared reservation option on island view', async ({
+    page,
+  }) => {
     const islandLink = page.locator('[data-testid="island-link"]').first();
 
-    if (await islandLink.count() === 0) {
+    if ((await islandLink.count()) === 0) {
       test.skip();
     }
 
@@ -141,7 +158,7 @@ test.describe('Shared Reservation - User Joining', () => {
   test('should join a shared reservation', async ({ page }) => {
     const islandLink = page.locator('[data-testid="island-link"]').first();
 
-    if (await islandLink.count() === 0) {
+    if ((await islandLink.count()) === 0) {
       test.skip();
     }
 
@@ -149,7 +166,9 @@ test.describe('Shared Reservation - User Joining', () => {
     await page.waitForURL(/\/islands\/[^/]+/);
 
     // Look for "Join Shared" button
-    const joinSharedButton = page.getByRole('button', { name: /join.*shared/i });
+    const joinSharedButton = page.getByRole('button', {
+      name: /join.*shared/i,
+    });
 
     if (await joinSharedButton.isVisible()) {
       await joinSharedButton.click();
@@ -167,7 +186,7 @@ test.describe('Shared Reservation - User Joining', () => {
 
       // Select a boat
       const firstBoat = page.locator('[data-testid="boat-option"]').first();
-      if (await firstBoat.count() > 0) {
+      if ((await firstBoat.count()) > 0) {
         await firstBoat.click();
       }
 
@@ -187,23 +206,29 @@ test.describe('Shared Reservation - User Joining', () => {
       await page.getByRole('button', { name: /confirm|join/i }).click();
 
       // Should show success
-      await expect(page.getByText(/success|joined/i)).toBeVisible({ timeout: 10000 });
+      await expect(page.getByText(/success|joined/i)).toBeVisible({
+        timeout: 10000,
+      });
     } else {
       test.skip();
     }
   });
 
-  test('should display gender schedule for shared reservation', async ({ page }) => {
+  test('should display gender schedule for shared reservation', async ({
+    page,
+  }) => {
     const islandLink = page.locator('[data-testid="island-link"]').first();
 
-    if (await islandLink.count() === 0) {
+    if ((await islandLink.count()) === 0) {
       test.skip();
     }
 
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+/);
 
-    const joinSharedButton = page.getByRole('button', { name: /join.*shared/i });
+    const joinSharedButton = page.getByRole('button', {
+      name: /join.*shared/i,
+    });
 
     if (await joinSharedButton.isVisible()) {
       await joinSharedButton.click();
@@ -226,30 +251,38 @@ test.describe('Shared Reservation - User Joining', () => {
     }
   });
 
-  test('should show current participants in shared reservation', async ({ page }) => {
+  test('should show current participants in shared reservation', async ({
+    page,
+  }) => {
     const islandLink = page.locator('[data-testid="island-link"]').first();
 
-    if (await islandLink.count() === 0) {
+    if ((await islandLink.count()) === 0) {
       test.skip();
     }
 
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+/);
 
-    const joinSharedButton = page.getByRole('button', { name: /join.*shared/i });
+    const joinSharedButton = page.getByRole('button', {
+      name: /join.*shared/i,
+    });
 
     if (await joinSharedButton.isVisible()) {
       await joinSharedButton.click();
 
       // Look for participants section
-      const participantsSection = page.locator('[data-testid="participants-list"]');
+      const participantsSection = page.locator(
+        '[data-testid="participants-list"]'
+      );
 
       if (await participantsSection.isVisible()) {
         // Should show participant details
         await expect(participantsSection).toBeVisible();
       } else {
         // Alternative: look for text indicating participants
-        const participantText = page.getByText(/participants|boats|no one has joined/i);
+        const participantText = page.getByText(
+          /participants|boats|no one has joined/i
+        );
         await expect(participantText).toBeVisible();
       }
     } else {
@@ -257,12 +290,14 @@ test.describe('Shared Reservation - User Joining', () => {
     }
   });
 
-  test('should prevent joining shared reservation if boat already has reservation today', async ({ page }) => {
+  test('should prevent joining shared reservation if boat already has reservation today', async ({
+    page,
+  }) => {
     // This would require creating an individual reservation first,
     // then trying to join a shared reservation with the same boat
     const islandLink = page.locator('[data-testid="island-link"]').first();
 
-    if (await islandLink.count() === 0) {
+    if ((await islandLink.count()) === 0) {
       test.skip();
     }
 
@@ -270,7 +305,9 @@ test.describe('Shared Reservation - User Joining', () => {
     await page.waitForURL(/\/islands\/[^/]+/);
 
     // Make individual reservation first
-    const reserveButton = page.getByRole('button', { name: /make reservation/i }).first();
+    const reserveButton = page
+      .getByRole('button', { name: /make reservation/i })
+      .first();
     await reserveButton.click();
 
     const boatSearch = page.getByPlaceholder(/search.*boat/i);
@@ -280,8 +317,8 @@ test.describe('Shared Reservation - User Joining', () => {
     const firstBoat = page.locator('[data-testid="boat-option"]').first();
     let boatName = '';
 
-    if (await firstBoat.count() > 0) {
-      boatName = await firstBoat.textContent() || '';
+    if ((await firstBoat.count()) > 0) {
+      boatName = (await firstBoat.textContent()) || '';
       await firstBoat.click();
     }
 
@@ -295,7 +332,9 @@ test.describe('Shared Reservation - User Joining', () => {
     await page.goto('/');
     await islandLink.click();
 
-    const joinSharedButton = page.getByRole('button', { name: /join.*shared/i });
+    const joinSharedButton = page.getByRole('button', {
+      name: /join.*shared/i,
+    });
 
     if (await joinSharedButton.isVisible()) {
       await joinSharedButton.click();
@@ -305,7 +344,7 @@ test.describe('Shared Reservation - User Joining', () => {
       await page.waitForTimeout(500);
 
       const sameBoat = page.locator('[data-testid="boat-option"]').first();
-      if (await sameBoat.count() > 0) {
+      if ((await sameBoat.count()) > 0) {
         await sameBoat.click();
 
         // Should show error
@@ -329,7 +368,7 @@ test.describe('Club Sauna Auto-creation', () => {
 
     const firstSauna = page.locator('[data-testid="sauna-item"]').first();
 
-    if (await firstSauna.count() === 0) {
+    if ((await firstSauna.count()) === 0) {
       test.skip();
     }
 
@@ -345,7 +384,7 @@ test.describe('Club Sauna Auto-creation', () => {
 
     const firstSauna = page.locator('[data-testid="sauna-item"]').first();
 
-    if (await firstSauna.count() === 0) {
+    if ((await firstSauna.count()) === 0) {
       test.skip();
     }
 

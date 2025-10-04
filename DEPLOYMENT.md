@@ -11,21 +11,26 @@
 Required environment variables for production:
 
 ### Database
+
 - `DATABASE_URL` - PostgreSQL connection string
 - `DIRECT_URL` - Direct PostgreSQL URL for migrations (usually same as DATABASE_URL)
 
 ### Authentication & Security
+
 - `SESSION_SECRET` - Random secret for session encryption (generate with: `openssl rand -base64 32`)
 - `CRON_SECRET` - Secret for protecting cron endpoints (generate with: `openssl rand -base64 32`)
 
 ### Storage
+
 - `BLOB_READ_WRITE_TOKEN` - Vercel Blob storage token for logo uploads
 
 ### App Configuration
+
 - `NEXT_PUBLIC_APP_URL` - Your production URL (e.g., https://your-app.vercel.app)
 - `DEFAULT_TIMEZONE` - Default timezone for new clubs (e.g., "Europe/Helsinki")
 
 ### Optional
+
 - `NEXT_PUBLIC_VERCEL_ANALYTICS_ID` - Vercel Analytics ID
 - `SENTRY_DSN` - Sentry error tracking (server)
 - `NEXT_PUBLIC_SENTRY_DSN` - Sentry error tracking (client)
@@ -91,6 +96,7 @@ npx prisma db seed
 ### 6. Set Up Cron Jobs
 
 Vercel Cron is configured in `vercel.json`. Jobs will run automatically:
+
 - **Midnight** (00:00): Generate Club Sauna reservations
 - **8 PM** (20:00): Evaluate Club Sauna reservations
 
@@ -113,6 +119,7 @@ Vercel Cron is configured in `vercel.json`. Jobs will run automatically:
 ### Build Warnings
 
 The build may show prerender warnings for dynamic pages:
+
 ```
 Error occurred prerendering page "/auth"
 TypeError: Cannot read properties of null (reading 'useContext')
@@ -123,6 +130,7 @@ TypeError: Cannot read properties of null (reading 'useContext')
 ### Database Connection Issues
 
 If you see database connection errors:
+
 1. Verify DATABASE_URL is correct
 2. Ensure database accepts connections from Vercel IPs
 3. Check that SSL mode is configured: `?sslmode=require`

@@ -1,5 +1,10 @@
 import { NextRequest } from 'next/server';
-import { parseRequestBody, successResponse, errorResponse, handleApiError } from '@/lib/api-utils';
+import {
+  parseRequestBody,
+  successResponse,
+  errorResponse,
+  handleApiError,
+} from '@/lib/api-utils';
 import prisma from '@/lib/db';
 import type { SyncRequest, SyncResponse, SyncChange } from '@/types';
 import { ReservationStatus, GenderOrder } from '@prisma/client';
@@ -7,29 +12,29 @@ import { ReservationStatus, GenderOrder } from '@prisma/client';
 /**
  * POST /api/sync/push
  * Push changes from Island Device to backend
- * 
+ *
  * Island Device is the source of truth, so these changes are authoritative
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await parseRequestBody<SyncRequest>(request);
-    
+
     if (!body.islandId || !Array.isArray(body.changes)) {
       return errorResponse('Invalid sync request format', 400);
     }
-    
+
     // Verify island exists
     const island = await prisma.island.findUnique({
       where: { id: body.islandId },
     });
-    
+
     if (!island) {
       return errorResponse('Island not found', 404);
     }
-    
+
     const appliedChanges: string[] = [];
     const rejectedChanges: Array<{ id: string; reason: string }> = [];
-    
+
     // Process each change
     for (const change of body.changes) {
       try {
@@ -38,17 +43,17 @@ export async function POST(request: NextRequest) {
             await handleReservationSync(change);
             appliedChanges.push(change.id);
             break;
-            
+
           case 'shared_reservation':
             await handleSharedReservationSync(change);
             appliedChanges.push(change.id);
             break;
-            
+
           case 'shared_participant':
             await handleSharedParticipantSync(change);
             appliedChanges.push(change.id);
             break;
-            
+
           default:
             rejectedChanges.push({
               id: change.id,
@@ -63,11 +68,11 @@ export async function POST(request: NextRequest) {
         });
       }
     }
-    
+
     // Log sync activity
     await prisma.syncLog.createMany({
-      data: appliedChanges.map(changeId => {
-        const change = body.changes.find(c => c.id === changeId)!;
+      data: appliedChanges.map((changeId) => {
+        const change = body.changes.find((c) => c.id === changeId)!;
         return {
           islandId: body.islandId,
           entityType: change.entityType,
@@ -78,7 +83,7 @@ export async function POST(request: NextRequest) {
         };
       }),
     });
-    
+
     const response: SyncResponse = {
       success: true,
       appliedChanges,
@@ -86,7 +91,7 @@ export async function POST(request: NextRequest) {
       serverChanges: [], // No server changes to push back for now
       newSyncTimestamp: new Date(),
     };
-    
+
     return successResponse(response);
   } catch (error) {
     return handleApiError(error);
@@ -95,7 +100,7 @@ export async function POST(request: NextRequest) {
 
 async function handleReservationSync(change: SyncChange) {
   const data = change.data;
-  
+
   switch (change.operation) {
     case 'create':
       await prisma.reservation.upsert({
@@ -110,25 +115,31 @@ async function handleReservationSync(change: SyncChange) {
           kids: data.kids as number,
           status: data.status as ReservationStatus,
           createdAt: new Date(data.createdAt as string),
-          cancelledAt: data.cancelledAt ? new Date(data.cancelledAt as string) : null,
+          cancelledAt: data.cancelledAt
+            ? new Date(data.cancelledAt as string)
+            : null,
         },
         update: {
           status: data.status as ReservationStatus,
-          cancelledAt: data.cancelledAt ? new Date(data.cancelledAt as string) : null,
+          cancelledAt: data.cancelledAt
+            ? new Date(data.cancelledAt as string)
+            : null,
         },
       });
       break;
-      
+
     case 'update':
       await prisma.reservation.update({
         where: { id: change.entityId },
         data: {
           status: data.status as ReservationStatus,
-          cancelledAt: data.cancelledAt ? new Date(data.cancelledAt as string) : null,
+          cancelledAt: data.cancelledAt
+            ? new Date(data.cancelledAt as string)
+            : null,
         },
       });
       break;
-      
+
     case 'delete':
       await prisma.reservation.delete({
         where: { id: change.entityId },
@@ -139,7 +150,7 @@ async function handleReservationSync(change: SyncChange) {
 
 async function handleSharedReservationSync(change: SyncChange) {
   const data = change.data;
-  
+
   switch (change.operation) {
     case 'create':
       await prisma.sharedReservation.upsert({
@@ -155,27 +166,33 @@ async function handleSharedReservationSync(change: SyncChange) {
           name: data.name as string,
           description: data.description as string | null | undefined,
           isAutoGenerated: data.isAutoGenerated as boolean,
-          autoCancelledAt: data.autoCancelledAt ? new Date(data.autoCancelledAt as string) : null,
+          autoCancelledAt: data.autoCancelledAt
+            ? new Date(data.autoCancelledAt as string)
+            : null,
           convertedToIndividual: data.convertedToIndividual as boolean,
           createdBy: 'island_device',
         },
         update: {
-          autoCancelledAt: data.autoCancelledAt ? new Date(data.autoCancelledAt as string) : null,
+          autoCancelledAt: data.autoCancelledAt
+            ? new Date(data.autoCancelledAt as string)
+            : null,
           convertedToIndividual: data.convertedToIndividual as boolean,
         },
       });
       break;
-      
+
     case 'update':
       await prisma.sharedReservation.update({
         where: { id: change.entityId },
         data: {
-          autoCancelledAt: data.autoCancelledAt ? new Date(data.autoCancelledAt as string) : null,
+          autoCancelledAt: data.autoCancelledAt
+            ? new Date(data.autoCancelledAt as string)
+            : null,
           convertedToIndividual: data.convertedToIndividual as boolean,
         },
       });
       break;
-      
+
     case 'delete':
       await prisma.sharedReservation.delete({
         where: { id: change.entityId },
@@ -215,7 +232,7 @@ async function handleSharedParticipantSync(change: SyncChange) {
         },
       });
       break;
-      
+
     case 'delete':
       await prisma.sharedReservationParticipant.delete({
         where: { id: change.entityId },

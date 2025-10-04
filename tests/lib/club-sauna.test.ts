@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  isClubSaunaEligibleDate,
-} from '@/lib/club-sauna';
+import { isClubSaunaEligibleDate } from '@/lib/club-sauna';
 
 describe('isClubSaunaEligibleDate', () => {
   it('should mark high season dates as eligible (June-August)', () => {
@@ -9,9 +7,18 @@ describe('isClubSaunaEligibleDate', () => {
     const julyDate = new Date('2025-07-15');
     const augustDate = new Date('2025-08-15');
 
-    expect(isClubSaunaEligibleDate(juneDate)).toEqual({ eligible: true, season: 'high' });
-    expect(isClubSaunaEligibleDate(julyDate)).toEqual({ eligible: true, season: 'high' });
-    expect(isClubSaunaEligibleDate(augustDate)).toEqual({ eligible: true, season: 'high' });
+    expect(isClubSaunaEligibleDate(juneDate)).toEqual({
+      eligible: true,
+      season: 'high',
+    });
+    expect(isClubSaunaEligibleDate(julyDate)).toEqual({
+      eligible: true,
+      season: 'high',
+    });
+    expect(isClubSaunaEligibleDate(augustDate)).toEqual({
+      eligible: true,
+      season: 'high',
+    });
   });
 
   it('should mark shoulder season Friday/Saturday as eligible (May, September)', () => {
@@ -19,9 +26,18 @@ describe('isClubSaunaEligibleDate', () => {
     const maySaturday = new Date('2025-05-10'); // Saturday
     const septFriday = new Date('2025-09-05'); // Friday
 
-    expect(isClubSaunaEligibleDate(mayFriday)).toEqual({ eligible: true, season: 'shoulder' });
-    expect(isClubSaunaEligibleDate(maySaturday)).toEqual({ eligible: true, season: 'shoulder' });
-    expect(isClubSaunaEligibleDate(septFriday)).toEqual({ eligible: true, season: 'shoulder' });
+    expect(isClubSaunaEligibleDate(mayFriday)).toEqual({
+      eligible: true,
+      season: 'shoulder',
+    });
+    expect(isClubSaunaEligibleDate(maySaturday)).toEqual({
+      eligible: true,
+      season: 'shoulder',
+    });
+    expect(isClubSaunaEligibleDate(septFriday)).toEqual({
+      eligible: true,
+      season: 'shoulder',
+    });
   });
 
   it('should not mark non-Friday/Saturday as eligible in shoulder season', () => {

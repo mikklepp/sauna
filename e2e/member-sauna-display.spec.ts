@@ -17,7 +17,12 @@ test.describe('Member Sauna Display & Status', () => {
     await page.waitForURL(/\/islands/, { timeout: 10000 });
 
     // Wait for page to finish loading (either islands load or "no islands" message)
-    await page.waitForSelector('[data-testid="island-link"], :text("No islands available")', { timeout: 5000 }).catch(() => {});
+    await page
+      .waitForSelector(
+        '[data-testid="island-link"], :text("No islands available")',
+        { timeout: 5000 }
+      )
+      .catch(() => {});
 
     const islandLinks = page.locator('[data-testid="island-link"]');
     const islandCount = await islandLinks.count();
@@ -38,7 +43,9 @@ test.describe('Member Sauna Display & Status', () => {
         await page.waitForLoadState('networkidle');
 
         // Wait for sauna cards to load
-        await page.waitForSelector('[data-testid="sauna-card"]', { timeout: 5000 }).catch(() => {});
+        await page
+          .waitForSelector('[data-testid="sauna-card"]', { timeout: 5000 })
+          .catch(() => {});
 
         const saunaCards = page.locator('[data-testid="sauna-card"]');
         const saunaCardCount = await saunaCards.count();
@@ -71,12 +78,17 @@ test.describe('Member Sauna Display & Status', () => {
     // Each sauna card should have a name
     for (let i = 0; i < saunaCount; i++) {
       const saunaCard = saunaCards.nth(i);
-      const saunaName = await saunaCard.locator('h3, [class*="CardTitle"]').first().textContent();
+      const saunaName = await saunaCard
+        .locator('h3, [class*="CardTitle"]')
+        .first()
+        .textContent();
       expect(saunaName).toBeTruthy();
     }
   });
 
-  test('should display sauna status (Available or In Use)', async ({ page }) => {
+  test('should display sauna status (Available or In Use)', async ({
+    page,
+  }) => {
     const found = await navigateToIslandWithSaunas(page);
     if (!found) {
       test.skip();
@@ -90,14 +102,22 @@ test.describe('Member Sauna Display & Status', () => {
 
     // First sauna should show status - look for "Available" or "Currently in use" text
     const firstSauna = saunaCards.first();
-    const hasAvailable = await firstSauna.getByText(/^Available$/).isVisible().catch(() => false);
-    const hasInUse = await firstSauna.getByText(/currently in use/i).isVisible().catch(() => false);
+    const hasAvailable = await firstSauna
+      .getByText(/^Available$/)
+      .isVisible()
+      .catch(() => false);
+    const hasInUse = await firstSauna
+      .getByText(/currently in use/i)
+      .isVisible()
+      .catch(() => false);
 
     // Should have either status
     expect(hasAvailable || hasInUse).toBeTruthy();
   });
 
-  test('should display next available time for each sauna', async ({ page }) => {
+  test('should display next available time for each sauna', async ({
+    page,
+  }) => {
     const found = await navigateToIslandWithSaunas(page);
     if (!found) {
       test.skip();
@@ -121,7 +141,9 @@ test.describe('Member Sauna Display & Status', () => {
     }
   });
 
-  test('should show Reserve This Time button for each sauna', async ({ page }) => {
+  test('should show Reserve This Time button for each sauna', async ({
+    page,
+  }) => {
     const found = await navigateToIslandWithSaunas(page);
     if (!found) {
       test.skip();
@@ -135,12 +157,16 @@ test.describe('Member Sauna Display & Status', () => {
     // Each sauna should have a reserve button
     for (let i = 0; i < saunaCount; i++) {
       const saunaCard = saunaCards.nth(i);
-      const reserveButton = saunaCard.getByRole('button', { name: /reserve this time/i });
+      const reserveButton = saunaCard.getByRole('button', {
+        name: /reserve this time/i,
+      });
       await expect(reserveButton).toBeVisible();
     }
   });
 
-  test('should display heating time information when sauna is cold', async ({ page }) => {
+  test('should display heating time information when sauna is cold', async ({
+    page,
+  }) => {
     const found = await navigateToIslandWithSaunas(page);
     if (!found) {
       test.skip();
@@ -151,11 +177,16 @@ test.describe('Member Sauna Display & Status', () => {
     // Check if any sauna shows heating time info
     // This is conditional - only shown when sauna needs heating
     const firstSauna = saunaCards.first();
-    const heatingInfo = await firstSauna.getByText(/includes.*heating time/i).isVisible().catch(() => false);
+    const heatingInfo = await firstSauna
+      .getByText(/includes.*heating time/i)
+      .isVisible()
+      .catch(() => false);
 
     // If heating info is shown, verify it contains a number of hours
     if (heatingInfo) {
-      const heatingText = await firstSauna.getByText(/includes.*heating time/i).textContent();
+      const heatingText = await firstSauna
+        .getByText(/includes.*heating time/i)
+        .textContent();
       expect(heatingText).toMatch(/\d+h/i);
     }
 
@@ -163,7 +194,9 @@ test.describe('Member Sauna Display & Status', () => {
     expect(true).toBe(true);
   });
 
-  test('should show View All Reservations button for each sauna', async ({ page }) => {
+  test('should show View All Reservations button for each sauna', async ({
+    page,
+  }) => {
     const found = await navigateToIslandWithSaunas(page);
     if (!found) {
       test.skip();
@@ -177,12 +210,16 @@ test.describe('Member Sauna Display & Status', () => {
     // Each sauna should have a "View All Reservations" button
     for (let i = 0; i < saunaCount; i++) {
       const saunaCard = saunaCards.nth(i);
-      const viewReservationsButton = saunaCard.getByRole('button', { name: /view all reservations/i });
+      const viewReservationsButton = saunaCard.getByRole('button', {
+        name: /view all reservations/i,
+      });
       await expect(viewReservationsButton).toBeVisible();
     }
   });
 
-  test('should support multiple saunas on same island (1-3)', async ({ page }) => {
+  test('should support multiple saunas on same island (1-3)', async ({
+    page,
+  }) => {
     const found = await navigateToIslandWithSaunas(page);
     if (!found) {
       test.skip();
@@ -197,15 +234,25 @@ test.describe('Member Sauna Display & Status', () => {
 
     // Each sauna should be independently displayed
     if (saunaCount > 1) {
-      const firstSaunaName = await saunaCards.nth(0).locator('h3').first().textContent();
-      const secondSaunaName = await saunaCards.nth(1).locator('h3').first().textContent();
+      const firstSaunaName = await saunaCards
+        .nth(0)
+        .locator('h3')
+        .first()
+        .textContent();
+      const secondSaunaName = await saunaCards
+        .nth(1)
+        .locator('h3')
+        .first()
+        .textContent();
 
       // Sauna names should be different
       expect(firstSaunaName).not.toBe(secondSaunaName);
     }
   });
 
-  test('should display shared sauna indicator when exists', async ({ page }) => {
+  test('should display shared sauna indicator when exists', async ({
+    page,
+  }) => {
     const found = await navigateToIslandWithSaunas(page);
     if (!found) {
       test.skip();
@@ -213,7 +260,10 @@ test.describe('Member Sauna Display & Status', () => {
 
     // Check if any sauna has shared reservation indicator
     // This is conditional - only shown when there's a shared reservation today
-    const sharedIndicator = await page.getByText(/shared sauna today|join shared/i).isVisible().catch(() => false);
+    const sharedIndicator = await page
+      .getByText(/shared sauna today|join shared/i)
+      .isVisible()
+      .catch(() => false);
 
     // If shared indicator exists, verify we can see details
     if (sharedIndicator) {

@@ -1,6 +1,11 @@
 import { NextRequest } from 'next/server';
 import { validateCronSecret } from '@/lib/auth';
-import { successResponse, errorResponse, handleApiError, getAuthHeader } from '@/lib/api-utils';
+import {
+  successResponse,
+  errorResponse,
+  handleApiError,
+  getAuthHeader,
+} from '@/lib/api-utils';
 import { evaluateClubSauna } from '@/lib/club-sauna';
 import prisma from '@/lib/db';
 import { startOfDay, endOfDay } from 'date-fns';
@@ -15,16 +20,16 @@ export async function POST(request: NextRequest) {
     // Validate cron secret
     const authHeader = getAuthHeader(request);
     const secret = authHeader?.replace('Bearer ', '');
-    
+
     if (!validateCronSecret(secret || '')) {
       return errorResponse('Unauthorized', 401);
     }
-    
+
     // Get today's date
     const today = new Date();
     const todayStart = startOfDay(today);
     const todayEnd = endOfDay(today);
-    
+
     // Find all auto-generated Club Sauna reservations for today
     const clubSaunas = await prisma.sharedReservation.findMany({
       where: {
@@ -53,13 +58,13 @@ export async function POST(request: NextRequest) {
         },
       },
     });
-    
+
     const evaluated = [];
-    
+
     for (const clubSauna of clubSaunas) {
       // Evaluate the Club Sauna
       const evaluation = evaluateClubSauna(clubSauna);
-      
+
       if (evaluation.shouldCancel) {
         // Cancel the shared reservation
         await prisma.sharedReservation.update({
@@ -69,13 +74,13 @@ export async function POST(request: NextRequest) {
             convertedToIndividual: true,
           },
         });
-        
+
         // Create individual reservations for participants
         for (const conversion of evaluation.conversions) {
           const participant = clubSauna.participants.find(
-            p => p.boatId === conversion.boatId
+            (p) => p.boatId === conversion.boatId
           );
-          
+
           if (participant) {
             await prisma.reservation.create({
               data: {
@@ -90,7 +95,7 @@ export async function POST(request: NextRequest) {
             });
           }
         }
-        
+
         evaluated.push({
           sharedReservationId: clubSauna.id,
           saunaName: clubSauna.sauna.name,
@@ -104,7 +109,7 @@ export async function POST(request: NextRequest) {
         // eslint-disable-next-line no-console
         console.log(
           `Club Sauna ${clubSauna.id} cancelled (${evaluation.participantCount} participants < 3), ` +
-          `converted ${evaluation.conversions.length} to individual reservations`
+            `converted ${evaluation.conversions.length} to individual reservations`
         );
       } else {
         evaluated.push({
@@ -122,7 +127,7 @@ export async function POST(request: NextRequest) {
         );
       }
     }
-    
+
     return successResponse({
       message: 'Club Sauna evaluation completed',
       date: today.toISOString(),

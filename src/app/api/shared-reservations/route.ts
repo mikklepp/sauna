@@ -1,11 +1,11 @@
 import { NextRequest } from 'next/server';
 import { requireClubAuth, requireAdminAuth } from '@/lib/auth';
-import { 
-  parseRequestBody, 
-  successResponse, 
-  errorResponse, 
+import {
+  parseRequestBody,
+  successResponse,
+  errorResponse,
   handleApiError,
-  getQueryParam 
+  getQueryParam,
 } from '@/lib/api-utils';
 import { createSharedReservationSchema } from '@/lib/validation';
 import prisma from '@/lib/db';
@@ -19,19 +19,19 @@ export async function POST(request: NextRequest) {
   try {
     await requireAdminAuth(); // Only admins can create shared reservations
     const body = await parseRequestBody(request);
-    
+
     // Validate input
     const validated = createSharedReservationSchema.parse(body);
-    
+
     // Check if sauna exists
     const sauna = await prisma.sauna.findUnique({
       where: { id: validated.saunaId },
     });
-    
+
     if (!sauna) {
       return errorResponse('Sauna not found', 404);
     }
-    
+
     // Create shared reservation
     const sharedReservation = await prisma.sharedReservation.create({
       data: {
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
         sauna: true,
       },
     });
-    
+
     return successResponse(sharedReservation, 201);
   } catch (error) {
     return handleApiError(error);

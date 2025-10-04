@@ -12,7 +12,7 @@ import type {
 
 /**
  * IndexedDB database for Island Device offline storage
- * 
+ *
  * This is the source of truth for the Island Device.
  * All reservation operations are performed against this local database first,
  * then synced to the backend when online.
@@ -27,13 +27,13 @@ export class SaunaDB extends Dexie {
   sharedReservations!: Table<LocalSharedReservation>;
   sharedParticipants!: Table<LocalSharedParticipant>;
   syncQueue!: Table<SyncChange>;
-  
+
   // Metadata table for device configuration
   metadata!: Table<{ key: string; value: string | boolean }>;
 
   constructor() {
     super('SaunaReservations');
-    
+
     this.version(1).stores({
       clubs: 'id, secret',
       islands: 'id, clubId',
@@ -61,31 +61,41 @@ export async function initializeDevice(config: {
   boats: LocalBoat[];
   deviceId: string;
 }): Promise<void> {
-  await db.transaction('rw', [db.clubs, db.islands, db.saunas, db.boats, db.metadata], async () => {
-    // Clear existing data
-    await db.clubs.clear();
-    await db.islands.clear();
-    await db.saunas.clear();
-    await db.boats.clear();
-    
-    // Add club
-    await db.clubs.add(config.club);
-    
-    // Add island
-    await db.islands.add(config.island);
-    
-    // Add saunas
-    await db.saunas.bulkAdd(config.saunas);
-    
-    // Add boats
-    await db.boats.bulkAdd(config.boats);
-    
-    // Store device metadata
-    await db.metadata.put({ key: 'deviceId', value: config.deviceId });
-    await db.metadata.put({ key: 'assignedIslandId', value: config.island.id });
-    await db.metadata.put({ key: 'isConfigured', value: true });
-    await db.metadata.put({ key: 'lastSyncAt', value: new Date().toISOString() });
-  });
+  await db.transaction(
+    'rw',
+    [db.clubs, db.islands, db.saunas, db.boats, db.metadata],
+    async () => {
+      // Clear existing data
+      await db.clubs.clear();
+      await db.islands.clear();
+      await db.saunas.clear();
+      await db.boats.clear();
+
+      // Add club
+      await db.clubs.add(config.club);
+
+      // Add island
+      await db.islands.add(config.island);
+
+      // Add saunas
+      await db.saunas.bulkAdd(config.saunas);
+
+      // Add boats
+      await db.boats.bulkAdd(config.boats);
+
+      // Store device metadata
+      await db.metadata.put({ key: 'deviceId', value: config.deviceId });
+      await db.metadata.put({
+        key: 'assignedIslandId',
+        value: config.island.id,
+      });
+      await db.metadata.put({ key: 'isConfigured', value: true });
+      await db.metadata.put({
+        key: 'lastSyncAt',
+        value: new Date().toISOString(),
+      });
+    }
+  );
 }
 
 /**
@@ -101,7 +111,7 @@ export async function getDeviceConfig(): Promise<{
   const deviceId = await db.metadata.get('deviceId');
   const assignedIslandId = await db.metadata.get('assignedIslandId');
   const lastSyncAt = await db.metadata.get('lastSyncAt');
-  
+
   return {
     isConfigured: isConfigured?.value === true,
     deviceId: deviceId?.value as string | undefined,
@@ -137,27 +147,31 @@ export async function getAssignedIslandId(): Promise<string | null> {
  * Clear all device data (factory reset)
  */
 export async function clearDeviceData(): Promise<void> {
-  await db.transaction('rw', [
-    db.clubs,
-    db.islands,
-    db.saunas,
-    db.boats,
-    db.reservations,
-    db.sharedReservations,
-    db.sharedParticipants,
-    db.syncQueue,
-    db.metadata,
-  ], async () => {
-    await db.clubs.clear();
-    await db.islands.clear();
-    await db.saunas.clear();
-    await db.boats.clear();
-    await db.reservations.clear();
-    await db.sharedReservations.clear();
-    await db.sharedParticipants.clear();
-    await db.syncQueue.clear();
-    await db.metadata.clear();
-  });
+  await db.transaction(
+    'rw',
+    [
+      db.clubs,
+      db.islands,
+      db.saunas,
+      db.boats,
+      db.reservations,
+      db.sharedReservations,
+      db.sharedParticipants,
+      db.syncQueue,
+      db.metadata,
+    ],
+    async () => {
+      await db.clubs.clear();
+      await db.islands.clear();
+      await db.saunas.clear();
+      await db.boats.clear();
+      await db.reservations.clear();
+      await db.sharedReservations.clear();
+      await db.sharedParticipants.clear();
+      await db.syncQueue.clear();
+      await db.metadata.clear();
+    }
+  );
 }
 
 /**

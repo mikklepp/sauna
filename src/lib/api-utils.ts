@@ -43,7 +43,7 @@ export function handleApiError(error: unknown): NextResponse<ApiResponse> {
   // Zod validation errors
   if (error instanceof ZodError) {
     return errorResponse(
-      `Validation error: ${error.errors.map(e => e.message).join(', ')}`,
+      `Validation error: ${error.errors.map((e) => e.message).join(', ')}`,
       400
     );
   }
@@ -61,7 +61,10 @@ export function handleApiError(error: unknown): NextResponse<ApiResponse> {
     }
 
     // Conflict errors
-    if (error.message.includes('already exists') || error.message.includes('conflict')) {
+    if (
+      error.message.includes('already exists') ||
+      error.message.includes('conflict')
+    ) {
       return errorResponse(error.message, 409);
     }
 
@@ -128,7 +131,8 @@ export function getPathParam(
  * Validate UUID format
  */
 export function validateUUID(value: string, fieldName: string = 'ID'): void {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (!uuidRegex.test(value)) {
     throw new Error(`Invalid ${fieldName} format`);
   }
@@ -139,7 +143,7 @@ export function validateUUID(value: string, fieldName: string = 'ID'): void {
  */
 export function parseDateParam(dateString: string | null): Date | null {
   if (!dateString) return null;
-  
+
   try {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) {

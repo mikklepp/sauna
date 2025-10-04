@@ -1,4 +1,4 @@
-import { Metadata } from 'next'
+import { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,19 +11,19 @@ export const metadata: Metadata = {
     statusBarStyle: 'default',
     title: 'Island Device',
   },
-}
+};
 
 export default function IslandDeviceLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-4">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 text-white">
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+            <div className="h-2 w-2 animate-pulse rounded-full bg-green-400" />
             <span className="text-sm font-medium">Island Device Mode</span>
           </div>
           <span className="text-xs opacity-75">Offline Ready</span>
@@ -31,5 +31,5 @@ export default function IslandDeviceLayout({
       </div>
       {children}
     </div>
-  )
+  );
 }

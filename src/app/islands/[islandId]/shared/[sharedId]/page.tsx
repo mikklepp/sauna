@@ -2,8 +2,20 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ChevronLeft, Search, Users as UsersIcon, Clock, Check } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  ChevronLeft,
+  Search,
+  Users as UsersIcon,
+  Clock,
+  Check,
+} from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -50,7 +62,8 @@ export default function JoinSharedPage() {
   const sharedId = params.sharedId as string;
 
   const [step, setStep] = useState<Step>('details');
-  const [sharedReservation, setSharedReservation] = useState<SharedReservation | null>(null);
+  const [sharedReservation, setSharedReservation] =
+    useState<SharedReservation | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [boats, setBoats] = useState<Boat[]>([]);
   const [selectedBoat, setSelectedBoat] = useState<Boat | null>(null);
@@ -61,11 +74,15 @@ export default function JoinSharedPage() {
 
   const fetchSharedReservation = useCallback(async () => {
     try {
-      const response = await fetch(`/api/shared-reservations?saunaId=${sharedId}`);
+      const response = await fetch(
+        `/api/shared-reservations?saunaId=${sharedId}`
+      );
       if (response.ok) {
         const data = await response.json();
         // Find the specific shared reservation
-        const shared = data.data?.find((sr: SharedReservation) => sr.id === sharedId);
+        const shared = data.data?.find(
+          (sr: SharedReservation) => sr.id === sharedId
+        );
         if (shared) {
           setSharedReservation(shared);
         }
@@ -82,7 +99,9 @@ export default function JoinSharedPage() {
     }
 
     try {
-      const response = await fetch(`/api/boats/search?q=${encodeURIComponent(searchQuery)}`);
+      const response = await fetch(
+        `/api/boats/search?q=${encodeURIComponent(searchQuery)}`
+      );
       if (response.ok) {
         const data = await response.json();
         setBoats(data.data || []);
@@ -108,7 +127,7 @@ export default function JoinSharedPage() {
     setError('');
 
     // Check if boat already participating
-    if (sharedReservation?.participants.some(p => p.boat.id === boat.id)) {
+    if (sharedReservation?.participants.some((p) => p.boat.id === boat.id)) {
       setError('This boat is already participating in this shared sauna');
       setLoading(false);
       return;
@@ -143,15 +162,18 @@ export default function JoinSharedPage() {
     setError('');
 
     try {
-      const response = await fetch(`/api/shared-reservations/${sharedId}/join`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          boatId: selectedBoat.id,
-          adults,
-          kids,
-        }),
-      });
+      const response = await fetch(
+        `/api/shared-reservations/${sharedId}/join`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            boatId: selectedBoat.id,
+            adults,
+            kids,
+          }),
+        }
+      );
 
       if (response.ok) {
         setStep('success');
@@ -168,22 +190,40 @@ export default function JoinSharedPage() {
 
   function getGenderSchedule(): string {
     if (!sharedReservation) return '';
-    
+
     const startTime = new Date(sharedReservation.startTime);
-    const malesStart = sharedReservation.genderOrder === 'MALES_FIRST' ? startTime : new Date(startTime.getTime() + sharedReservation.femalesDurationHours * 60 * 60 * 1000);
-    const femalesStart = sharedReservation.genderOrder === 'FEMALES_FIRST' ? startTime : new Date(startTime.getTime() + sharedReservation.malesDurationHours * 60 * 60 * 1000);
-    
-    const malesEnd = new Date(malesStart.getTime() + sharedReservation.malesDurationHours * 60 * 60 * 1000);
-    const femalesEnd = new Date(femalesStart.getTime() + sharedReservation.femalesDurationHours * 60 * 60 * 1000);
+    const malesStart =
+      sharedReservation.genderOrder === 'MALES_FIRST'
+        ? startTime
+        : new Date(
+            startTime.getTime() +
+              sharedReservation.femalesDurationHours * 60 * 60 * 1000
+          );
+    const femalesStart =
+      sharedReservation.genderOrder === 'FEMALES_FIRST'
+        ? startTime
+        : new Date(
+            startTime.getTime() +
+              sharedReservation.malesDurationHours * 60 * 60 * 1000
+          );
+
+    const malesEnd = new Date(
+      malesStart.getTime() +
+        sharedReservation.malesDurationHours * 60 * 60 * 1000
+    );
+    const femalesEnd = new Date(
+      femalesStart.getTime() +
+        sharedReservation.femalesDurationHours * 60 * 60 * 1000
+    );
 
     return `Women: ${formatTime(femalesStart)} - ${formatTime(femalesEnd)}\nMen: ${formatTime(malesStart)} - ${formatTime(malesEnd)}`;
   }
 
   if (!sharedReservation) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
           <p className="text-gray-600">Loading shared sauna...</p>
         </div>
       </div>
@@ -193,49 +233,57 @@ export default function JoinSharedPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
+      <header className="border-b border-gray-200 bg-white">
         <div className="container mx-auto px-4 py-4">
           <Button
             variant="ghost"
             onClick={() => router.push(`/app/islands/${islandId}`)}
             className="mb-2"
           >
-            <ChevronLeft className="w-4 h-4 mr-1" />
+            <ChevronLeft className="mr-1 h-4 w-4" />
             Back
           </Button>
-          <h1 className="text-2xl font-bold text-gray-900">Join Shared Sauna</h1>
-          <p className="text-gray-500">{sharedReservation.name || 'Shared Sauna'}</p>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Join Shared Sauna
+          </h1>
+          <p className="text-gray-500">
+            {sharedReservation.name || 'Shared Sauna'}
+          </p>
         </div>
       </header>
 
       {/* Progress Indicator */}
       {step !== 'details' && (
-        <div className="bg-white border-b border-gray-200">
+        <div className="border-b border-gray-200 bg-white">
           <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center justify-between max-w-md mx-auto">
-              <StepIndicator 
-                active={step === 'boat'} 
-                completed={['party-size', 'confirm', 'success'].includes(step)} 
-                number={1} 
-                label="Boat" 
+            <div className="mx-auto flex max-w-md items-center justify-between">
+              <StepIndicator
+                active={step === 'boat'}
+                completed={['party-size', 'confirm', 'success'].includes(step)}
+                number={1}
+                label="Boat"
               />
-              <div className="flex-1 h-0.5 bg-gray-200 mx-2">
-                <div className={`h-full transition-all ${['party-size', 'confirm', 'success'].includes(step) ? 'bg-purple-600' : 'bg-gray-200'}`} />
+              <div className="mx-2 h-0.5 flex-1 bg-gray-200">
+                <div
+                  className={`h-full transition-all ${['party-size', 'confirm', 'success'].includes(step) ? 'bg-purple-600' : 'bg-gray-200'}`}
+                />
               </div>
-              <StepIndicator 
-                active={step === 'party-size'} 
-                completed={['confirm', 'success'].includes(step)} 
-                number={2} 
-                label="Party" 
+              <StepIndicator
+                active={step === 'party-size'}
+                completed={['confirm', 'success'].includes(step)}
+                number={2}
+                label="Party"
               />
-              <div className="flex-1 h-0.5 bg-gray-200 mx-2">
-                <div className={`h-full transition-all ${['confirm', 'success'].includes(step) ? 'bg-purple-600' : 'bg-gray-200'}`} />
+              <div className="mx-2 h-0.5 flex-1 bg-gray-200">
+                <div
+                  className={`h-full transition-all ${['confirm', 'success'].includes(step) ? 'bg-purple-600' : 'bg-gray-200'}`}
+                />
               </div>
-              <StepIndicator 
-                active={step === 'confirm'} 
-                completed={step === 'success'} 
-                number={3} 
-                label="Confirm" 
+              <StepIndicator
+                active={step === 'confirm'}
+                completed={step === 'success'}
+                number={3}
+                label="Confirm"
               />
             </div>
           </div>
@@ -243,36 +291,36 @@ export default function JoinSharedPage() {
       )}
 
       {/* Content */}
-      <main className="container mx-auto px-4 py-8 max-w-2xl">
+      <main className="container mx-auto max-w-2xl px-4 py-8">
         {/* Step 0: Shared Reservation Details */}
         {step === 'details' && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <UsersIcon className="w-5 h-5 text-purple-600" />
+                <UsersIcon className="h-5 w-5 text-purple-600" />
                 {sharedReservation.name || 'Shared Sauna'}
               </CardTitle>
               <CardDescription>{sharedReservation.sauna.name}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Schedule */}
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Clock className="w-4 h-4 text-purple-600" />
+              <div className="rounded-lg border border-purple-200 bg-purple-50 p-4">
+                <div className="mb-2 flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-purple-600" />
                   <span className="font-medium text-purple-900">Schedule</span>
                 </div>
-                <div className="text-sm text-purple-800 whitespace-pre-line">
+                <div className="whitespace-pre-line text-sm text-purple-800">
                   {getGenderSchedule()}
                 </div>
               </div>
 
               {/* Participants */}
               <div>
-                <h3 className="font-medium text-gray-900 mb-3">
+                <h3 className="mb-3 font-medium text-gray-900">
                   Current Participants ({sharedReservation.participants.length})
                 </h3>
                 {sharedReservation.participants.length === 0 ? (
-                  <p className="text-sm text-gray-500 text-center py-4">
+                  <p className="py-4 text-center text-sm text-gray-500">
                     No participants yet - be the first!
                   </p>
                 ) : (
@@ -280,7 +328,7 @@ export default function JoinSharedPage() {
                     {sharedReservation.participants.map((participant) => (
                       <div
                         key={participant.id}
-                        className="bg-gray-50 border border-gray-200 rounded-lg p-3"
+                        className="rounded-lg border border-gray-200 bg-gray-50 p-3"
                       >
                         <div className="font-medium text-gray-900">
                           {participant.boat.name}
@@ -291,8 +339,10 @@ export default function JoinSharedPage() {
                           </div>
                         )}
                         <div className="text-sm text-gray-500">
-                          {participant.adults} {participant.adults === 1 ? 'adult' : 'adults'}
-                          {participant.kids > 0 && `, ${participant.kids} ${participant.kids === 1 ? 'kid' : 'kids'}`}
+                          {participant.adults}{' '}
+                          {participant.adults === 1 ? 'adult' : 'adults'}
+                          {participant.kids > 0 &&
+                            `, ${participant.kids} ${participant.kids === 1 ? 'kid' : 'kids'}`}
                         </div>
                       </div>
                     ))}
@@ -315,11 +365,13 @@ export default function JoinSharedPage() {
           <Card>
             <CardHeader>
               <CardTitle>Select Your Boat</CardTitle>
-              <CardDescription>Search by boat name or membership number</CardDescription>
+              <CardDescription>
+                Search by boat name or membership number
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="relative">
-                <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
                   placeholder="Search boats..."
                   value={searchQuery}
@@ -329,28 +381,34 @@ export default function JoinSharedPage() {
               </div>
 
               {error && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                <div className="rounded-md border border-red-200 bg-red-50 p-3">
                   <p className="text-sm text-red-600">{error}</p>
                 </div>
               )}
 
-              <div className="space-y-2 max-h-96 overflow-y-auto">
+              <div className="max-h-96 space-y-2 overflow-y-auto">
                 {boats.map((boat) => (
                   <button
                     key={boat.id}
                     onClick={() => handleBoatSelect(boat)}
                     disabled={loading}
-                    className="w-full text-left p-4 border border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors disabled:opacity-50"
+                    className="w-full rounded-lg border border-gray-200 p-4 text-left transition-colors hover:border-purple-500 hover:bg-purple-50 disabled:opacity-50"
                   >
                     <div className="font-medium text-gray-900">{boat.name}</div>
                     {boat.captainName && (
-                      <div className="text-sm text-gray-600">Captain: {boat.captainName}</div>
+                      <div className="text-sm text-gray-600">
+                        Captain: {boat.captainName}
+                      </div>
                     )}
-                    <div className="text-sm text-gray-500">#{boat.membershipNumber}</div>
+                    <div className="text-sm text-gray-500">
+                      #{boat.membershipNumber}
+                    </div>
                   </button>
                 ))}
                 {searchQuery.length >= 2 && boats.length === 0 && (
-                  <p className="text-center text-gray-500 py-8">No boats found</p>
+                  <p className="py-8 text-center text-gray-500">
+                    No boats found
+                  </p>
                 )}
               </div>
 
@@ -370,12 +428,18 @@ export default function JoinSharedPage() {
           <Card>
             <CardHeader>
               <CardTitle>Party Size</CardTitle>
-              <CardDescription>How many people will be using the sauna?</CardDescription>
+              <CardDescription>
+                How many people will be using the sauna?
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <div className="font-medium text-gray-900">{selectedBoat.name}</div>
-                <div className="text-sm text-gray-500">#{selectedBoat.membershipNumber}</div>
+              <div className="rounded-lg bg-gray-50 p-4">
+                <div className="font-medium text-gray-900">
+                  {selectedBoat.name}
+                </div>
+                <div className="text-sm text-gray-500">
+                  #{selectedBoat.membershipNumber}
+                </div>
               </div>
 
               <div className="space-y-4">
@@ -407,7 +471,11 @@ export default function JoinSharedPage() {
               </div>
 
               <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setStep('boat')} className="flex-1">
+                <Button
+                  variant="outline"
+                  onClick={() => setStep('boat')}
+                  className="flex-1"
+                >
                   Back
                 </Button>
                 <Button
@@ -427,19 +495,25 @@ export default function JoinSharedPage() {
           <Card>
             <CardHeader>
               <CardTitle>Confirm Participation</CardTitle>
-              <CardDescription>Review your details before joining</CardDescription>
+              <CardDescription>
+                Review your details before joining
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
                 <div className="border-b pb-3">
                   <div className="text-sm text-gray-500">Shared Sauna</div>
-                  <div className="font-medium">{sharedReservation.name || 'Shared Sauna'}</div>
-                  <div className="text-sm text-gray-600">{sharedReservation.sauna.name}</div>
+                  <div className="font-medium">
+                    {sharedReservation.name || 'Shared Sauna'}
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    {sharedReservation.sauna.name}
+                  </div>
                 </div>
 
                 <div className="border-b pb-3">
                   <div className="text-sm text-gray-500">Schedule</div>
-                  <div className="text-sm text-gray-900 whitespace-pre-line mt-1">
+                  <div className="mt-1 whitespace-pre-line text-sm text-gray-900">
                     {getGenderSchedule()}
                   </div>
                 </div>
@@ -448,9 +522,13 @@ export default function JoinSharedPage() {
                   <div className="text-sm text-gray-500">Boat</div>
                   <div className="font-medium">{selectedBoat.name}</div>
                   {selectedBoat.captainName && (
-                    <div className="text-sm text-gray-600">Captain: {selectedBoat.captainName}</div>
+                    <div className="text-sm text-gray-600">
+                      Captain: {selectedBoat.captainName}
+                    </div>
                   )}
-                  <div className="text-sm text-gray-500">#{selectedBoat.membershipNumber}</div>
+                  <div className="text-sm text-gray-500">
+                    #{selectedBoat.membershipNumber}
+                  </div>
                 </div>
 
                 <div>
@@ -463,13 +541,17 @@ export default function JoinSharedPage() {
               </div>
 
               {error && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                <div className="rounded-md border border-red-200 bg-red-50 p-3">
                   <p className="text-sm text-red-600">{error}</p>
                 </div>
               )}
 
               <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setStep('party-size')} className="flex-1">
+                <Button
+                  variant="outline"
+                  onClick={() => setStep('party-size')}
+                  className="flex-1"
+                >
                   Back
                 </Button>
                 <Button
@@ -487,14 +569,18 @@ export default function JoinSharedPage() {
         {/* Step 4: Success */}
         {step === 'success' && selectedBoat && (
           <Card>
-            <CardContent className="text-center py-12">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Check className="w-8 h-8 text-purple-600" />
+            <CardContent className="py-12 text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-purple-100">
+                <Check className="h-8 w-8 text-purple-600" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Joined Successfully!</h2>
-              <p className="text-gray-600 mb-6">You&apos;re now part of this shared sauna</p>
+              <h2 className="mb-2 text-2xl font-bold text-gray-900">
+                Joined Successfully!
+              </h2>
+              <p className="mb-6 text-gray-600">
+                You&apos;re now part of this shared sauna
+              </p>
 
-              <div className="bg-purple-50 rounded-lg p-6 mb-6 text-left max-w-sm mx-auto">
+              <div className="mx-auto mb-6 max-w-sm rounded-lg bg-purple-50 p-6 text-left">
                 <div className="space-y-2">
                   <div>
                     <span className="text-sm text-purple-700">Event:</span>
@@ -504,7 +590,7 @@ export default function JoinSharedPage() {
                   </div>
                   <div>
                     <span className="text-sm text-purple-700">Schedule:</span>
-                    <div className="text-sm text-purple-900 whitespace-pre-line">
+                    <div className="whitespace-pre-line text-sm text-purple-900">
                       {getGenderSchedule()}
                     </div>
                   </div>
@@ -527,15 +613,31 @@ export default function JoinSharedPage() {
   );
 }
 
-function StepIndicator({ active, completed, number, label }: { active: boolean; completed: boolean; number: number; label: string }) {
+function StepIndicator({
+  active,
+  completed,
+  number,
+  label,
+}: {
+  active: boolean;
+  completed: boolean;
+  number: number;
+  label: string;
+}) {
   return (
     <div className="flex flex-col items-center">
-      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-medium transition-colors ${
-        completed ? 'bg-purple-600 text-white' : active ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-600'
-      }`}>
-        {completed ? <Check className="w-5 h-5" /> : number}
+      <div
+        className={`flex h-10 w-10 items-center justify-center rounded-full font-medium transition-colors ${
+          completed
+            ? 'bg-purple-600 text-white'
+            : active
+              ? 'bg-purple-600 text-white'
+              : 'bg-gray-200 text-gray-600'
+        }`}
+      >
+        {completed ? <Check className="h-5 w-5" /> : number}
       </div>
-      <span className="text-xs mt-1 text-gray-600">{label}</span>
+      <span className="mt-1 text-xs text-gray-600">{label}</span>
     </div>
   );
 }

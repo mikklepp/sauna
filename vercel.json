@@ -4,7 +4,7 @@
   "framework": "nextjs",
   "installCommand": "npm install",
   "devCommand": "npm run dev",
-  
+
   "headers": [
     {
       "source": "/sw.js",
@@ -29,7 +29,7 @@
       ]
     }
   ],
-  
+
   "crons": [
     {
       "path": "/api/cron/generate-club-sauna",
@@ -40,13 +40,13 @@
       "schedule": "0 20 * * *"
     }
   ],
-  
+
   "rewrites": [
     {
       "source": "/api/:path*",
       "destination": "/api/:path*"
     }
   ],
-  
+
   "regions": ["arn1"]
 }

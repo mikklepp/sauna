@@ -1,7 +1,16 @@
 import { NextRequest } from 'next/server';
 import { requireClubAuth } from '@/lib/auth';
-import { successResponse, errorResponse, handleApiError, getPathParam } from '@/lib/api-utils';
-import { calculateNextAvailable, getCurrentReservation, getFutureReservations } from '@/lib/availability';
+import {
+  successResponse,
+  errorResponse,
+  handleApiError,
+  getPathParam,
+} from '@/lib/api-utils';
+import {
+  calculateNextAvailable,
+  getCurrentReservation,
+  getFutureReservations,
+} from '@/lib/availability';
 import prisma from '@/lib/db';
 import { startOfDay, endOfDay } from 'date-fns';
 
@@ -16,7 +25,7 @@ export async function GET(
   try {
     const club = await requireClubAuth();
     const saunaId = getPathParam(params, 'id');
-    
+
     // Get sauna
     const sauna = await prisma.sauna.findUnique({
       where: { id: saunaId },
@@ -24,15 +33,15 @@ export async function GET(
         island: true,
       },
     });
-    
+
     if (!sauna || sauna.island.clubId !== club.id) {
       return errorResponse('Sauna not found', 404);
     }
-    
+
     // Get all active reservations for today and future
     const now = new Date();
     const todayStart = startOfDay(now);
-    
+
     const reservations = await prisma.reservation.findMany({
       where: {
         saunaId,
@@ -45,13 +54,13 @@ export async function GET(
         startTime: 'asc',
       },
     });
-    
+
     // Get current reservation
     const currentReservation = getCurrentReservation(reservations, now);
-    
+
     // Get future reservations
     const futureReservations = getFutureReservations(reservations, now);
-    
+
     // Calculate next available
     const nextAvailable = calculateNextAvailable(
       sauna,
@@ -59,7 +68,7 @@ export async function GET(
       futureReservations,
       now
     );
-    
+
     // Check for shared reservations today
     const todayEnd = endOfDay(now);
     const sharedReservations = await prisma.sharedReservation.findMany({
@@ -78,7 +87,7 @@ export async function GET(
         },
       },
     });
-    
+
     return successResponse({
       sauna: {
         id: sauna.id,

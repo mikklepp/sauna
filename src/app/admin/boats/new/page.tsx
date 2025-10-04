@@ -1,107 +1,103 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { ArrowLeft } from 'lucide-react'
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ArrowLeft } from 'lucide-react';
 
 interface Club {
-  id: string
-  name: string
+  id: string;
+  name: string;
 }
 
 export default function NewBoatPage() {
-  const router = useRouter()
-  const [clubs, setClubs] = useState<Club[]>([])
-  const [loading, setLoading] = useState(false)
+  const router = useRouter();
+  const [clubs, setClubs] = useState<Club[]>([]);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     membershipNumber: '',
     clubId: '',
     captainName: '',
     phoneNumber: '',
-  })
+  });
 
   useEffect(() => {
-    fetchClubs()
-  }, [])
+    fetchClubs();
+  }, []);
 
   async function fetchClubs() {
     try {
-      const response = await fetch('/api/clubs')
-      if (!response.ok) throw new Error('Failed to fetch clubs')
-      const result = await response.json()
-      const data = result.data || result
-      setClubs(data)
+      const response = await fetch('/api/clubs');
+      if (!response.ok) throw new Error('Failed to fetch clubs');
+      const result = await response.json();
+      const data = result.data || result;
+      setClubs(data);
       if (data.length > 0) {
-        setFormData(prev => ({ ...prev, clubId: data[0].id }))
+        setFormData((prev) => ({ ...prev, clubId: data[0].id }));
       }
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to load clubs')
+      alert(err instanceof Error ? err.message : 'Failed to load clubs');
     }
   }
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!formData.name.trim()) {
-      alert('Please enter a boat name')
-      return
+      alert('Please enter a boat name');
+      return;
     }
 
     if (!formData.membershipNumber.trim()) {
-      alert('Please enter a membership number')
-      return
+      alert('Please enter a membership number');
+      return;
     }
 
     if (!formData.clubId) {
-      alert('Please select a club')
-      return
+      alert('Please select a club');
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
 
     try {
       const payload = {
         ...formData,
         captainName: formData.captainName.trim() || null,
         phoneNumber: formData.phoneNumber.trim() || null,
-      }
+      };
 
       const response = await fetch('/api/boats', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-      })
+      });
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to create boat')
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create boat');
       }
 
-      router.push('/admin/boats')
+      router.push('/admin/boats');
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to create boat')
-      setLoading(false)
+      alert(err instanceof Error ? err.message : 'Failed to create boat');
+      setLoading(false);
     }
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-2xl">
-      <Button
-        variant="outline"
-        onClick={() => router.back()}
-        className="mb-6"
-      >
-        <ArrowLeft className="w-4 h-4 mr-2" />
+    <div className="container mx-auto max-w-2xl px-4 py-8">
+      <Button variant="outline" onClick={() => router.back()} className="mb-6">
+        <ArrowLeft className="mr-2 h-4 w-4" />
         Back
       </Button>
 
       <Card className="p-6">
-        <h1 className="text-2xl font-bold mb-6">Add New Boat</h1>
+        <h1 className="mb-6 text-2xl font-bold">Add New Boat</h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -109,7 +105,9 @@ export default function NewBoatPage() {
             <Input
               id="name"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
               placeholder="e.g., Sea Spirit"
               required
             />
@@ -120,11 +118,13 @@ export default function NewBoatPage() {
             <Input
               id="membershipNumber"
               value={formData.membershipNumber}
-              onChange={(e) => setFormData({ ...formData, membershipNumber: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, membershipNumber: e.target.value })
+              }
               placeholder="e.g., HSC-001"
               required
             />
-            <p className="text-sm text-gray-600 mt-2">
+            <p className="mt-2 text-sm text-gray-600">
               Must be unique within the club.
             </p>
           </div>
@@ -134,8 +134,10 @@ export default function NewBoatPage() {
             <select
               id="clubId"
               value={formData.clubId}
-              onChange={(e) => setFormData({ ...formData, clubId: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) =>
+                setFormData({ ...formData, clubId: e.target.value })
+              }
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             >
               <option value="">Select a club</option>
@@ -146,7 +148,7 @@ export default function NewBoatPage() {
               ))}
             </select>
             {clubs.length === 0 && (
-              <p className="text-sm text-amber-600 mt-2">
+              <p className="mt-2 text-sm text-amber-600">
                 No clubs available. Please create a club first.
               </p>
             )}
@@ -157,7 +159,9 @@ export default function NewBoatPage() {
             <Input
               id="captainName"
               value={formData.captainName}
-              onChange={(e) => setFormData({ ...formData, captainName: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, captainName: e.target.value })
+              }
               placeholder="e.g., John Smith"
             />
           </div>
@@ -168,7 +172,9 @@ export default function NewBoatPage() {
               id="phoneNumber"
               type="tel"
               value={formData.phoneNumber}
-              onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, phoneNumber: e.target.value })
+              }
               placeholder="e.g., +358 40 123 4567"
             />
           </div>
@@ -194,5 +200,5 @@ export default function NewBoatPage() {
         </form>
       </Card>
     </div>
-  )
+  );
 }

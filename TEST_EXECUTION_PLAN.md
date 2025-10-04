@@ -1,6 +1,7 @@
 # Test Execution and Issue Resolution Plan
 
 ## Objective
+
 Run all tests systematically, collect issues, categorize them, and fix them in priority order.
 
 ---
@@ -8,14 +9,17 @@ Run all tests systematically, collect issues, categorize them, and fix them in p
 ## Phase 1: Test Execution & Issue Collection
 
 ### Step 1.1: Run Unit Tests ✅
+
 **Command:** `npm run test -- --run`
 
 **Expected Output:**
+
 - Pass/fail status for each test
 - Any error messages
 - Coverage report
 
 **Action Items:**
+
 - [ ] Execute tests
 - [ ] Document failures
 - [ ] Note any timeout issues
@@ -23,14 +27,17 @@ Run all tests systematically, collect issues, categorize them, and fix them in p
 ---
 
 ### Step 1.2: Run TypeScript Type Check
+
 **Command:** `npm run type-check`
 
 **Expected Output:**
+
 - Type errors with file/line numbers
 - Missing type definitions
 - Type mismatches
 
 **Action Items:**
+
 - [ ] Execute type check
 - [ ] List all type errors
 - [ ] Categorize by severity
@@ -38,14 +45,17 @@ Run all tests systematically, collect issues, categorize them, and fix them in p
 ---
 
 ### Step 1.3: Run Build Process
+
 **Command:** `npm run build`
 
 **Expected Output:**
+
 - Build success/failure
 - ESLint warnings
 - Bundle size information
 
 **Action Items:**
+
 - [ ] Execute build
 - [ ] Collect ESLint warnings
 - [ ] Note any build failures
@@ -53,19 +63,23 @@ Run all tests systematically, collect issues, categorize them, and fix them in p
 ---
 
 ### Step 1.4: Run E2E Tests
+
 **Command:** `npm run test:e2e -- --project=chromium`
 
 **Prerequisites:**
+
 - [ ] Database running
 - [ ] Database seeded with test data
 - [ ] Environment variables configured
 
 **Expected Output:**
+
 - Pass/fail for each test
 - Screenshots of failures
 - Error messages
 
 **Action Items:**
+
 - [ ] Set up test database
 - [ ] Run e2e tests
 - [ ] Document all failures
@@ -76,24 +90,28 @@ Run all tests systematically, collect issues, categorize them, and fix them in p
 ## Phase 2: Issue Analysis & Categorization
 
 ### Category A: Critical Blockers (Fix First)
+
 - TypeScript compilation errors
 - Build failures
 - Database connection issues
 - Missing environment variables
 
 ### Category B: Test Failures (Fix Second)
+
 - Unit test failures
 - E2E test failures due to missing elements
 - Incorrect selectors
 - Missing data-testid attributes
 
 ### Category C: ESLint Warnings (Fix Third)
+
 - React hooks exhaustive-deps warnings
 - Console.log statements
 - Any type usage
 - Unused variables
 
 ### Category D: Improvements (Fix Last)
+
 - Test coverage gaps
 - Performance optimizations
 - Code quality improvements
@@ -103,10 +121,12 @@ Run all tests systematically, collect issues, categorize them, and fix them in p
 ## Phase 3: Systematic Issue Resolution
 
 ### 3.1: Fix Critical Blockers
+
 **Priority:** Highest
 **Goal:** Get build passing
 
 **Approach:**
+
 1. Fix TypeScript errors one file at a time
 2. Add missing type definitions
 3. Fix import/export issues
@@ -115,10 +135,12 @@ Run all tests systematically, collect issues, categorize them, and fix them in p
 ---
 
 ### 3.2: Fix Test Infrastructure
+
 **Priority:** High
 **Goal:** Get tests running
 
 **Approach:**
+
 1. Add missing data-testid attributes to components
 2. Fix test selectors
 3. Ensure test database is properly seeded
@@ -127,10 +149,12 @@ Run all tests systematically, collect issues, categorize them, and fix them in p
 ---
 
 ### 3.3: Fix Failing Tests
+
 **Priority:** High
 **Goal:** Get all tests passing
 
 **Approach:**
+
 1. Fix unit test failures
 2. Fix e2e test failures
 3. Update test expectations if needed
@@ -139,10 +163,12 @@ Run all tests systematically, collect issues, categorize them, and fix them in p
 ---
 
 ### 3.4: Fix ESLint Warnings
+
 **Priority:** Medium
 **Goal:** Clean code, no warnings
 
 **Approach:**
+
 1. Fix React hooks dependencies
 2. Remove or suppress console.log statements
 3. Replace `any` types with proper types
@@ -153,7 +179,9 @@ Run all tests systematically, collect issues, categorize them, and fix them in p
 ## Phase 4: Verification
 
 ### 4.1: Re-run All Tests
+
 **Commands:**
+
 ```bash
 npm run test -- --run          # Unit tests
 npm run type-check             # TypeScript
@@ -162,6 +190,7 @@ npm run test:e2e               # E2E tests
 ```
 
 **Success Criteria:**
+
 - [ ] All unit tests pass
 - [ ] No TypeScript errors
 - [ ] Build succeeds
@@ -172,6 +201,7 @@ npm run test:e2e               # E2E tests
 ---
 
 ### 4.2: Update Documentation
+
 - [ ] Update TEST_RESULTS.md
 - [ ] Document any known issues
 - [ ] Update README if needed
@@ -181,7 +211,9 @@ npm run test:e2e               # E2E tests
 ## Phase 5: Commit & Push
 
 ### 5.1: Create Comprehensive Commit
+
 **Message Template:**
+
 ```
 Fix all test failures and resolve build issues
 
@@ -203,6 +235,7 @@ Test Results:
 ## Issue Tracking Template
 
 ### Issue Log Format
+
 ```markdown
 ## Issue #X: [Brief Description]
 
@@ -210,7 +243,9 @@ Test Results:
 **File:** path/to/file.ts:line
 **Error Message:**
 ```
+
 [Exact error message]
+
 ```
 
 **Root Cause:** [Analysis]
@@ -227,6 +262,7 @@ Test Results:
 ## Quick Reference Commands
 
 ### Test Commands
+
 ```bash
 # Unit tests
 npm run test -- --run
@@ -249,6 +285,7 @@ npm run lint
 ```
 
 ### Database Commands
+
 ```bash
 # Generate Prisma client
 npm run db:generate

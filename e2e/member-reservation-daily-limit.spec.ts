@@ -16,7 +16,12 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
     await page.waitForURL(/\/islands/, { timeout: 10000 });
 
     // Wait for islands to load
-    await page.waitForSelector('[data-testid="island-link"], :text("No islands available")', { timeout: 5000 }).catch(() => {});
+    await page
+      .waitForSelector(
+        '[data-testid="island-link"], :text("No islands available")',
+        { timeout: 5000 }
+      )
+      .catch(() => {});
 
     const islandLinks = page.locator('[data-testid="island-link"]');
     const islandCount = await islandLinks.count();
@@ -36,12 +41,16 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
         await page.waitForLoadState('networkidle');
 
         // Wait for sauna cards to load
-        await page.waitForSelector('[data-testid="sauna-card"]', { timeout: 5000 }).catch(() => {});
+        await page
+          .waitForSelector('[data-testid="sauna-card"]', { timeout: 5000 })
+          .catch(() => {});
 
         const saunaCards = page.locator('[data-testid="sauna-card"]');
-        if (await saunaCards.count() > 0) {
+        if ((await saunaCards.count()) > 0) {
           // Click the Reserve button on the first sauna
-          const reserveButton = saunaCards.first().getByRole('button', { name: /reserve this time/i });
+          const reserveButton = saunaCards
+            .first()
+            .getByRole('button', { name: /reserve this time/i });
           if (await reserveButton.isVisible()) {
             await reserveButton.click();
             await page.waitForURL(/\/islands\/[^/]+\/reserve/);
@@ -61,14 +70,17 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
   /**
    * Helper to create a reservation with a specific boat
    */
-  async function createReservationWithBoat(page: Page, boatSearchTerm: string): Promise<{ success: boolean; error?: string; boatName?: string }> {
+  async function createReservationWithBoat(
+    page: Page,
+    boatSearchTerm: string
+  ): Promise<{ success: boolean; error?: string; boatName?: string }> {
     // Search for boat
     const searchInput = page.getByTestId('boat-search-input');
     await searchInput.fill(boatSearchTerm);
     await page.waitForTimeout(500); // Wait for debounced search
 
     const boatResults = page.locator('[data-testid="boat-result"]');
-    if (await boatResults.count() === 0) {
+    if ((await boatResults.count()) === 0) {
       return { success: false, error: 'No boats found' };
     }
 
@@ -82,12 +94,16 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
 
     await Promise.race([
       adultsInput.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {}),
-      errorMsg.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {})
+      errorMsg.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {}),
     ]);
 
     // Check if we got daily limit error at boat selection
     if (await errorMsg.isVisible().catch(() => false)) {
-      return { success: false, error: 'Daily limit at boat selection', boatName: boatName?.trim() || undefined };
+      return {
+        success: false,
+        error: 'Daily limit at boat selection',
+        boatName: boatName?.trim() || undefined,
+      };
     }
 
     // Verify we're on party size step
@@ -105,7 +121,9 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
     await continueButton.click();
 
     // Click Confirm
-    const confirmButton = page.getByRole('button', { name: /confirm reservation/i });
+    const confirmButton = page.getByRole('button', {
+      name: /confirm reservation/i,
+    });
     await confirmButton.click();
 
     // Wait for either success page or error on confirmation page
@@ -113,8 +131,12 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
     const confirmErrorMsg = page.getByText(/already has a reservation/i);
 
     await Promise.race([
-      successTitle.waitFor({ state: 'visible', timeout: 10000 }).catch(() => {}),
-      confirmErrorMsg.waitFor({ state: 'visible', timeout: 10000 }).catch(() => {})
+      successTitle
+        .waitFor({ state: 'visible', timeout: 10000 })
+        .catch(() => {}),
+      confirmErrorMsg
+        .waitFor({ state: 'visible', timeout: 10000 })
+        .catch(() => {}),
     ]);
 
     // Check if we succeeded
@@ -124,13 +146,19 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
 
     // Check if we got daily limit error at confirmation
     if (await confirmErrorMsg.isVisible().catch(() => false)) {
-      return { success: false, error: 'Daily limit at confirmation', boatName: boatName?.trim() || undefined };
+      return {
+        success: false,
+        error: 'Daily limit at confirmation',
+        boatName: boatName?.trim() || undefined,
+      };
     }
 
     return { success: false, error: 'Unknown error' };
   }
 
-  test('should prevent same boat from reserving twice on same island same day', async ({ page }) => {
+  test('should prevent same boat from reserving twice on same island same day', async ({
+    page,
+  }) => {
     const found = await navigateToReservePage(page);
     if (!found) {
       test.skip();
@@ -146,22 +174,29 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
 
     // Try to create second reservation with same boat on same island
     // Navigate back to reserve page
-    await page.goto(page.url().replace(/\/islands\/[^/]+\/.*$/, match => {
-      const islandId = match.match(/\/islands\/([^/]+)/)?.[1];
-      return `/islands/${islandId}/reserve?saunaId=${new URL(page.url()).searchParams.get('saunaId') || ''}`;
-    }));
+    await page.goto(
+      page.url().replace(/\/islands\/[^/]+\/.*$/, (match) => {
+        const islandId = match.match(/\/islands\/([^/]+)/)?.[1];
+        return `/islands/${islandId}/reserve?saunaId=${new URL(page.url()).searchParams.get('saunaId') || ''}`;
+      })
+    );
     await page.waitForURL(/\/islands\/[^/]+\/reserve/);
     await page.waitForLoadState('networkidle');
 
     // Try to reserve with same boat
-    const secondResult = await createReservationWithBoat(page, firstResult.boatName || 'Test');
+    const secondResult = await createReservationWithBoat(
+      page,
+      firstResult.boatName || 'Test'
+    );
 
     // Should get daily limit error
     expect(secondResult.success).toBe(false);
     expect(secondResult.error).toContain('Daily limit');
   });
 
-  test('should show error message when boat already has reservation on island', async ({ page }) => {
+  test('should show error message when boat already has reservation on island', async ({
+    page,
+  }) => {
     const found = await navigateToReservePage(page);
     if (!found) {
       test.skip();
@@ -191,8 +226,10 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
       const errorMsg = page.getByText(/already has a reservation/i);
 
       await Promise.race([
-        adultsInput.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {}),
-        errorMsg.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {})
+        adultsInput
+          .waitFor({ state: 'visible', timeout: 5000 })
+          .catch(() => {}),
+        errorMsg.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {}),
       ]);
 
       if (await errorMsg.isVisible().catch(() => false)) {
@@ -226,7 +263,7 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
         await page.waitForTimeout(500);
 
         const boatResults2 = page.locator('[data-testid="boat-result"]');
-        if (await boatResults2.count() > 0) {
+        if ((await boatResults2.count()) > 0) {
           await boatResults2.first().click();
 
           const errorMsg = page.getByText(/already has a reservation/i);
@@ -240,12 +277,19 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
     expect(foundError).toBe(true);
   });
 
-  test('should allow same boat to reserve on different islands same day', async ({ page }) => {
+  test('should allow same boat to reserve on different islands same day', async ({
+    page,
+  }) => {
     await page.goto(`/auth?secret=${clubSecret}`);
     await page.waitForURL(/\/islands/, { timeout: 10000 });
 
     // Wait for islands to load
-    await page.waitForSelector('[data-testid="island-link"], :text("No islands available")', { timeout: 5000 }).catch(() => {});
+    await page
+      .waitForSelector(
+        '[data-testid="island-link"], :text("No islands available")',
+        { timeout: 5000 }
+      )
+      .catch(() => {});
 
     const islandLinks = page.locator('[data-testid="island-link"]');
     const islandCount = await islandLinks.count();
@@ -276,11 +320,13 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
     await page.waitForLoadState('networkidle');
 
     const saunaCards = page.locator('[data-testid="sauna-card"]');
-    if (await saunaCards.count() === 0) {
+    if ((await saunaCards.count()) === 0) {
       test.skip();
     }
 
-    const reserveButton = saunaCards.first().getByRole('button', { name: /reserve this time/i });
+    const reserveButton = saunaCards
+      .first()
+      .getByRole('button', { name: /reserve this time/i });
     await reserveButton.click();
     await page.waitForURL(/\/islands\/[^/]+\/reserve/);
 
@@ -300,22 +346,29 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
     await page.waitForLoadState('networkidle');
 
     const saunaCards2 = page.locator('[data-testid="sauna-card"]');
-    if (await saunaCards2.count() === 0) {
+    if ((await saunaCards2.count()) === 0) {
       test.skip();
     }
 
-    const reserveButton2 = saunaCards2.first().getByRole('button', { name: /reserve this time/i });
+    const reserveButton2 = saunaCards2
+      .first()
+      .getByRole('button', { name: /reserve this time/i });
     await reserveButton2.click();
     await page.waitForURL(/\/islands\/[^/]+\/reserve/);
 
     // Try to create reservation with same boat on different island
-    const secondResult = await createReservationWithBoat(page, firstResult.boatName);
+    const secondResult = await createReservationWithBoat(
+      page,
+      firstResult.boatName
+    );
 
     // Should succeed - daily limit is per island
     expect(secondResult.success).toBe(true);
   });
 
-  test('should validate daily limit at confirmation step if reservation created between steps', async ({ page }) => {
+  test('should validate daily limit at confirmation step if reservation created between steps', async ({
+    page,
+  }) => {
     const found = await navigateToReservePage(page);
     if (!found) {
       test.skip();
@@ -327,7 +380,7 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
     await page.waitForTimeout(500);
 
     const boatResults = page.locator('[data-testid="boat-result"]');
-    if (await boatResults.count() === 0) {
+    if ((await boatResults.count()) === 0) {
       test.skip();
     }
 
@@ -340,7 +393,7 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
 
     await Promise.race([
       adultsInput.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {}),
-      errorMsg.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {})
+      errorMsg.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {}),
     ]);
 
     // Skip if boat already has reservation at selection
@@ -358,7 +411,9 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
     await continueButton.click();
 
     // Click Confirm
-    const confirmButton = page.getByRole('button', { name: /confirm reservation/i });
+    const confirmButton = page.getByRole('button', {
+      name: /confirm reservation/i,
+    });
     await confirmButton.click();
 
     // Wait for either success or error
@@ -366,8 +421,12 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
     const confirmErrorMsg = page.getByText(/already has a reservation/i);
 
     await Promise.race([
-      successTitle.waitFor({ state: 'visible', timeout: 10000 }).catch(() => {}),
-      confirmErrorMsg.waitFor({ state: 'visible', timeout: 10000 }).catch(() => {})
+      successTitle
+        .waitFor({ state: 'visible', timeout: 10000 })
+        .catch(() => {}),
+      confirmErrorMsg
+        .waitFor({ state: 'visible', timeout: 10000 })
+        .catch(() => {}),
     ]);
 
     // Either should succeed OR show daily limit error at confirmation

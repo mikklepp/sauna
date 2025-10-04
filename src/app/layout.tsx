@@ -6,7 +6,8 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Sauna Reservation System',
-  description: 'Offline-capable sauna reservation system for island communities',
+  description:
+    'Offline-capable sauna reservation system for island communities',
   manifest: '/manifest.json',
   themeColor: '#0070f3',
   appleWebApp: {

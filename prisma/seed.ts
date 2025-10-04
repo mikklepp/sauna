@@ -261,7 +261,7 @@ async function main() {
     },
   });
 
-  console.log('✅ Created today\'s shared reservation');
+  console.log("✅ Created today's shared reservation");
 
   // Create a sample shared reservation for tomorrow
   const tomorrowStart = new Date(tomorrow);

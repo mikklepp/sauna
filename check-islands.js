@@ -13,16 +13,16 @@ const prisma = new PrismaClient();
     include: {
       _count: {
         select: {
-          saunas: true
-        }
+          saunas: true,
+        },
       },
       saunas: {
         select: {
           id: true,
-          name: true
-        }
-      }
-    }
+          name: true,
+        },
+      },
+    },
   });
 
   console.log('Islands for club', club.name + ':');

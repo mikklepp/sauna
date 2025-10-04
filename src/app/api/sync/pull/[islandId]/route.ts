@@ -1,12 +1,18 @@
 import { NextRequest } from 'next/server';
-import { successResponse, errorResponse, handleApiError, getPathParam, getQueryParam } from '@/lib/api-utils';
+import {
+  successResponse,
+  errorResponse,
+  handleApiError,
+  getPathParam,
+  getQueryParam,
+} from '@/lib/api-utils';
 import prisma from '@/lib/db';
 import { startOfDay } from 'date-fns';
 
 /**
  * GET /api/sync/pull/[islandId]?since=timestamp
  * Pull changes from backend to Island Device
- * 
+ *
  * This allows user-created reservations (via web app) to sync TO the Island Device
  */
 export async function GET(
@@ -16,7 +22,7 @@ export async function GET(
   try {
     const islandId = getPathParam(params, 'islandId');
     const sinceParam = getQueryParam(request, 'since');
-    
+
     // Verify island exists
     const island = await prisma.island.findUnique({
       where: { id: islandId },
@@ -24,40 +30,34 @@ export async function GET(
         saunas: true,
       },
     });
-    
+
     if (!island) {
       return errorResponse('Island not found', 404);
     }
-    
+
     const since = sinceParam ? new Date(sinceParam) : startOfDay(new Date());
-    const saunaIds = island.saunas.map(s => s.id);
-    
+    const saunaIds = island.saunas.map((s) => s.id);
+
     // Get reservations created/modified since timestamp
     const reservations = await prisma.reservation.findMany({
       where: {
         saunaId: {
           in: saunaIds,
         },
-        OR: [
-          { createdAt: { gte: since } },
-          { updatedAt: { gte: since } },
-        ],
+        OR: [{ createdAt: { gte: since } }, { updatedAt: { gte: since } }],
       },
       orderBy: {
         createdAt: 'asc',
       },
     });
-    
+
     // Get shared reservations
     const sharedReservations = await prisma.sharedReservation.findMany({
       where: {
         saunaId: {
           in: saunaIds,
         },
-        OR: [
-          { createdAt: { gte: since } },
-          { updatedAt: { gte: since } },
-        ],
+        OR: [{ createdAt: { gte: since } }, { updatedAt: { gte: since } }],
       },
       include: {
         participants: true,
@@ -66,10 +66,10 @@ export async function GET(
         createdAt: 'asc',
       },
     });
-    
+
     // Format as sync changes
     const changes = [
-      ...reservations.map(r => ({
+      ...reservations.map((r) => ({
         id: crypto.randomUUID(),
         entityType: 'reservation' as const,
         entityId: r.id,
@@ -88,7 +88,7 @@ export async function GET(
         },
         timestamp: r.updatedAt,
       })),
-      ...sharedReservations.flatMap(sr => [
+      ...sharedReservations.flatMap((sr) => [
         {
           id: crypto.randomUUID(),
           entityType: 'shared_reservation' as const,
@@ -110,7 +110,7 @@ export async function GET(
           },
           timestamp: sr.updatedAt,
         },
-        ...sr.participants.map(p => ({
+        ...sr.participants.map((p) => ({
           id: crypto.randomUUID(),
           entityType: 'shared_participant' as const,
           entityId: p.id,
@@ -127,7 +127,7 @@ export async function GET(
         })),
       ]),
     ];
-    
+
     return successResponse({
       islandId,
       changes,

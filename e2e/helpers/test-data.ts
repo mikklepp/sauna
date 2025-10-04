@@ -15,8 +15,10 @@ export async function loginAsAdmin(page: any) {
   await page.getByLabel(/password/i).fill(TEST_ADMIN.password);
 
   // Wait for the login API call to complete after clicking submit
-  const responsePromise = page.waitForResponse((response: any) =>
-    response.url().includes('/api/auth/admin/login') && response.request().method() === 'POST'
+  const responsePromise = page.waitForResponse(
+    (response: any) =>
+      response.url().includes('/api/auth/admin/login') &&
+      response.request().method() === 'POST'
   );
 
   await page.getByRole('button', { name: /sign in/i }).click();

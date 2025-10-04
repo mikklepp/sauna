@@ -7,7 +7,9 @@ test.describe('Admin Authentication', () => {
   });
 
   test('should display login form', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: /admin login/i })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /admin login/i })
+    ).toBeVisible();
     await expect(page.getByLabel(/username/i)).toBeVisible();
     await expect(page.getByLabel(/password/i)).toBeVisible();
     await expect(page.getByRole('button', { name: /sign in/i })).toBeVisible();
@@ -28,8 +30,10 @@ test.describe('Admin Authentication', () => {
     await page.getByLabel(/password/i).fill('admin123');
 
     // Wait for the login API call
-    const responsePromise = page.waitForResponse(response =>
-      response.url().includes('/api/auth/admin/login') && response.request().method() === 'POST'
+    const responsePromise = page.waitForResponse(
+      (response) =>
+        response.url().includes('/api/auth/admin/login') &&
+        response.request().method() === 'POST'
     );
 
     await page.getByRole('button', { name: /sign in/i }).click();
@@ -39,7 +43,9 @@ test.describe('Admin Authentication', () => {
 
     // Should redirect to admin dashboard
     await expect(page).toHaveURL(/\/admin/);
-    await expect(page.getByRole('heading', { name: /admin portal/i })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /admin portal/i })
+    ).toBeVisible();
   });
 
   test('should persist login across page reloads', async ({ page }) => {
@@ -47,8 +53,10 @@ test.describe('Admin Authentication', () => {
     await page.getByLabel(/username/i).fill('admin');
     await page.getByLabel(/password/i).fill('admin123');
 
-    const responsePromise = page.waitForResponse(response =>
-      response.url().includes('/api/auth/admin/login') && response.request().method() === 'POST'
+    const responsePromise = page.waitForResponse(
+      (response) =>
+        response.url().includes('/api/auth/admin/login') &&
+        response.request().method() === 'POST'
     );
 
     await page.getByRole('button', { name: /sign in/i }).click();
@@ -62,10 +70,14 @@ test.describe('Admin Authentication', () => {
 
     // Should still be logged in
     await expect(page).toHaveURL(/\/admin/);
-    await expect(page.getByRole('heading', { name: /admin portal/i })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /admin portal/i })
+    ).toBeVisible();
   });
 
-  test('should redirect to login when accessing protected route without auth', async ({ page }) => {
+  test('should redirect to login when accessing protected route without auth', async ({
+    page,
+  }) => {
     // Try to access admin dashboard without logging in
     await page.goto('/admin');
 
@@ -78,8 +90,10 @@ test.describe('Admin Authentication', () => {
     await page.getByLabel(/username/i).fill('admin');
     await page.getByLabel(/password/i).fill('admin123');
 
-    const responsePromise = page.waitForResponse(response =>
-      response.url().includes('/api/auth/admin/login') && response.request().method() === 'POST'
+    const responsePromise = page.waitForResponse(
+      (response) =>
+        response.url().includes('/api/auth/admin/login') &&
+        response.request().method() === 'POST'
     );
 
     await page.getByRole('button', { name: /sign in/i }).click();
@@ -108,7 +122,9 @@ test.describe('Admin Authentication', () => {
     if (await registerLink.isVisible()) {
       await registerLink.click();
       await expect(page).toHaveURL(/\/admin\/register/);
-      await expect(page.getByRole('heading', { name: /register/i })).toBeVisible();
+      await expect(
+        page.getByRole('heading', { name: /register/i })
+      ).toBeVisible();
     }
   });
 
@@ -128,8 +144,10 @@ test.describe('Admin Authentication', () => {
       await confirmPasswordField.fill(password);
     }
 
-    const responsePromise = page.waitForResponse(response =>
-      response.url().includes('/api/auth/admin/register') && response.request().method() === 'POST'
+    const responsePromise = page.waitForResponse(
+      (response) =>
+        response.url().includes('/api/auth/admin/register') &&
+        response.request().method() === 'POST'
     );
 
     await page.getByRole('button', { name: /register|sign up/i }).click();

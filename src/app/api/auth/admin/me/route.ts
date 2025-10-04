@@ -1,6 +1,10 @@
 import { NextRequest } from 'next/server';
 import { getAdminFromSession } from '@/lib/auth';
-import { successResponse, errorResponse, handleApiError } from '@/lib/api-utils';
+import {
+  successResponse,
+  errorResponse,
+  handleApiError,
+} from '@/lib/api-utils';
 
 /**
  * GET /api/auth/admin/me

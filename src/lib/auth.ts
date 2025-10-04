@@ -204,7 +204,9 @@ export async function setAdminSessionCookie(username: string): Promise<void> {
 /**
  * Get admin from session
  */
-export async function getAdminFromSession(): Promise<{ username: string } | null> {
+export async function getAdminFromSession(): Promise<{
+  username: string;
+} | null> {
   const cookieStore = cookies();
   const token = cookieStore.get('admin_session');
 
@@ -292,12 +294,12 @@ export async function verifyDeviceToken(
  */
 export function validateCronSecret(providedSecret: string): boolean {
   const cronSecret = process.env.CRON_SECRET;
-  
+
   if (!cronSecret) {
     console.warn('CRON_SECRET not set - cron endpoints are not protected');
     return true; // Allow in development
   }
-  
+
   return providedSecret === cronSecret;
 }
 

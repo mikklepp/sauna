@@ -1,98 +1,94 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { ArrowLeft } from 'lucide-react'
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ArrowLeft } from 'lucide-react';
 
 interface Island {
-  id: string
-  name: string
+  id: string;
+  name: string;
   club: {
-    name: string
-  }
+    name: string;
+  };
 }
 
 export default function NewSaunaPage() {
-  const router = useRouter()
-  const [islands, setIslands] = useState<Island[]>([])
-  const [loading, setLoading] = useState(false)
+  const router = useRouter();
+  const [islands, setIslands] = useState<Island[]>([]);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     islandId: '',
     heatingTimeHours: 2,
     autoClubSaunaEnabled: false,
-  })
+  });
 
   useEffect(() => {
-    fetchIslands()
-  }, [])
+    fetchIslands();
+  }, []);
 
   async function fetchIslands() {
     try {
-      const response = await fetch('/api/islands')
-      if (!response.ok) throw new Error('Failed to fetch islands')
-      const result = await response.json()
-      const data = result.data || result
-      setIslands(data)
+      const response = await fetch('/api/islands');
+      if (!response.ok) throw new Error('Failed to fetch islands');
+      const result = await response.json();
+      const data = result.data || result;
+      setIslands(data);
       if (data.length > 0) {
-        setFormData(prev => ({ ...prev, islandId: data[0].id }))
+        setFormData((prev) => ({ ...prev, islandId: data[0].id }));
       }
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to load islands')
+      alert(err instanceof Error ? err.message : 'Failed to load islands');
     }
   }
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!formData.name.trim()) {
-      alert('Please enter a sauna name')
-      return
+      alert('Please enter a sauna name');
+      return;
     }
 
     if (!formData.islandId) {
-      alert('Please select an island')
-      return
+      alert('Please select an island');
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
 
     try {
       const response = await fetch('/api/saunas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
-      })
+      });
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to create sauna')
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create sauna');
       }
 
-      router.push('/admin/saunas')
+      router.push('/admin/saunas');
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to create sauna')
-      setLoading(false)
+      alert(err instanceof Error ? err.message : 'Failed to create sauna');
+      setLoading(false);
     }
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-2xl">
-      <Button
-        variant="outline"
-        onClick={() => router.back()}
-        className="mb-6"
-      >
-        <ArrowLeft className="w-4 h-4 mr-2" />
+    <div className="container mx-auto max-w-2xl px-4 py-8">
+      <Button variant="outline" onClick={() => router.back()} className="mb-6">
+        <ArrowLeft className="mr-2 h-4 w-4" />
         Back
       </Button>
 
       <Card className="p-6">
-        <h1 className="text-2xl font-bold mb-6">Create New Sauna</h1>
+        <h1 className="mb-6 text-2xl font-bold">Create New Sauna</h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -100,7 +96,9 @@ export default function NewSaunaPage() {
             <Input
               id="name"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
               placeholder="e.g., Main Sauna"
               required
             />
@@ -111,8 +109,10 @@ export default function NewSaunaPage() {
             <select
               id="islandId"
               value={formData.islandId}
-              onChange={(e) => setFormData({ ...formData, islandId: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) =>
+                setFormData({ ...formData, islandId: e.target.value })
+              }
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             >
               <option value="">Select an island</option>
@@ -123,7 +123,7 @@ export default function NewSaunaPage() {
               ))}
             </select>
             {islands.length === 0 && (
-              <p className="text-sm text-amber-600 mt-2">
+              <p className="mt-2 text-sm text-amber-600">
                 No islands available. Please create an island first.
               </p>
             )}
@@ -134,8 +134,13 @@ export default function NewSaunaPage() {
             <select
               id="heatingTimeHours"
               value={formData.heatingTimeHours}
-              onChange={(e) => setFormData({ ...formData, heatingTimeHours: parseInt(e.target.value) })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  heatingTimeHours: parseInt(e.target.value),
+                })
+              }
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             >
               <option value="1">1 hour</option>
@@ -143,7 +148,7 @@ export default function NewSaunaPage() {
               <option value="3">3 hours</option>
               <option value="4">4 hours</option>
             </select>
-            <p className="text-sm text-gray-600 mt-2">
+            <p className="mt-2 text-sm text-gray-600">
               Time needed to heat the sauna before use.
             </p>
           </div>
@@ -153,15 +158,21 @@ export default function NewSaunaPage() {
               type="checkbox"
               id="autoClubSaunaEnabled"
               checked={formData.autoClubSaunaEnabled}
-              onChange={(e) => setFormData({ ...formData, autoClubSaunaEnabled: e.target.checked })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  autoClubSaunaEnabled: e.target.checked,
+                })
+              }
               className="mt-1"
             />
             <div className="flex-1">
               <Label htmlFor="autoClubSaunaEnabled" className="cursor-pointer">
                 Enable Auto Club Sauna
               </Label>
-              <p className="text-sm text-gray-600 mt-1">
-                Automatically create shared &ldquo;Club Sauna&rdquo; reservations during peak season (Jun-Aug daily, May/Sep Fri-Sat)
+              <p className="mt-1 text-sm text-gray-600">
+                Automatically create shared &ldquo;Club Sauna&rdquo;
+                reservations during peak season (Jun-Aug daily, May/Sep Fri-Sat)
               </p>
             </div>
           </div>
@@ -187,5 +198,5 @@ export default function NewSaunaPage() {
         </form>
       </Card>
     </div>
-  )
+  );
 }

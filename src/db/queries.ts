@@ -20,14 +20,14 @@ export async function createReservation(
 ): Promise<string> {
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
-  
+
   await db.reservations.add({
     ...reservation,
     id,
     createdAt: now,
     syncStatus: 'pending',
   });
-  
+
   // Add to sync queue
   await addToSyncQueue({
     entityType: 'reservation',
@@ -36,7 +36,7 @@ export async function createReservation(
     data: { ...reservation, id, createdAt: now },
     timestamp: new Date(),
   });
-  
+
   return id;
 }
 
@@ -49,15 +49,15 @@ export async function getReservationsForSaunaDate(
 ): Promise<LocalReservation[]> {
   const dayStart = startOfDay(date).toISOString();
   const dayEnd = endOfDay(date).toISOString();
-  
+
   return db.reservations
     .where('saunaId')
     .equals(saunaId)
-    .and(r => {
+    .and((r) => {
       const startTime = new Date(r.startTime);
       return startTime >= new Date(dayStart) && startTime <= new Date(dayEnd);
     })
-    .and(r => r.status === 'ACTIVE')
+    .and((r) => r.status === 'ACTIVE')
     .toArray();
 }
 
@@ -66,13 +66,13 @@ export async function getReservationsForSaunaDate(
  */
 export async function cancelReservation(reservationId: string): Promise<void> {
   const now = new Date().toISOString();
-  
+
   await db.reservations.update(reservationId, {
     status: 'CANCELLED',
     cancelledAt: now,
     syncStatus: 'pending',
   });
-  
+
   // Add to sync queue
   const reservation = await db.reservations.get(reservationId);
   if (reservation) {
@@ -96,35 +96,37 @@ export async function hasBoatReservationToday(
 ): Promise<boolean> {
   // Get all saunas for the island
   const saunas = await db.saunas.where('islandId').equals(islandId).toArray();
-  const saunaIds = saunas.map(s => s.id);
-  
+  const saunaIds = saunas.map((s) => s.id);
+
   const dayStart = startOfDay(date).toISOString();
   const dayEnd = endOfDay(date).toISOString();
-  
+
   // Check individual reservations
   const individualReservation = await db.reservations
     .where('boatId')
     .equals(boatId)
-    .and(r => saunaIds.includes(r.saunaId))
-    .and(r => {
+    .and((r) => saunaIds.includes(r.saunaId))
+    .and((r) => {
       const startTime = new Date(r.startTime);
       return startTime >= new Date(dayStart) && startTime <= new Date(dayEnd);
     })
-    .and(r => r.status === 'ACTIVE')
+    .and((r) => r.status === 'ACTIVE')
     .first();
-  
+
   if (individualReservation) {
     return true;
   }
-  
+
   // Check shared reservation participation
   const sharedParticipation = await db.sharedParticipants
     .where('boatId')
     .equals(boatId)
     .toArray();
-  
+
   for (const participant of sharedParticipation) {
-    const sharedRes = await db.sharedReservations.get(participant.sharedReservationId);
+    const sharedRes = await db.sharedReservations.get(
+      participant.sharedReservationId
+    );
     if (sharedRes && saunaIds.includes(sharedRes.saunaId)) {
       const resDate = new Date(sharedRes.date);
       if (resDate >= new Date(dayStart) && resDate <= new Date(dayEnd)) {
@@ -132,7 +134,7 @@ export async function hasBoatReservationToday(
       }
     }
   }
-  
+
   return false;
 }
 
@@ -147,13 +149,13 @@ export async function createSharedReservation(
   sharedReservation: Omit<LocalSharedReservation, 'id' | 'syncStatus'>
 ): Promise<string> {
   const id = crypto.randomUUID();
-  
+
   await db.sharedReservations.add({
     ...sharedReservation,
     id,
     syncStatus: 'pending',
   });
-  
+
   // Add to sync queue
   await addToSyncQueue({
     entityType: 'shared_reservation',
@@ -162,7 +164,7 @@ export async function createSharedReservation(
     data: { ...sharedReservation, id },
     timestamp: new Date(),
   });
-  
+
   return id;
 }
 
@@ -174,11 +176,11 @@ export async function getSharedReservationsForSaunaDate(
   date: Date
 ): Promise<LocalSharedReservation[]> {
   const dateStr = startOfDay(date).toISOString().split('T')[0];
-  
+
   return db.sharedReservations
     .where('saunaId')
     .equals(saunaId)
-    .and(sr => sr.date.startsWith(dateStr))
+    .and((sr) => sr.date.startsWith(dateStr))
     .toArray();
 }
 
@@ -193,7 +195,7 @@ export async function joinSharedReservation(
 ): Promise<string> {
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
-  
+
   await db.sharedParticipants.add({
     id,
     sharedReservationId,
@@ -203,7 +205,7 @@ export async function joinSharedReservation(
     joinedAt: now,
     syncStatus: 'pending',
   });
-  
+
   // Add to sync queue
   await addToSyncQueue({
     entityType: 'shared_participant',
@@ -212,7 +214,7 @@ export async function joinSharedReservation(
     data: { id, sharedReservationId, boatId, adults, kids, joinedAt: now },
     timestamp: new Date(),
   });
-  
+
   return id;
 }
 
@@ -226,7 +228,7 @@ export async function getSharedReservationParticipants(
     .where('sharedReservationId')
     .equals(sharedReservationId)
     .toArray();
-  
+
   const result = [];
   for (const participant of participants) {
     const boat = await db.boats.get(participant.boatId);
@@ -234,7 +236,7 @@ export async function getSharedReservationParticipants(
       result.push({ ...participant, boat });
     }
   }
-  
+
   return result;
 }
 
@@ -246,27 +248,29 @@ export async function cancelAndConvertSharedReservation(
   conversions: { boatId: string; startTime: Date; endTime: Date }[]
 ): Promise<void> {
   const now = new Date().toISOString();
-  
+
   // Update shared reservation
   await db.sharedReservations.update(sharedReservationId, {
     autoCancelledAt: now,
     convertedToIndividual: true,
     syncStatus: 'pending',
   });
-  
+
   // Get shared reservation details
   const sharedRes = await db.sharedReservations.get(sharedReservationId);
   if (!sharedRes) return;
-  
+
   // Get participants for their adult/kid counts
   const participants = await db.sharedParticipants
     .where('sharedReservationId')
     .equals(sharedReservationId)
     .toArray();
-  
+
   // Create individual reservations for conversions
   for (const conversion of conversions) {
-    const participant = participants.find(p => p.boatId === conversion.boatId);
+    const participant = participants.find(
+      (p) => p.boatId === conversion.boatId
+    );
     if (participant) {
       await createReservation({
         saunaId: sharedRes.saunaId,
@@ -280,7 +284,7 @@ export async function cancelAndConvertSharedReservation(
       });
     }
   }
-  
+
   // Add to sync queue
   await addToSyncQueue({
     entityType: 'shared_reservation',
@@ -298,15 +302,19 @@ export async function cancelAndConvertSharedReservation(
 /**
  * Search boats by name or membership number
  */
-export async function searchBoats(query: string, clubId: string): Promise<LocalBoat[]> {
+export async function searchBoats(
+  query: string,
+  clubId: string
+): Promise<LocalBoat[]> {
   const lowerQuery = query.toLowerCase();
-  
+
   return db.boats
     .where('clubId')
     .equals(clubId)
-    .and(boat => 
-      boat.name.toLowerCase().includes(lowerQuery) ||
-      boat.membershipNumber.toLowerCase().includes(lowerQuery)
+    .and(
+      (boat) =>
+        boat.name.toLowerCase().includes(lowerQuery) ||
+        boat.membershipNumber.toLowerCase().includes(lowerQuery)
     )
     .toArray();
 }
@@ -331,18 +339,22 @@ export async function getBoatByMembershipNumber(
 /**
  * Get all saunas for an island
  */
-export async function getSaunasForIsland(islandId: string): Promise<LocalSauna[]> {
+export async function getSaunasForIsland(
+  islandId: string
+): Promise<LocalSauna[]> {
   return db.saunas.where('islandId').equals(islandId).toArray();
 }
 
 /**
  * Get saunas eligible for Club Sauna
  */
-export async function getClubSaunaEligibleSaunas(islandId: string): Promise<LocalSauna[]> {
+export async function getClubSaunaEligibleSaunas(
+  islandId: string
+): Promise<LocalSauna[]> {
   return db.saunas
     .where('islandId')
     .equals(islandId)
-    .and(s => s.autoClubSaunaEnabled === true)
+    .and((s) => s.autoClubSaunaEnabled === true)
     .toArray();
 }
 
@@ -355,7 +367,9 @@ import type { SyncChange } from '@/types';
 /**
  * Add a change to the sync queue
  */
-export async function addToSyncQueue(change: Omit<SyncChange, 'id'>): Promise<void> {
+export async function addToSyncQueue(
+  change: Omit<SyncChange, 'id'>
+): Promise<void> {
   await db.syncQueue.add({
     ...change,
     id: crypto.randomUUID(),

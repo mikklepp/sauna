@@ -97,18 +97,21 @@ This system provides three main interfaces:
 ### Data Flow
 
 **User Web App (Online)**
+
 ```
 User Action → API → Postgres → Backend Sync → Island Device (if online)
                                               └→ Queued if offline
 ```
 
 **Island Device (Offline)**
+
 ```
 User Action → IndexedDB (immediate) → Sync Queue
                                     └→ Backend when online
 ```
 
 **Conflict Resolution**
+
 - Island Device data is ALWAYS the source of truth
 - Backend syncs TO Island Device, not from it
 - User Web App changes are pending until Island Device confirms
@@ -118,6 +121,7 @@ User Action → IndexedDB (immediate) → Sync Queue
 ### Core Functionality
 
 #### Individual Reservations
+
 - Book next available time slot only (no advance booking)
 - 1-hour duration, starting at top of hour
 - 15-minute cancellation cutoff
@@ -125,6 +129,7 @@ User Action → IndexedDB (immediate) → Sync Queue
 - Heating time consideration (configurable per sauna)
 
 #### Shared Sauna Reservations
+
 - Multiple boats can participate
 - Configurable gender schedule (e.g., Women 21:00-22:00, Men 22:00-23:00)
 - Can be created for any future date
@@ -132,6 +137,7 @@ User Action → IndexedDB (immediate) → Sync Queue
 - Not counted toward daily individual reservation limit
 
 #### Automatic "Club Sauna" Feature
+
 - Auto-creates shared reservations during peak season:
   - **High Season**: Every day in June, July, August
   - **Shoulder Season**: Every Friday/Saturday in May, September
@@ -143,18 +149,21 @@ User Action → IndexedDB (immediate) → Sync Queue
 - Backend redundancy for web-only access
 
 #### Boat Management
+
 - Search by boat name (primary) or membership number (secondary)
 - Daily reservation limit enforced
 - Optional captain name and phone number
 - Bulk CSV import/export
 
 #### Club Theming
+
 - Customizable logo upload
 - Primary and secondary color configuration
 - Applied dynamically based on club context
 - Logo displayed in navigation and headers
 
 #### Reporting
+
 - Annual statistics per sauna and boat
 - Separate tracking for individual vs shared reservations
 - CSV and PDF export
@@ -173,6 +182,7 @@ User Action → IndexedDB (immediate) → Sync Queue
 ## Technology Stack
 
 ### Frontend
+
 - **Framework**: Next.js 14.2+ (App Router)
 - **Language**: TypeScript (strict mode)
 - **UI Components**: shadcn/ui + Radix UI
@@ -182,6 +192,7 @@ User Action → IndexedDB (immediate) → Sync Queue
 - **Server State**: TanStack Query (React Query)
 
 ### Backend
+
 - **API**: Next.js API Routes (REST)
 - **Database**: Vercel Postgres
 - **ORM**: Prisma
@@ -189,12 +200,14 @@ User Action → IndexedDB (immediate) → Sync Queue
 - **Scheduled Jobs**: Vercel Cron Functions
 
 ### PWA & Offline
+
 - **PWA Framework**: next-pwa
 - **Service Worker**: Workbox
 - **Local Database**: IndexedDB + Dexie.js
 - **Background Tasks**: Web Workers + Periodic Background Sync API
 
 ### Development
+
 - **Testing**: Vitest, React Testing Library, Playwright
 - **Linting**: ESLint (strict)
 - **Formatting**: Prettier
@@ -202,6 +215,7 @@ User Action → IndexedDB (immediate) → Sync Queue
 - **CI/CD**: GitHub Actions
 
 ### Deployment
+
 - **Platform**: Vercel
 - **Environment**: Node.js 20+
 - **Build Tool**: Turbo (optional for monorepo)
@@ -336,17 +350,20 @@ sauna-reservation-system/
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/your-org/sauna-reservation-system.git
 cd sauna-reservation-system
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Set up environment variables:
+
 ```bash
 cp .env.example .env
 ```
@@ -354,6 +371,7 @@ cp .env.example .env
 Edit `.env` with your configuration (see [Environment Variables](#environment-variables))
 
 4. Set up the database:
+
 ```bash
 # Generate Prisma client
 npx prisma generate
@@ -366,11 +384,13 @@ npx prisma db seed
 ```
 
 5. Start the development server:
+
 ```bash
 npm run dev
 ```
 
 6. Open your browser:
+
 - Admin Portal: http://localhost:3000/admin
 - User App: http://localhost:3000/app
 - Island Device: http://localhost:3000/island-device
@@ -502,6 +522,7 @@ See `prisma/schema.prisma` for the complete schema definition.
 All user-facing endpoints require club secret authentication via cookie or header.
 
 **Validate Club Secret**
+
 ```
 POST /api/auth/validate-club-secret
 Body: { secret: string }
@@ -621,12 +642,14 @@ The Island Device mode is a Progressive Web App with full offline capabilities:
 ### Service Worker Strategy
 
 **Static Assets**: Cache-first with cache invalidation
+
 ```javascript
 // CSS, JS, images, fonts
 precacheAndRoute([...])
 ```
 
 **API Calls**: Network-first with offline fallback
+
 ```javascript
 // Reservations, availability checks
 registerRoute(
@@ -639,18 +662,19 @@ registerRoute(
 ```
 
 **Background Sync**: Queue operations when offline
+
 ```javascript
 // Reservations made offline
 const bgSyncPlugin = new BackgroundSyncPlugin('reservations-queue', {
-  maxRetentionTime: 24 * 60 // 24 hours
-})
+  maxRetentionTime: 24 * 60, // 24 hours
+});
 ```
 
 ### IndexedDB Schema
 
 ```javascript
 // Dexie.js schema
-const db = new Dexie('SaunaReservations')
+const db = new Dexie('SaunaReservations');
 
 db.version(1).stores({
   clubs: 'id, secret',
@@ -660,13 +684,14 @@ db.version(1).stores({
   reservations: 'id, saunaId, startTime, boatId',
   sharedReservations: 'id, saunaId, date',
   sharedParticipants: 'id, sharedReservationId, boatId',
-  syncQueue: '++id, timestamp, type'
-})
+  syncQueue: '++id, timestamp, type',
+});
 ```
 
 ### Web Workers for Scheduled Jobs
 
 **Midnight Job** - Generate Club Sauna
+
 ```javascript
 // workers/club-sauna-generator.ts
 // Runs at 00:00 local time
@@ -676,6 +701,7 @@ db.version(1).stores({
 ```
 
 **20:00 Job** - Evaluate Club Sauna
+
 ```javascript
 // workers/club-sauna-evaluator.ts
 // Runs at 20:00 local time
@@ -690,6 +716,7 @@ db.version(1).stores({
 See [docs/ISLAND_DEVICE.md](docs/ISLAND_DEVICE.md) for complete setup guide.
 
 **Quick Setup**:
+
 1. Admin assigns device to island in portal
 2. Navigate to `/island-device/setup?token=[setup-token]`
 3. Download configuration package
@@ -699,13 +726,13 @@ See [docs/ISLAND_DEVICE.md](docs/ISLAND_DEVICE.md) for complete setup guide.
 
 ### Browser Support
 
-| Feature | Chrome/Edge | Safari | Firefox |
-|---------|-------------|--------|---------|
-| Service Worker | ✅ | ✅ | ✅ |
-| IndexedDB | ✅ | ✅ | ✅ |
-| Background Sync | ✅ | ⚠️ Limited | ⚠️ Limited |
-| Periodic Sync | ✅ | ❌ | ❌ |
-| Web Workers | ✅ | ✅ | ✅ |
+| Feature         | Chrome/Edge | Safari     | Firefox    |
+| --------------- | ----------- | ---------- | ---------- |
+| Service Worker  | ✅          | ✅         | ✅         |
+| IndexedDB       | ✅          | ✅         | ✅         |
+| Background Sync | ✅          | ⚠️ Limited | ⚠️ Limited |
+| Periodic Sync   | ✅          | ❌         | ❌         |
+| Web Workers     | ✅          | ✅         | ✅         |
 
 **Fallback Strategy**: For browsers without Periodic Background Sync, Web Workers run scheduled tasks when the app is open.
 
@@ -714,17 +741,21 @@ See [docs/ISLAND_DEVICE.md](docs/ISLAND_DEVICE.md) for complete setup guide.
 ### Backend Jobs (Vercel Cron)
 
 **Generate Club Sauna** - Daily at 00:00 UTC
+
 ```
 0 0 * * * → /api/cron/generate-club-sauna
 ```
+
 - Creates shared reservations for eligible saunas
 - Checks date against season rules (June-Aug, May/Sept Fri-Sat)
 - Default schedule: Women 21:00-22:00, Men 22:00-23:00
 
 **Evaluate Club Sauna** - Daily at 20:00 UTC
+
 ```
 0 20 * * * → /api/cron/evaluate-club-sauna
 ```
+
 - Counts participants for today's Club Sauna
 - Cancels and converts if < 3 boats
 - Creates individual reservations automatically
@@ -732,6 +763,7 @@ See [docs/ISLAND_DEVICE.md](docs/ISLAND_DEVICE.md) for complete setup guide.
 ### Island Device Jobs (Web Workers)
 
 Same logic runs locally on Island Device:
+
 - Uses device's local time (not UTC)
 - Works completely offline
 - No internet connectivity required
@@ -749,11 +781,13 @@ Same logic runs locally on Island Device:
 ### Unit Tests
 
 Run with Vitest:
+
 ```bash
 npm test
 ```
 
 Test files located in `tests/unit/`:
+
 - Business logic (availability, validation)
 - Utility functions
 - React hooks
@@ -762,11 +796,13 @@ Test files located in `tests/unit/`:
 ### Integration Tests
 
 Test API endpoints:
+
 ```bash
 npm run test:integration
 ```
 
 Test files located in `tests/integration/`:
+
 - API route handlers
 - Database interactions
 - Authentication flows
@@ -775,11 +811,13 @@ Test files located in `tests/integration/`:
 ### E2E Tests
 
 Run with Playwright:
+
 ```bash
 npm run test:e2e
 ```
 
 Test files located in `tests/e2e/`:
+
 - User reservation flows
 - Admin configuration
 - Island Device offline mode
@@ -788,11 +826,13 @@ Test files located in `tests/e2e/`:
 ### PWA Tests
 
 Test offline functionality:
+
 ```bash
 npm run test:pwa
 ```
 
 Includes:
+
 - Service worker caching
 - IndexedDB operations
 - Background sync
@@ -801,6 +841,7 @@ Includes:
 ### Coverage
 
 Generate coverage report:
+
 ```bash
 npm run test:coverage
 ```
@@ -814,11 +855,13 @@ Target: 80%+ coverage for critical paths
 The application is designed for Vercel with automatic deployments:
 
 **Environments**:
+
 - **Production**: `main` branch → production.vercel.app
 - **Staging**: `develop` branch → staging.vercel.app
 - **Preview**: Pull requests → unique preview URLs
 
 **Setup**:
+
 1. Connect GitHub repository to Vercel
 2. Configure environment variables in Vercel dashboard
 3. Set up Vercel Postgres database
@@ -832,6 +875,7 @@ See [Environment Variables](#environment-variables) section.
 ### Database Migrations
 
 Production migrations:
+
 ```bash
 # Run migrations
 npx prisma migrate deploy
@@ -845,6 +889,7 @@ Vercel runs these automatically via build script.
 ### Cron Configuration
 
 Add to `vercel.json`:
+
 ```json
 {
   "crons": [
@@ -863,6 +908,7 @@ Add to `vercel.json`:
 ### Custom Domains
 
 Configure per-club custom domains in Vercel:
+
 - club1.saunareservations.com → Admin sets club1 as identifier
 - club2.saunareservations.com → Admin sets club2 as identifier
 
@@ -957,6 +1003,7 @@ CRON_SECRET="your-random-secret"
 ### Common Issues
 
 **Database Connection Errors**
+
 ```bash
 # Check DATABASE_URL is correct
 echo $DATABASE_URL
@@ -969,6 +1016,7 @@ npx prisma migrate reset
 ```
 
 **PWA Not Installing**
+
 ```bash
 # Check manifest is accessible
 curl http://localhost:3000/manifest.json
@@ -981,6 +1029,7 @@ curl http://localhost:3000/manifest.json
 ```
 
 **Scheduled Jobs Not Running (Island Device)**
+
 ```bash
 # Check Web Worker is running
 # DevTools → Sources → Web Workers
@@ -993,6 +1042,7 @@ curl http://localhost:3000/manifest.json
 ```
 
 **Sync Issues**
+
 ```bash
 # Check sync queue in IndexedDB
 # DevTools → Application → IndexedDB → syncQueue
@@ -1007,6 +1057,7 @@ curl http://localhost:3000/manifest.json
 ### Debug Mode
 
 Enable debug logging:
+
 ```bash
 # In .env.local
 DEBUG=true
@@ -1014,6 +1065,7 @@ NEXT_PUBLIC_DEBUG=true
 ```
 
 View logs:
+
 - Browser console for frontend logs
 - Vercel logs for backend/API logs
 - Service worker logs in DevTools
@@ -1021,16 +1073,19 @@ View logs:
 ### Performance Issues
 
 **Slow API Responses**
+
 - Check database indexes
 - Review Prisma query performance
 - Enable query logging: `prisma.log = ['query']`
 
 **Large Bundle Size**
+
 - Run bundle analyzer: `npm run analyze`
 - Check for duplicate dependencies
 - Lazy load heavy components
 
 **Slow PWA**
+
 - Reduce IndexedDB data size
 - Optimize service worker cache strategy
 - Profile with Lighthouse
@@ -1042,6 +1097,7 @@ View logs:
 ## Support
 
 For issues and questions:
+
 - GitHub Issues: [repository-url]/issues
 - Documentation: [repository-url]/docs
 - Email: support@saunareservations.com

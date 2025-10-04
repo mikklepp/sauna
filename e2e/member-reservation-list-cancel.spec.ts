@@ -16,7 +16,12 @@ test.describe('Member Reservation List View & Cancellation', () => {
     await page.waitForURL(/\/islands/, { timeout: 10000 });
 
     // Wait for islands to load
-    await page.waitForSelector('[data-testid="island-link"], :text("No islands available")', { timeout: 5000 }).catch(() => {});
+    await page
+      .waitForSelector(
+        '[data-testid="island-link"], :text("No islands available")',
+        { timeout: 5000 }
+      )
+      .catch(() => {});
 
     const islandLinks = page.locator('[data-testid="island-link"]');
     const islandCount = await islandLinks.count();
@@ -36,12 +41,16 @@ test.describe('Member Reservation List View & Cancellation', () => {
         await page.waitForLoadState('networkidle');
 
         // Wait for sauna cards to load
-        await page.waitForSelector('[data-testid="sauna-card"]', { timeout: 5000 }).catch(() => {});
+        await page
+          .waitForSelector('[data-testid="sauna-card"]', { timeout: 5000 })
+          .catch(() => {});
 
         const saunaCards = page.locator('[data-testid="sauna-card"]');
-        if (await saunaCards.count() > 0) {
+        if ((await saunaCards.count()) > 0) {
           // Click "View All Reservations" on first sauna
-          const viewButton = saunaCards.first().getByRole('button', { name: /view all reservations/i });
+          const viewButton = saunaCards
+            .first()
+            .getByRole('button', { name: /view all reservations/i });
           if (await viewButton.isVisible()) {
             await viewButton.click();
             await page.waitForURL(/\/reservations$/);
@@ -75,7 +84,9 @@ test.describe('Member Reservation List View & Cancellation', () => {
     const noReservations = page.getByText(/no reservations/i);
 
     const hasUpcoming = await upcomingHeading.isVisible().catch(() => false);
-    const hasNoReservations = await noReservations.isVisible().catch(() => false);
+    const hasNoReservations = await noReservations
+      .isVisible()
+      .catch(() => false);
 
     expect(hasUpcoming || hasNoReservations).toBe(true);
   });
@@ -95,10 +106,14 @@ test.describe('Member Reservation List View & Cancellation', () => {
 
     // Should navigate back to island detail page
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await expect(page.locator('[data-testid="sauna-card"]').first()).toBeVisible({ timeout: 5000 });
+    await expect(
+      page.locator('[data-testid="sauna-card"]').first()
+    ).toBeVisible({ timeout: 5000 });
   });
 
-  test('should display upcoming reservations section when reservations exist', async ({ page }) => {
+  test('should display upcoming reservations section when reservations exist', async ({
+    page,
+  }) => {
     const found = await navigateToReservationsList(page);
     if (!found) {
       test.skip();
@@ -123,14 +138,18 @@ test.describe('Member Reservation List View & Cancellation', () => {
     expect(timeText).toMatch(/\d{1,2}:\d{2}\s?(AM|PM)?/i);
   });
 
-  test('should display past reservations in "Earlier Today" section', async ({ page }) => {
+  test('should display past reservations in "Earlier Today" section', async ({
+    page,
+  }) => {
     const found = await navigateToReservationsList(page);
     if (!found) {
       test.skip();
     }
 
     // Check if there are past reservations
-    const earlierHeading = page.getByRole('heading', { name: /earlier today/i });
+    const earlierHeading = page.getByRole('heading', {
+      name: /earlier today/i,
+    });
     const hasEarlier = await earlierHeading.isVisible().catch(() => false);
 
     if (!hasEarlier) {
@@ -144,16 +163,22 @@ test.describe('Member Reservation List View & Cancellation', () => {
     // Past reservations should be displayed (somewhat dimmed/muted)
     // They should not have cancel buttons
     const earlierSection = page.locator('div', { has: earlierHeading });
-    const reservations = earlierSection.locator('div').filter({ hasText: /\d{1,2}:\d{2}/ });
+    const reservations = earlierSection
+      .locator('div')
+      .filter({ hasText: /\d{1,2}:\d{2}/ });
 
-    if (await reservations.count() > 0) {
+    if ((await reservations.count()) > 0) {
       // Verify no cancel button in past reservations
-      const cancelButtons = earlierSection.getByRole('button').filter({ hasText: /cancel|x/i });
+      const cancelButtons = earlierSection
+        .getByRole('button')
+        .filter({ hasText: /cancel|x/i });
       expect(await cancelButtons.count()).toBe(0);
     }
   });
 
-  test('should show boat information in reservation cards', async ({ page }) => {
+  test('should show boat information in reservation cards', async ({
+    page,
+  }) => {
     const found = await navigateToReservationsList(page);
     if (!found) {
       test.skip();
@@ -161,7 +186,9 @@ test.describe('Member Reservation List View & Cancellation', () => {
 
     // Check if there are any reservations
     const upcomingHeading = page.getByRole('heading', { name: /upcoming/i });
-    const hasReservations = await upcomingHeading.isVisible().catch(() => false);
+    const hasReservations = await upcomingHeading
+      .isVisible()
+      .catch(() => false);
 
     if (!hasReservations) {
       test.skip();
@@ -169,14 +196,19 @@ test.describe('Member Reservation List View & Cancellation', () => {
 
     // Get first reservation
     const upcomingSection = page.locator('div', { has: upcomingHeading });
-    const firstReservation = upcomingSection.locator('div').filter({ hasText: /\d{1,2}:\d{2}/ }).first();
+    const firstReservation = upcomingSection
+      .locator('div')
+      .filter({ hasText: /\d{1,2}:\d{2}/ })
+      .first();
 
     // Should show boat information (look for membership number pattern)
     const boatInfo = firstReservation.locator('text=#').first();
     await expect(boatInfo).toBeVisible();
   });
 
-  test('should show party size (adults and kids) in reservation cards', async ({ page }) => {
+  test('should show party size (adults and kids) in reservation cards', async ({
+    page,
+  }) => {
     const found = await navigateToReservationsList(page);
     if (!found) {
       test.skip();
@@ -184,7 +216,9 @@ test.describe('Member Reservation List View & Cancellation', () => {
 
     // Check if there are any reservations
     const upcomingHeading = page.getByRole('heading', { name: /upcoming/i });
-    const hasReservations = await upcomingHeading.isVisible().catch(() => false);
+    const hasReservations = await upcomingHeading
+      .isVisible()
+      .catch(() => false);
 
     if (!hasReservations) {
       test.skip();
@@ -198,7 +232,9 @@ test.describe('Member Reservation List View & Cancellation', () => {
     expect(reservationText).toMatch(/\d+\s+adult/i);
   });
 
-  test('should show cancel button for upcoming reservations (>15 min before start)', async ({ page }) => {
+  test('should show cancel button for upcoming reservations (>15 min before start)', async ({
+    page,
+  }) => {
     const found = await navigateToReservationsList(page);
     if (!found) {
       test.skip();
@@ -206,7 +242,9 @@ test.describe('Member Reservation List View & Cancellation', () => {
 
     // Check if there are upcoming reservations
     const upcomingHeading = page.getByRole('heading', { name: /upcoming/i });
-    const hasReservations = await upcomingHeading.isVisible().catch(() => false);
+    const hasReservations = await upcomingHeading
+      .isVisible()
+      .catch(() => false);
 
     if (!hasReservations) {
       test.skip();
@@ -218,12 +256,17 @@ test.describe('Member Reservation List View & Cancellation', () => {
 
     // Should have cancel button OR "Too late to cancel" message
     const hasCancelButton = await cancelButton.isVisible().catch(() => false);
-    const tooLateMsg = await page.getByText(/too late to cancel/i).isVisible().catch(() => false);
+    const tooLateMsg = await page
+      .getByText(/too late to cancel/i)
+      .isVisible()
+      .catch(() => false);
 
     expect(hasCancelButton || tooLateMsg).toBe(true);
   });
 
-  test('should show "Too late to cancel" for reservations starting in <15 minutes', async ({ page }) => {
+  test('should show "Too late to cancel" for reservations starting in <15 minutes', async ({
+    page,
+  }) => {
     const found = await navigateToReservationsList(page);
     if (!found) {
       test.skip();
@@ -243,11 +286,15 @@ test.describe('Member Reservation List View & Cancellation', () => {
 
     // Verify no cancel button is shown for this reservation
     const parentSection = page.locator('div', { has: tooLateMsg });
-    const cancelButton = parentSection.getByRole('button').filter({ hasText: /x/i });
+    const cancelButton = parentSection
+      .getByRole('button')
+      .filter({ hasText: /x/i });
     expect(await cancelButton.count()).toBe(0);
   });
 
-  test('should open cancel confirmation dialog when clicking cancel button', async ({ page }) => {
+  test('should open cancel confirmation dialog when clicking cancel button', async ({
+    page,
+  }) => {
     const found = await navigateToReservationsList(page);
     if (!found) {
       test.skip();
@@ -255,7 +302,9 @@ test.describe('Member Reservation List View & Cancellation', () => {
 
     // Find a cancellable reservation
     const upcomingHeading = page.getByRole('heading', { name: /upcoming/i });
-    const hasReservations = await upcomingHeading.isVisible().catch(() => false);
+    const hasReservations = await upcomingHeading
+      .isVisible()
+      .catch(() => false);
 
     if (!hasReservations) {
       test.skip();
@@ -273,7 +322,9 @@ test.describe('Member Reservation List View & Cancellation', () => {
     await cancelButton.click();
 
     // Should open confirmation dialog
-    await expect(page.getByRole('heading', { name: /cancel reservation/i })).toBeVisible({ timeout: 2000 });
+    await expect(
+      page.getByRole('heading', { name: /cancel reservation/i })
+    ).toBeVisible({ timeout: 2000 });
     await expect(page.getByText(/are you sure/i)).toBeVisible();
 
     // Should show reservation details in dialog
@@ -281,7 +332,9 @@ test.describe('Member Reservation List View & Cancellation', () => {
     await expect(page.getByText(/boat:/i)).toBeVisible();
   });
 
-  test('should close cancel dialog when clicking "Keep Reservation"', async ({ page }) => {
+  test('should close cancel dialog when clicking "Keep Reservation"', async ({
+    page,
+  }) => {
     const found = await navigateToReservationsList(page);
     if (!found) {
       test.skip();
@@ -303,20 +356,26 @@ test.describe('Member Reservation List View & Cancellation', () => {
     await cancelButton.click();
 
     // Wait for dialog
-    await expect(page.getByRole('heading', { name: /cancel reservation/i })).toBeVisible({ timeout: 2000 });
+    await expect(
+      page.getByRole('heading', { name: /cancel reservation/i })
+    ).toBeVisible({ timeout: 2000 });
 
     // Click "Keep Reservation"
     const keepButton = page.getByRole('button', { name: /keep reservation/i });
     await keepButton.click();
 
     // Dialog should close
-    await expect(page.getByRole('heading', { name: /cancel reservation/i })).not.toBeVisible({ timeout: 2000 });
+    await expect(
+      page.getByRole('heading', { name: /cancel reservation/i })
+    ).not.toBeVisible({ timeout: 2000 });
 
     // Reservation should still be in the list
     await expect(upcomingHeading).toBeVisible();
   });
 
-  test('should successfully cancel reservation when confirming', async ({ page }) => {
+  test('should successfully cancel reservation when confirming', async ({
+    page,
+  }) => {
     const found = await navigateToReservationsList(page);
     if (!found) {
       test.skip();
@@ -336,13 +395,18 @@ test.describe('Member Reservation List View & Cancellation', () => {
     }
 
     // Get the count of reservations before cancellation
-    const reservationsBeforeCount = await upcomingSection.locator('div').filter({ hasText: /\d{1,2}:\d{2}/ }).count();
+    const reservationsBeforeCount = await upcomingSection
+      .locator('div')
+      .filter({ hasText: /\d{1,2}:\d{2}/ })
+      .count();
 
     // Click cancel
     await cancelButton.click();
 
     // Wait for dialog and confirm
-    await expect(page.getByRole('heading', { name: /cancel reservation/i })).toBeVisible({ timeout: 2000 });
+    await expect(
+      page.getByRole('heading', { name: /cancel reservation/i })
+    ).toBeVisible({ timeout: 2000 });
 
     const confirmButton = page.getByRole('button', { name: /confirm cancel/i });
     await confirmButton.click();
@@ -351,16 +415,23 @@ test.describe('Member Reservation List View & Cancellation', () => {
     await page.waitForTimeout(1000);
 
     // Check result - either the reservation is removed OR the list shows "No reservations"
-    const stillHasUpcoming = await upcomingHeading.isVisible().catch(() => false);
+    const stillHasUpcoming = await upcomingHeading
+      .isVisible()
+      .catch(() => false);
 
     if (stillHasUpcoming) {
       // If still has upcoming, count should be less
-      const reservationsAfterCount = await upcomingSection.locator('div').filter({ hasText: /\d{1,2}:\d{2}/ }).count();
+      const reservationsAfterCount = await upcomingSection
+        .locator('div')
+        .filter({ hasText: /\d{1,2}:\d{2}/ })
+        .count();
       expect(reservationsAfterCount).toBeLessThan(reservationsBeforeCount);
     } else {
       // No more upcoming reservations, should show "No reservations" or just "Earlier Today"
       const noReservations = page.getByText(/no reservations/i);
-      const earlierToday = page.getByRole('heading', { name: /earlier today/i });
+      const earlierToday = page.getByRole('heading', {
+        name: /earlier today/i,
+      });
 
       const hasNoMsg = await noReservations.isVisible().catch(() => false);
       const hasEarlier = await earlierToday.isVisible().catch(() => false);

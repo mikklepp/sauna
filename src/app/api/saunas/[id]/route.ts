@@ -1,6 +1,16 @@
 import { NextRequest } from 'next/server';
-import { requireAdminAuth, requireClubAuth, getAdminFromSession } from '@/lib/auth';
-import { parseRequestBody, successResponse, errorResponse, handleApiError, getPathParam } from '@/lib/api-utils';
+import {
+  requireAdminAuth,
+  requireClubAuth,
+  getAdminFromSession,
+} from '@/lib/auth';
+import {
+  parseRequestBody,
+  successResponse,
+  errorResponse,
+  handleApiError,
+  getPathParam,
+} from '@/lib/api-utils';
 import prisma from '@/lib/db';
 
 /**
@@ -76,20 +86,20 @@ export async function PUT(
   try {
     await requireAdminAuth();
     const saunaId = getPathParam(params, 'id');
-    const body = await parseRequestBody(request) as {
+    const body = (await parseRequestBody(request)) as {
       name?: string;
       heatingTimeHours?: number;
       autoClubSaunaEnabled?: boolean;
     };
-    
+
     const existing = await prisma.sauna.findUnique({
       where: { id: saunaId },
     });
-    
+
     if (!existing) {
       return errorResponse('Sauna not found', 404);
     }
-    
+
     const updated = await prisma.sauna.update({
       where: { id: saunaId },
       data: {
@@ -105,7 +115,7 @@ export async function PUT(
         },
       },
     });
-    
+
     return successResponse(updated);
   } catch (error) {
     return handleApiError(error);
@@ -123,19 +133,19 @@ export async function DELETE(
   try {
     await requireAdminAuth();
     const saunaId = getPathParam(params, 'id');
-    
+
     const existing = await prisma.sauna.findUnique({
       where: { id: saunaId },
     });
-    
+
     if (!existing) {
       return errorResponse('Sauna not found', 404);
     }
-    
+
     await prisma.sauna.delete({
       where: { id: saunaId },
     });
-    
+
     return successResponse({ message: 'Sauna deleted successfully' });
   } catch (error) {
     return handleApiError(error);

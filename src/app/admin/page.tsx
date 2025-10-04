@@ -1,4 +1,11 @@
-import { Building2, MapPin, Waves, Users, Calendar, Activity } from 'lucide-react';
+import {
+  Building2,
+  MapPin,
+  Waves,
+  Users,
+  Calendar,
+  Activity,
+} from 'lucide-react';
 
 export default async function AdminDashboard() {
   // In a real implementation, fetch these stats from the API
@@ -15,55 +22,55 @@ export default async function AdminDashboard() {
     <div className="p-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-500 mt-2">
+        <p className="mt-2 text-gray-500">
           Overview of the sauna reservation system
         </p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         <StatCard
           title="Clubs"
           value={stats.clubs}
-          icon={<Building2 className="w-6 h-6" />}
+          icon={<Building2 className="h-6 w-6" />}
           color="blue"
         />
         <StatCard
           title="Islands"
           value={stats.islands}
-          icon={<MapPin className="w-6 h-6" />}
+          icon={<MapPin className="h-6 w-6" />}
           color="green"
         />
         <StatCard
           title="Saunas"
           value={stats.saunas}
-          icon={<Waves className="w-6 h-6" />}
+          icon={<Waves className="h-6 w-6" />}
           color="purple"
         />
         <StatCard
           title="Boats"
           value={stats.boats}
-          icon={<Users className="w-6 h-6" />}
+          icon={<Users className="h-6 w-6" />}
           color="orange"
         />
         <StatCard
           title="Reservations Today"
           value={stats.reservationsToday}
-          icon={<Activity className="w-6 h-6" />}
+          icon={<Activity className="h-6 w-6" />}
           color="red"
         />
         <StatCard
           title="Upcoming Shared"
           value={stats.upcomingShared}
-          icon={<Calendar className="w-6 h-6" />}
+          icon={<Calendar className="h-6 w-6" />}
           color="indigo"
         />
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="rounded-lg bg-white p-6 shadow">
+        <h2 className="mb-4 text-xl font-semibold">Quick Actions</h2>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           <QuickActionButton href="/admin/clubs/new">
             Create Club
           </QuickActionButton>
@@ -103,13 +110,15 @@ function StatCard({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="rounded-lg bg-white p-6 shadow">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm text-gray-500 mb-1">{title}</p>
+          <p className="mb-1 text-sm text-gray-500">{title}</p>
           <p className="text-3xl font-bold text-gray-900">{value}</p>
         </div>
-        <div className={`p-3 rounded-lg ${colorClasses[color as keyof typeof colorClasses]}`}>
+        <div
+          className={`rounded-lg p-3 ${colorClasses[color as keyof typeof colorClasses]}`}
+        >
           {icon}
         </div>
       </div>
@@ -127,7 +136,7 @@ function QuickActionButton({
   return (
     <a
       href={href}
-      className="block p-4 text-center bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+      className="block rounded-lg border border-gray-200 bg-gray-50 p-4 text-center transition-colors hover:bg-gray-100"
     >
       <span className="font-medium text-gray-700">{children}</span>
     </a>

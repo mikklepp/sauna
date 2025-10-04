@@ -75,7 +75,7 @@ const nextConfig = {
     if (!isServer) {
       config.output.globalObject = 'self';
     }
-    
+
     return config;
   },
 };
@@ -90,10 +90,10 @@ const pwaConfig = {
   fallbacks: {
     document: '/offline',
   },
-  
+
   // Service worker configuration
   sw: 'sw.js',
-  
+
   // Workbox options
   runtimeCaching: [
     {
@@ -234,7 +234,7 @@ const pwaConfig = {
       },
     },
   ],
-  
+
   // Build-time options
   buildExcludes: [/middleware-manifest\.json$/],
 

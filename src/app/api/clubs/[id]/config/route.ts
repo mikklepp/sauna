@@ -1,6 +1,11 @@
 import { NextRequest } from 'next/server';
 import { requireClubAuth } from '@/lib/auth';
-import { successResponse, errorResponse, handleApiError, getPathParam } from '@/lib/api-utils';
+import {
+  successResponse,
+  errorResponse,
+  handleApiError,
+  getPathParam,
+} from '@/lib/api-utils';
 import prisma from '@/lib/db';
 
 /**
@@ -15,12 +20,12 @@ export async function GET(
   try {
     const authenticatedClub = await requireClubAuth();
     const clubId = getPathParam(params, 'id');
-    
+
     // Verify requesting the right club
     if (authenticatedClub.id !== clubId) {
       return errorResponse('Access denied', 403);
     }
-    
+
     // Get complete club configuration
     const club = await prisma.club.findUnique({
       where: { id: clubId },
@@ -44,11 +49,11 @@ export async function GET(
         },
       },
     });
-    
+
     if (!club) {
       return errorResponse('Club not found', 404);
     }
-    
+
     // Format response for easy consumption
     const config = {
       club: {
@@ -59,18 +64,18 @@ export async function GET(
         secondaryColor: club.secondaryColor,
         timezone: club.timezone,
       },
-      islands: club.islands.map(island => ({
+      islands: club.islands.map((island) => ({
         id: island.id,
         name: island.name,
         numberOfSaunas: island.numberOfSaunas,
-        saunas: island.saunas.map(sauna => ({
+        saunas: island.saunas.map((sauna) => ({
           id: sauna.id,
           name: sauna.name,
           heatingTimeHours: sauna.heatingTimeHours,
           autoClubSaunaEnabled: sauna.autoClubSaunaEnabled,
         })),
       })),
-      boats: club.boats.map(boat => ({
+      boats: club.boats.map((boat) => ({
         id: boat.id,
         name: boat.name,
         membershipNumber: boat.membershipNumber,
@@ -78,7 +83,7 @@ export async function GET(
         phoneNumber: boat.phoneNumber,
       })),
     };
-    
+
     return successResponse(config);
   } catch (error) {
     return handleApiError(error);

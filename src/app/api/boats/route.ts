@@ -4,7 +4,7 @@ import {
   parseRequestBody,
   successResponse,
   errorResponse,
-  handleApiError
+  handleApiError,
 } from '@/lib/api-utils';
 import { createBoatSchema } from '@/lib/validation';
 import prisma from '@/lib/db';
@@ -17,10 +17,10 @@ export async function POST(request: NextRequest) {
   try {
     await requireAdminAuth();
     const body = await parseRequestBody(request);
-    
+
     // Validate input
     const validated = createBoatSchema.parse(body);
-    
+
     // Check if membership number already exists in club
     const existing = await prisma.boat.findFirst({
       where: {
@@ -28,16 +28,19 @@ export async function POST(request: NextRequest) {
         membershipNumber: validated.membershipNumber,
       },
     });
-    
+
     if (existing) {
-      return errorResponse('A boat with this membership number already exists', 409);
+      return errorResponse(
+        'A boat with this membership number already exists',
+        409
+      );
     }
-    
+
     // Create boat
     const boat = await prisma.boat.create({
       data: validated,
     });
-    
+
     return successResponse(boat, 201);
   } catch (error) {
     return handleApiError(error);
