@@ -28,7 +28,8 @@ test.describe('Admin Island Management', () => {
     // Submit form
     await page.getByRole('button', { name: /create|save/i }).click();
 
-    // Should show success message or see the new island in the list
+    // Wait for navigation back to islands list
+    await page.waitForURL(/\/admin\/islands$/);
     await expect(page.getByText(islandName)).toBeVisible();
   });
 
@@ -66,6 +67,9 @@ test.describe('Admin Island Management', () => {
     await clubSelect.selectOption({ index: 1 }); // Select first non-empty option
 
     await page.getByRole('button', { name: /create|save/i }).click();
+
+    // Wait for navigation back to islands list
+    await page.waitForURL(/\/admin\/islands$/);
     await expect(page.getByText(islandName)).toBeVisible();
 
     // Find and delete the island
@@ -102,10 +106,10 @@ test.describe('Admin Sauna Management', () => {
     const islandSelect = page.getByLabel(/island/i);
     await islandSelect.selectOption({ index: 1 }); // Select first non-empty option
 
-    // Set heating time
+    // Set heating time (it's a select dropdown)
     const heatingTimeField = page.getByLabel(/heating time/i);
     if (await heatingTimeField.isVisible()) {
-      await heatingTimeField.fill('2');
+      await heatingTimeField.selectOption('2'); // Select "2 hours"
     }
 
     await page.getByRole('button', { name: /create|save/i }).click();
@@ -175,6 +179,8 @@ test.describe('Admin Boat Management', () => {
 
     await page.getByRole('button', { name: /create|save/i }).click();
 
+    // Wait for navigation back to boats list
+    await page.waitForURL(/\/admin\/boats$/);
     await expect(page.getByText(boatName)).toBeVisible();
     await expect(page.getByText(membershipNumber)).toBeVisible();
   });
@@ -254,6 +260,9 @@ Test CSV Boat,CSV${Date.now()},CSV Captain,555-9999`;
     await clubSelect.selectOption({ index: 1 }); // Select first non-empty option
 
     await page.getByRole('button', { name: /create|save/i }).click();
+
+    // Wait for navigation back to boats list
+    await page.waitForURL(/\/admin\/boats$/);
     await expect(page.getByText(boatName)).toBeVisible();
 
     // Delete the boat
