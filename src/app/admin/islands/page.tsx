@@ -149,6 +149,7 @@ export default function IslandsPage() {
                   size="sm"
                   onClick={() => handleDelete(island.id, island.name)}
                   data-testid="delete-island-button"
+                  aria-label="Delete"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>

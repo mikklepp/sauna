@@ -35,8 +35,8 @@ export const createBoatSchema = z.object({
   clubId: z.string().uuid(),
   name: z.string().min(1).max(100),
   membershipNumber: z.string().min(1).max(50),
-  captainName: z.string().max(100).optional(),
-  phoneNumber: z.string().max(20).optional(),
+  captainName: z.string().max(100).nullable().optional(),
+  phoneNumber: z.string().max(20).nullable().optional(),
 });
 
 export const updateClubThemeSchema = z.object({

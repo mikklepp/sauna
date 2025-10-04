@@ -231,6 +231,7 @@ export default function BoatsPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleDelete(boat.id, boat.name)}
+                        aria-label="Delete"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>

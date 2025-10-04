@@ -72,12 +72,12 @@ test.describe('Admin Island Management', () => {
     await page.waitForURL(/\/admin\/islands$/);
     await expect(page.getByText(islandName)).toBeVisible();
 
-    // Find and delete the island
-    const islandToDelete = page.locator(`text=${islandName}`).locator('..').locator('..');
-    await islandToDelete.getByRole('button', { name: /delete/i }).click();
+    // Find and delete the island using its card
+    const islandCard = page.locator('[data-testid="island-item"]').filter({ hasText: islandName });
 
-    // Confirm deletion
-    await page.getByRole('button', { name: /confirm|yes|delete/i }).click();
+    // Handle the browser confirm dialog
+    page.once('dialog', dialog => dialog.accept());
+    await islandCard.getByRole('button', { name: /delete/i }).click();
 
     // Should no longer be visible
     await expect(page.getByText(islandName)).not.toBeVisible();
@@ -265,11 +265,12 @@ Test CSV Boat,CSV${Date.now()},CSV Captain,555-9999`;
     await page.waitForURL(/\/admin\/boats$/);
     await expect(page.getByText(boatName)).toBeVisible();
 
-    // Delete the boat
-    const boatToDelete = page.locator(`text=${membershipNumber}`).locator('..').locator('..');
-    await boatToDelete.getByRole('button', { name: /delete/i }).click();
+    // Delete the boat - find the row containing the membership number
+    const boatRow = page.getByRole('row', { name: new RegExp(membershipNumber) });
 
-    await page.getByRole('button', { name: /confirm|yes|delete/i }).click();
+    // Handle the browser confirm dialog
+    page.once('dialog', dialog => dialog.accept());
+    await boatRow.getByRole('button', { name: /delete/i }).click();
 
     await expect(page.getByText(membershipNumber)).not.toBeVisible();
   });
