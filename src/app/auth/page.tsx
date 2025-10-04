@@ -23,10 +23,8 @@ export default function AuthPage() {
     if (typeof window !== 'undefined' && !validationInProgress) {
       const urlParams = new URLSearchParams(window.location.search);
       const secretParam = urlParams.get('secret');
-      console.log('Auth page useEffect - secretParam:', secretParam, 'validationInProgress:', validationInProgress);
 
       if (secretParam && !validationInProgress) {
-        console.log('Auto-validating secret:', secretParam);
         validationInProgress = true;
         setSecret(secretParam);
         // Auto-submit the form
@@ -38,11 +36,9 @@ export default function AuthPage() {
 
   async function validateSecret(secretToValidate: string) {
     if (!secretToValidate || secretToValidate.trim().length === 0) {
-      console.log('validateSecret called with empty secret, skipping');
       return;
     }
 
-    console.log('validateSecret called with:', secretToValidate);
     setLoading(true);
     setError('');
 
@@ -54,10 +50,8 @@ export default function AuthPage() {
       });
 
       const data = await response.json();
-      console.log('Validation response:', response.status, data);
 
       if (response.ok && data.success) {
-        console.log('Redirecting to /islands');
         // Use window.location for full page reload to ensure cookies are sent
         window.location.href = '/islands';
       } else {
@@ -65,7 +59,6 @@ export default function AuthPage() {
         setError(data.error || 'Invalid club secret');
       }
     } catch (err) {
-      console.error('Validation error:', err);
       validationInProgress = false;
       setError('Failed to validate secret');
     } finally {

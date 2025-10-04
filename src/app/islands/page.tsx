@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { MapPin, Waves, ChevronRight } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,11 +23,7 @@ export default function IslandsPage() {
   const [islands, setIslands] = useState<IslandData[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchIslands();
-  }, []);
-
-  async function fetchIslands() {
+  const fetchIslands = useCallback(async () => {
     try {
       const response = await fetch('/api/islands');
       if (response.ok) {
@@ -43,11 +39,15 @@ export default function IslandsPage() {
         router.push('/auth');
       }
     } catch (error) {
-      console.error('Failed to fetch islands:', error);
+      // Failed to fetch islands
     } finally {
       setLoading(false);
     }
-  }
+  }, [router]);
+
+  useEffect(() => {
+    fetchIslands();
+  }, [fetchIslands]);
 
   if (loading) {
     return (

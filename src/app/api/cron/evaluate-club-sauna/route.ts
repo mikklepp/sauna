@@ -100,7 +100,8 @@ export async function POST(request: NextRequest) {
           action: 'cancelled_and_converted',
           conversions: evaluation.conversions.length,
         });
-        
+
+        // eslint-disable-next-line no-console
         console.log(
           `Club Sauna ${clubSauna.id} cancelled (${evaluation.participantCount} participants < 3), ` +
           `converted ${evaluation.conversions.length} to individual reservations`
@@ -114,7 +115,8 @@ export async function POST(request: NextRequest) {
           participantCount: evaluation.participantCount,
           action: 'proceeding',
         });
-        
+
+        // eslint-disable-next-line no-console
         console.log(
           `Club Sauna ${clubSauna.id} proceeding (${evaluation.participantCount} participants >= 3)`
         );

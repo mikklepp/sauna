@@ -64,7 +64,6 @@ export default function IslandDeviceSetupPage() {
 
       // Initialize Web Workers for scheduled jobs
       await initializeWorkers()
-      console.log('[Island Device Setup] Workers initialized')
 
       setStep('complete')
     } catch (err) {

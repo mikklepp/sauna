@@ -40,6 +40,7 @@ export async function evaluateClubSaunas(): Promise<EvaluationResult> {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
+    // eslint-disable-next-line no-console
     console.log('[Club Sauna Evaluator] Starting evaluation for today')
 
     // Get all auto-generated Club Sauna reservations for today
@@ -48,6 +49,7 @@ export async function evaluateClubSaunas(): Promise<EvaluationResult> {
       .equals([today.toISOString(), 1])
       .toArray()
 
+    // eslint-disable-next-line no-console
     console.log(`[Club Sauna Evaluator] Found ${clubSaunas.length} Club Saunas to evaluate`)
 
     for (const clubSauna of clubSaunas) {
@@ -62,12 +64,14 @@ export async function evaluateClubSaunas(): Promise<EvaluationResult> {
 
         const participantCount = participants.length
 
+        // eslint-disable-next-line no-console
         console.log(
           `[Club Sauna Evaluator] Club Sauna ${clubSauna.id}: ${participantCount} participants`
         )
 
         // Decision point: < 3 boats = cancel and convert
         if (participantCount < MINIMUM_PARTICIPANTS) {
+          // eslint-disable-next-line no-console
           console.log(
             `[Club Sauna Evaluator] Cancelling (${participantCount} < ${MINIMUM_PARTICIPANTS})`
           )
@@ -142,6 +146,7 @@ export async function evaluateClubSaunas(): Promise<EvaluationResult> {
               // Remove from shared participants
               await db.sharedParticipants.delete(participant.id)
 
+              // eslint-disable-next-line no-console
               console.log(
                 `[Club Sauna Evaluator] Converted boat ${boat.name} to individual reservation`
               )
@@ -150,6 +155,7 @@ export async function evaluateClubSaunas(): Promise<EvaluationResult> {
               const error = `Failed to convert participant ${participant.id}: ${
                 err instanceof Error ? err.message : 'Unknown error'
               }`
+              // eslint-disable-next-line no-console
               console.error(error)
               result.errors.push(error)
             }
@@ -161,6 +167,7 @@ export async function evaluateClubSaunas(): Promise<EvaluationResult> {
             syncStatus: 'pending',
           } as any)
         } else {
+          // eslint-disable-next-line no-console
           console.log(
             `[Club Sauna Evaluator] Proceeding (${participantCount} >= ${MINIMUM_PARTICIPANTS})`
           )
@@ -170,11 +177,13 @@ export async function evaluateClubSaunas(): Promise<EvaluationResult> {
         const error = `Failed to evaluate Club Sauna ${clubSauna.id}: ${
           err instanceof Error ? err.message : 'Unknown error'
         }`
+        // eslint-disable-next-line no-console
         console.error(error)
         result.errors.push(error)
       }
     }
 
+    // eslint-disable-next-line no-console
     console.log(
       `[Club Sauna Evaluator] Complete: ${result.evaluated} evaluated, ${result.cancelled} cancelled, ${result.converted} converted, ${result.proceeded} proceeded`
     )
@@ -184,6 +193,7 @@ export async function evaluateClubSaunas(): Promise<EvaluationResult> {
     const error = `Club Sauna evaluation failed: ${
       err instanceof Error ? err.message : 'Unknown error'
     }`
+    // eslint-disable-next-line no-console
     console.error(error)
     result.errors.push(error)
     return result
@@ -210,6 +220,7 @@ export function scheduleNextRun(): number {
 
   const msUntilRun = nextRun.getTime() - now.getTime()
 
+  // eslint-disable-next-line no-console
   console.log(
     `[Club Sauna Evaluator] Next run scheduled in ${Math.round(msUntilRun / 1000 / 60)} minutes (${nextRun.toLocaleString()})`
   )
@@ -219,6 +230,7 @@ export function scheduleNextRun(): number {
 
 // Self-executing worker setup
 if (typeof self !== 'undefined' && self.addEventListener) {
+  // eslint-disable-next-line no-console
   console.log('[Club Sauna Evaluator] Worker initialized')
 
   // Listen for messages from main thread
@@ -226,6 +238,7 @@ if (typeof self !== 'undefined' && self.addEventListener) {
     const { type } = event.data
 
     if (type === 'RUN_NOW') {
+      // eslint-disable-next-line no-console
       console.log('[Club Sauna Evaluator] Manual run triggered')
       const result = await evaluateClubSaunas()
       self.postMessage({ type: 'COMPLETE', result })

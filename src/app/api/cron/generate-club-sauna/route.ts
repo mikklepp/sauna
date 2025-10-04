@@ -61,8 +61,9 @@ export async function POST(request: NextRequest) {
           name: 'Club Sauna',
         },
       });
-      
+
       if (existing) {
+        // eslint-disable-next-line no-console
         console.log(`Club Sauna already exists for sauna ${sauna.name} on ${tomorrow.toISOString()}`);
         continue;
       }
@@ -97,7 +98,8 @@ export async function POST(request: NextRequest) {
         clubName: sauna.island.club.name,
         date: tomorrow.toISOString(),
       });
-      
+
+      // eslint-disable-next-line no-console
       console.log(`Generated Club Sauna for ${sauna.name} on ${tomorrow.toISOString()}`);
     }
     

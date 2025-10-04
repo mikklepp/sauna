@@ -26,15 +26,18 @@ class WorkerManager {
    */
   async initialize(): Promise<void> {
     if (this.isInitialized) {
+      // eslint-disable-next-line no-console
       console.log('[Worker Manager] Already initialized')
       return
     }
 
     if (typeof window === 'undefined') {
+      // eslint-disable-next-line no-console
       console.log('[Worker Manager] Not in browser environment')
       return
     }
 
+    // eslint-disable-next-line no-console
     console.log('[Worker Manager] Initializing workers...')
 
     try {
@@ -45,8 +48,10 @@ class WorkerManager {
       this.initializeWorker('club-sauna-evaluator')
 
       this.isInitialized = true
+      // eslint-disable-next-line no-console
       console.log('[Worker Manager] All workers initialized')
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('[Worker Manager] Initialization failed:', err)
       throw err
     }
@@ -71,6 +76,7 @@ class WorkerManager {
         const { type: messageType, result } = event.data
 
         if (messageType === 'COMPLETE') {
+          // eslint-disable-next-line no-console
           console.log(`[Worker Manager] ${type} completed:`, result)
           status.lastRun = new Date()
           status.lastResult = result
@@ -81,6 +87,7 @@ class WorkerManager {
 
       // Listen for errors
       worker.addEventListener('error', (event) => {
+        // eslint-disable-next-line no-console
         console.error(`[Worker Manager] ${type} error:`, event.message)
         status.error = event.message
         status.isRunning = false
@@ -91,8 +98,10 @@ class WorkerManager {
       // Start the worker's schedule
       worker.postMessage({ type: 'SCHEDULE' })
 
+      // eslint-disable-next-line no-console
       console.log(`[Worker Manager] ${type} initialized and scheduled`)
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error(`[Worker Manager] Failed to initialize ${type}:`, err)
       throw err
     }
@@ -112,6 +121,7 @@ class WorkerManager {
       throw new Error(`Worker ${type} is already running`)
     }
 
+    // eslint-disable-next-line no-console
     console.log(`[Worker Manager] Manually triggering ${type}`)
     status.isRunning = true
 
@@ -194,11 +204,13 @@ class WorkerManager {
    * Terminate all workers
    */
   terminateAll(): void {
+    // eslint-disable-next-line no-console
     console.log('[Worker Manager] Terminating all workers')
 
     this.workers.forEach((status, type) => {
       if (status.worker) {
         status.worker.terminate()
+        // eslint-disable-next-line no-console
         console.log(`[Worker Manager] Terminated ${type}`)
       }
     })
@@ -216,6 +228,7 @@ class WorkerManager {
     if (status && status.worker) {
       status.worker.terminate()
       this.workers.delete(type)
+      // eslint-disable-next-line no-console
       console.log(`[Worker Manager] Terminated ${type}`)
     }
   }

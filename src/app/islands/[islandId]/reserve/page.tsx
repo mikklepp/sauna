@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { ChevronLeft, Search, Check } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,11 +36,7 @@ export default function ReservePage() {
   const [error, setError] = useState('');
   const [saunaInfo, setSaunaInfo] = useState<any>(null);
 
-  useEffect(() => {
-    fetchSaunaInfo();
-  }, [saunaId]);
-
-  async function fetchSaunaInfo() {
+  const fetchSaunaInfo = useCallback(async () => {
     try {
       const response = await fetch(`/api/saunas/${saunaId}/next-available`);
       if (response.ok) {
@@ -48,11 +44,11 @@ export default function ReservePage() {
         setSaunaInfo(data.data);
       }
     } catch (error) {
-      console.error('Failed to fetch sauna info:', error);
+      // Failed to fetch sauna info
     }
-  }
+  }, [saunaId]);
 
-  async function searchBoats() {
+  const searchBoats = useCallback(async () => {
     if (searchQuery.length < 2) {
       setBoats([]);
       return;
@@ -65,16 +61,20 @@ export default function ReservePage() {
         setBoats(data.data || []);
       }
     } catch (error) {
-      console.error('Failed to search boats:', error);
+      // Failed to search boats
     }
-  }
+  }, [searchQuery]);
+
+  useEffect(() => {
+    fetchSaunaInfo();
+  }, [fetchSaunaInfo]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       searchBoats();
     }, 300);
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchBoats]);
 
   async function handleBoatSelect(boat: Boat) {
     setLoading(true);

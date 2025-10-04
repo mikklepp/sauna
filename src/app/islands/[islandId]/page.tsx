@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Waves, Clock, Users, Calendar, ChevronLeft } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,11 +35,7 @@ export default function IslandSaunasPage() {
   const [loading, setLoading] = useState(true);
   const [islandName, setIslandName] = useState('');
 
-  useEffect(() => {
-    fetchSaunas();
-  }, [islandId]);
-
-  async function fetchSaunas() {
+  const fetchSaunas = useCallback(async () => {
     try {
       // Get island details
       const islandRes = await fetch(`/api/islands/${islandId}`);
@@ -52,7 +48,7 @@ export default function IslandSaunasPage() {
       const saunasRes = await fetch(`/api/saunas?islandId=${islandId}`);
       if (saunasRes.ok) {
         const saunasData = await saunasRes.json();
-        
+
         // Fetch availability for each sauna
         const saunasWithAvailability = await Promise.all(
           (saunasData.data || []).map(async (sauna: any) => {
@@ -64,15 +60,19 @@ export default function IslandSaunasPage() {
             return sauna;
           })
         );
-        
+
         setSaunas(saunasWithAvailability);
       }
     } catch (error) {
-      console.error('Failed to fetch saunas:', error);
+      // Failed to fetch saunas
     } finally {
       setLoading(false);
     }
-  }
+  }, [islandId]);
+
+  useEffect(() => {
+    fetchSaunas();
+  }, [fetchSaunas]);
 
   if (loading) {
     return (

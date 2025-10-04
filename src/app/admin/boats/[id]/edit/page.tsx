@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -35,11 +35,7 @@ export default function EditBoatPage() {
     phoneNumber: '',
   })
 
-  useEffect(() => {
-    fetchBoat()
-  }, [boatId])
-
-  async function fetchBoat() {
+  const fetchBoat = useCallback(async () => {
     try {
       const response = await fetch(`/api/boats/${boatId}`)
       if (!response.ok) throw new Error('Failed to fetch boat')
@@ -58,7 +54,11 @@ export default function EditBoatPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [boatId, router])
+
+  useEffect(() => {
+    fetchBoat()
+  }, [fetchBoat])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()

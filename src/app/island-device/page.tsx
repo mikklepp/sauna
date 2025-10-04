@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -13,6 +13,23 @@ export default function IslandDevicePage() {
   const [isConfigured, setIsConfigured] = useState(false)
   const [isOnline, setIsOnline] = useState(true)
   const [deviceConfig, setDeviceConfig] = useState<any>(null)
+
+  const checkDeviceStatus = useCallback(async () => {
+    try {
+      const config = await getDeviceConfig()
+      setDeviceConfig(config)
+      setIsConfigured(config.isConfigured)
+
+      // If configured, redirect to island view
+      if (config.isConfigured && config.assignedIslandId) {
+        router.push(`/island-device/${config.assignedIslandId}`)
+      }
+    } catch (err) {
+      console.error('Failed to check device status:', err)
+    } finally {
+      setLoading(false)
+    }
+  }, [router])
 
   useEffect(() => {
     checkDeviceStatus()
@@ -28,24 +45,7 @@ export default function IslandDevicePage() {
       window.removeEventListener('online', handleOnline)
       window.removeEventListener('offline', handleOffline)
     }
-  }, [])
-
-  async function checkDeviceStatus() {
-    try {
-      const config = await getDeviceConfig()
-      setDeviceConfig(config)
-      setIsConfigured(config.isConfigured)
-
-      // If configured, redirect to island view
-      if (config.isConfigured && config.assignedIslandId) {
-        router.push(`/island-device/${config.assignedIslandId}`)
-      }
-    } catch (err) {
-      console.error('Failed to check device status:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
+  }, [checkDeviceStatus])
 
   if (loading) {
     return (

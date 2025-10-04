@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -21,17 +21,7 @@ export default function ClubQRCodePage({ params }: { params: { id: string } }) {
   const [club, setClub] = useState<Club | null>(null)
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('')
 
-  useEffect(() => {
-    fetchClub()
-  }, [])
-
-  useEffect(() => {
-    if (club) {
-      generateQRCode()
-    }
-  }, [club])
-
-  async function fetchClub() {
+  const fetchClub = useCallback(async () => {
     try {
       const response = await fetch(`/api/clubs/${params.id}`)
       if (!response.ok) throw new Error('Failed to fetch club')
@@ -43,9 +33,9 @@ export default function ClubQRCodePage({ params }: { params: { id: string } }) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [params.id, router])
 
-  async function generateQRCode() {
+  const generateQRCode = useCallback(async () => {
     if (!club) return
 
     try {
@@ -65,9 +55,19 @@ export default function ClubQRCodePage({ params }: { params: { id: string } }) {
 
       setQrCodeUrl(url)
     } catch (err) {
-      console.error('Failed to generate QR code:', err)
+      // QR code generation failed silently
     }
-  }
+  }, [club])
+
+  useEffect(() => {
+    fetchClub()
+  }, [fetchClub])
+
+  useEffect(() => {
+    if (club) {
+      generateQRCode()
+    }
+  }, [club, generateQRCode])
 
   function downloadQRCode() {
     if (!qrCodeUrl || !club) return

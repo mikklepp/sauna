@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ChevronLeft, Clock, Users, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,11 +36,7 @@ export default function ReservationsListPage() {
     reservation: null,
   });
 
-  useEffect(() => {
-    fetchData();
-  }, [saunaId]);
-
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     try {
       // Get sauna info
       const saunaRes = await fetch(`/api/saunas/${saunaId}`);
@@ -57,11 +53,15 @@ export default function ReservationsListPage() {
         setReservations(resData.data || []);
       }
     } catch (error) {
-      console.error('Failed to fetch data:', error);
+      // Failed to fetch data
     } finally {
       setLoading(false);
     }
-  }
+  }, [saunaId]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   async function handleCancelReservation() {
     if (!cancelDialog.reservation) return;

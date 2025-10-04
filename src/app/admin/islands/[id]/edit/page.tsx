@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -32,11 +32,7 @@ export default function EditIslandPage() {
     numberOfSaunas: 1,
   })
 
-  useEffect(() => {
-    fetchIsland()
-  }, [islandId])
-
-  async function fetchIsland() {
+  const fetchIsland = useCallback(async () => {
     try {
       const response = await fetch(`/api/islands/${islandId}`)
       if (!response.ok) throw new Error('Failed to fetch island')
@@ -53,7 +49,11 @@ export default function EditIslandPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [islandId, router])
+
+  useEffect(() => {
+    fetchIsland()
+  }, [fetchIsland])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()

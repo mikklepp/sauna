@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -58,28 +58,7 @@ export default function ReportsPage() {
     fetchClubs()
   }, [])
 
-  useEffect(() => {
-    if (selectedClubId) {
-      fetchSaunas()
-      fetchBoats()
-    }
-  }, [selectedClubId])
-
-  async function fetchClubs() {
-    try {
-      const response = await fetch('/api/clubs')
-      if (!response.ok) throw new Error('Failed to fetch clubs')
-      const data = await response.json()
-      setClubs(data)
-      if (data.length > 0) {
-        setSelectedClubId(data[0].id)
-      }
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to load clubs')
-    }
-  }
-
-  async function fetchSaunas() {
+  const fetchSaunas = useCallback(async () => {
     try {
       const response = await fetch('/api/saunas')
       if (!response.ok) throw new Error('Failed to fetch saunas')
@@ -92,11 +71,11 @@ export default function ReportsPage() {
         setSelectedSaunaId(clubSaunas[0].id)
       }
     } catch (err) {
-      console.error('Failed to load saunas:', err)
+      // Failed to load saunas
     }
-  }
+  }, [clubs, selectedClubId])
 
-  async function fetchBoats() {
+  const fetchBoats = useCallback(async () => {
     try {
       const response = await fetch(`/api/clubs/${selectedClubId}/boats`)
       if (!response.ok) throw new Error('Failed to fetch boats')
@@ -106,7 +85,28 @@ export default function ReportsPage() {
         setSelectedBoatId(data[0].id)
       }
     } catch (err) {
-      console.error('Failed to load boats:', err)
+      // Failed to load boats
+    }
+  }, [selectedClubId])
+
+  useEffect(() => {
+    if (selectedClubId) {
+      fetchSaunas()
+      fetchBoats()
+    }
+  }, [selectedClubId, fetchSaunas, fetchBoats])
+
+  async function fetchClubs() {
+    try {
+      const response = await fetch('/api/clubs')
+      if (!response.ok) throw new Error('Failed to fetch clubs')
+      const data = await response.json()
+      setClubs(data)
+      if (data.length > 0) {
+        setSelectedClubId(data[0].id)
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to load clubs')
     }
   }
 

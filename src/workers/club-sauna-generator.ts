@@ -85,10 +85,12 @@ export async function generateClubSaunas(): Promise<{
     const config = shouldCreateClubSauna(today)
 
     if (!config.shouldCreate) {
+      // eslint-disable-next-line no-console
       console.log(`[Club Sauna Generator] Skipping: ${config.reason}`)
       return result
     }
 
+    // eslint-disable-next-line no-console
     console.log(`[Club Sauna Generator] Creating Club Saunas: ${config.reason}`)
 
     // Get all saunas with auto Club Sauna enabled
@@ -97,6 +99,7 @@ export async function generateClubSaunas(): Promise<{
       .equals(1) // Dexie uses 1 for true
       .toArray()
 
+    // eslint-disable-next-line no-console
     console.log(`[Club Sauna Generator] Found ${saunas.length} eligible saunas`)
 
     for (const sauna of saunas) {
@@ -108,6 +111,7 @@ export async function generateClubSaunas(): Promise<{
           .first()
 
         if (existing) {
+          // eslint-disable-next-line no-console
           console.log(`[Club Sauna Generator] Already exists for sauna ${sauna.name}`)
           result.skipped++
           continue
@@ -143,20 +147,24 @@ export async function generateClubSaunas(): Promise<{
           syncStatus: 'pending',
         } as any)
 
+        // eslint-disable-next-line no-console
         console.log(`[Club Sauna Generator] Created for sauna ${sauna.name}`)
         result.created++
       } catch (err) {
         const error = `Failed to create Club Sauna for ${sauna.name}: ${err instanceof Error ? err.message : 'Unknown error'}`
+        // eslint-disable-next-line no-console
         console.error(error)
         result.errors.push(error)
       }
     }
 
+    // eslint-disable-next-line no-console
     console.log(`[Club Sauna Generator] Complete: ${result.created} created, ${result.skipped} skipped`)
 
     return result
   } catch (err) {
     const error = `Club Sauna generation failed: ${err instanceof Error ? err.message : 'Unknown error'}`
+    // eslint-disable-next-line no-console
     console.error(error)
     result.errors.push(error)
     return result
@@ -174,6 +182,7 @@ export function scheduleNextRun(): number {
 
   const msUntilMidnight = tomorrow.getTime() - now.getTime()
 
+  // eslint-disable-next-line no-console
   console.log(`[Club Sauna Generator] Next run scheduled in ${Math.round(msUntilMidnight / 1000 / 60)} minutes`)
 
   return msUntilMidnight
@@ -181,6 +190,7 @@ export function scheduleNextRun(): number {
 
 // Self-executing worker setup
 if (typeof self !== 'undefined' && self.addEventListener) {
+  // eslint-disable-next-line no-console
   console.log('[Club Sauna Generator] Worker initialized')
 
   // Listen for messages from main thread
@@ -188,6 +198,7 @@ if (typeof self !== 'undefined' && self.addEventListener) {
     const { type } = event.data
 
     if (type === 'RUN_NOW') {
+      // eslint-disable-next-line no-console
       console.log('[Club Sauna Generator] Manual run triggered')
       const result = await generateClubSaunas()
       self.postMessage({ type: 'COMPLETE', result })

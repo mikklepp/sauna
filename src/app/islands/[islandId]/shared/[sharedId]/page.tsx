@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ChevronLeft, Search, Users as UsersIcon, Clock, Check } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -59,11 +59,7 @@ export default function JoinSharedPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    fetchSharedReservation();
-  }, [sharedId]);
-
-  async function fetchSharedReservation() {
+  const fetchSharedReservation = useCallback(async () => {
     try {
       const response = await fetch(`/api/shared-reservations?saunaId=${sharedId}`);
       if (response.ok) {
@@ -75,11 +71,11 @@ export default function JoinSharedPage() {
         }
       }
     } catch (error) {
-      console.error('Failed to fetch shared reservation:', error);
+      // Failed to fetch shared reservation
     }
-  }
+  }, [sharedId]);
 
-  async function searchBoats() {
+  const searchBoats = useCallback(async () => {
     if (searchQuery.length < 2) {
       setBoats([]);
       return;
@@ -92,16 +88,20 @@ export default function JoinSharedPage() {
         setBoats(data.data || []);
       }
     } catch (error) {
-      console.error('Failed to search boats:', error);
+      // Failed to search boats
     }
-  }
+  }, [searchQuery]);
+
+  useEffect(() => {
+    fetchSharedReservation();
+  }, [fetchSharedReservation]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       searchBoats();
     }, 300);
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchBoats]);
 
   async function handleBoatSelect(boat: Boat) {
     setLoading(true);

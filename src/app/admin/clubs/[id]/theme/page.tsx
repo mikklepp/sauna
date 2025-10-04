@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -33,11 +33,7 @@ export default function ClubThemePage() {
   const [logoFile, setLogoFile] = useState<File | null>(null)
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
 
-  useEffect(() => {
-    fetchClub()
-  }, [clubId])
-
-  async function fetchClub() {
+  const fetchClub = useCallback(async () => {
     try {
       const response = await fetch(`/api/clubs/${clubId}`)
       if (!response.ok) throw new Error('Failed to fetch club')
@@ -55,7 +51,11 @@ export default function ClubThemePage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [clubId, router])
+
+  useEffect(() => {
+    fetchClub()
+  }, [fetchClub])
 
   function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]

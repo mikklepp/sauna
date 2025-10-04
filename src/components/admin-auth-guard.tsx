@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 
 export function AdminAuthGuard({ children }: { children: React.ReactNode }) {
@@ -8,11 +8,7 @@ export function AdminAuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [isChecking, setIsChecking] = useState(true)
 
-  useEffect(() => {
-    checkAuth()
-  }, [])
-
-  async function checkAuth() {
+  const checkAuth = useCallback(async () => {
     // Skip auth check for login/register pages
     if (pathname === '/admin/login' || pathname === '/admin/register') {
       setIsChecking(false)
@@ -43,7 +39,11 @@ export function AdminAuthGuard({ children }: { children: React.ReactNode }) {
       console.error('Auth check failed:', err)
       router.push('/admin/login')
     }
-  }
+  }, [pathname, router])
+
+  useEffect(() => {
+    checkAuth()
+  }, [checkAuth])
 
   if (isChecking) {
     return (

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -36,11 +36,7 @@ export default function EditSaunaPage() {
     autoClubSaunaEnabled: false,
   })
 
-  useEffect(() => {
-    fetchSauna()
-  }, [saunaId])
-
-  async function fetchSauna() {
+  const fetchSauna = useCallback(async () => {
     try {
       const response = await fetch(`/api/saunas/${saunaId}`)
       if (!response.ok) throw new Error('Failed to fetch sauna')
@@ -58,7 +54,11 @@ export default function EditSaunaPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [saunaId, router])
+
+  useEffect(() => {
+    fetchSauna()
+  }, [fetchSauna])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()

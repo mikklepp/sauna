@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -28,33 +28,7 @@ export default function IslandDeviceIslandPage() {
   const [isOnline, setIsOnline] = useState(true)
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle')
 
-  useEffect(() => {
-    checkDeviceAndLoadData()
-
-    // Initialize workers if not already initialized
-    if (!workerManager.isReady()) {
-      initializeWorkers().catch(err => {
-        console.error('[Island Device] Failed to initialize workers:', err)
-      })
-    }
-
-    // Listen for online/offline events
-    const handleOnline = () => {
-      setIsOnline(true)
-      handleSync()
-    }
-    const handleOffline = () => setIsOnline(false)
-
-    window.addEventListener('online', handleOnline)
-    window.addEventListener('offline', handleOffline)
-
-    return () => {
-      window.removeEventListener('online', handleOnline)
-      window.removeEventListener('offline', handleOffline)
-    }
-  }, [islandId])
-
-  async function checkDeviceAndLoadData() {
+  const checkDeviceAndLoadData = useCallback(async () => {
     try {
       // Verify device is configured for this island
       const config = await getDeviceConfig()
@@ -77,15 +51,14 @@ export default function IslandDeviceIslandPage() {
       const saunasData = await db.saunas.where('islandId').equals(islandId).toArray()
       setSaunas(saunasData)
     } catch (err) {
-      console.error('Failed to load device data:', err)
       alert('Failed to load device data. Please reconfigure.')
       router.push('/island-device')
     } finally {
       setLoading(false)
     }
-  }
+  }, [islandId, router])
 
-  async function handleSync() {
+  const handleSync = useCallback(async () => {
     setSyncStatus('syncing')
 
     try {
@@ -111,7 +84,33 @@ export default function IslandDeviceIslandPage() {
       setSyncStatus('error')
       setTimeout(() => setSyncStatus('idle'), 5000)
     }
-  }
+  }, [islandId])
+
+  useEffect(() => {
+    checkDeviceAndLoadData()
+
+    // Initialize workers if not already initialized
+    if (!workerManager.isReady()) {
+      initializeWorkers().catch(() => {
+        // Worker initialization failed
+      })
+    }
+
+    // Listen for online/offline events
+    const handleOnline = () => {
+      setIsOnline(true)
+      handleSync()
+    }
+    const handleOffline = () => setIsOnline(false)
+
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [islandId, checkDeviceAndLoadData, handleSync])
 
   if (loading) {
     return (
