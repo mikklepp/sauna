@@ -35,7 +35,7 @@ export default function IslandsPage() {
         setIslands(data.data || []);
       } else {
         // Redirect to auth if session expired
-        router.push('/app/auth');
+        router.push('/auth');
       }
     } catch (error) {
       console.error('Failed to fetch islands:', error);
@@ -74,7 +74,7 @@ export default function IslandsPage() {
             <CardContent className="text-center py-12">
               <MapPin className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500 mb-4">No islands available</p>
-              <Button variant="outline" onClick={() => router.push('/app/auth')}>
+              <Button variant="outline" onClick={() => router.push('/auth')}>
                 Back to Login
               </Button>
             </CardContent>

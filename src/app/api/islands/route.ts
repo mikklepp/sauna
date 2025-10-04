@@ -1,17 +1,29 @@
 import { NextRequest } from 'next/server';
-import { requireAdminAuth } from '@/lib/auth';
+import { requireAdminAuth, getAdminFromSession, getClubFromSession } from '@/lib/auth';
 import { parseRequestBody, successResponse, errorResponse, handleApiError } from '@/lib/api-utils';
 import prisma from '@/lib/db';
 
 /**
  * GET /api/islands
- * Get all islands (admin only)
+ * Get all islands for the authenticated user (admin or club member)
+ * - Admin: returns all islands
+ * - Club member: returns islands belonging to their club
  */
 export async function GET(_request: NextRequest) {
   try {
-    await requireAdminAuth();
+    // Check if user is admin or club member
+    const admin = await getAdminFromSession();
+    const club = await getClubFromSession();
+
+    if (!admin && !club) {
+      return errorResponse('Unauthorized', 401);
+    }
+
+    // Build query based on user type
+    const whereClause = club ? { clubId: club.id } : {};
 
     const islands = await prisma.island.findMany({
+      where: whereClause,
       include: {
         club: {
           select: {

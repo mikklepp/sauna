@@ -37,7 +37,7 @@ export async function GET(
       validFrom: club.secretValidFrom.toISOString(),
       validUntil: club.secretValidUntil.toISOString(),
       // App URL for direct link
-      appUrl: `${process.env.NEXT_PUBLIC_APP_URL}/app/auth?secret=${club.secret}`,
+      appUrl: `${process.env.NEXT_PUBLIC_APP_URL}/auth?secret=${club.secret}`,
     };
     
     return successResponse({

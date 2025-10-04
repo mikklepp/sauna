@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { QrCode, Key } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,14 +10,41 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 export const dynamic = 'force-dynamic';
 
+// Use a ref to prevent double execution in React Strict Mode
+let validationInProgress = false;
+
 export default function AuthPage() {
   const router = useRouter();
   const [secret, setSecret] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  // Auto-authenticate if secret is provided in URL (QR code flow)
+  useEffect(() => {
+    // Use window.location to get URL params directly (simpler than useSearchParams)
+    if (typeof window !== 'undefined' && !validationInProgress) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const secretParam = urlParams.get('secret');
+      console.log('Auth page useEffect - secretParam:', secretParam, 'validationInProgress:', validationInProgress);
+
+      if (secretParam && !validationInProgress) {
+        console.log('Auto-validating secret:', secretParam);
+        validationInProgress = true;
+        setSecret(secretParam);
+        // Auto-submit the form
+        validateSecret(secretParam);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function validateSecret(secretToValidate: string) {
+    if (!secretToValidate || secretToValidate.trim().length === 0) {
+      console.log('validateSecret called with empty secret, skipping');
+      return;
+    }
+
+    console.log('validateSecret called with:', secretToValidate);
     setLoading(true);
     setError('');
 
@@ -25,21 +52,32 @@ export default function AuthPage() {
       const response = await fetch('/api/auth/validate-club-secret', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ secret }),
+        body: JSON.stringify({ secret: secretToValidate }),
       });
 
       const data = await response.json();
+      console.log('Validation response:', response.status, data);
 
       if (response.ok && data.success) {
-        router.push('/app/islands');
+        console.log('Redirecting to /islands');
+        // Use window.location for full page reload to ensure cookies are sent
+        window.location.href = '/islands';
       } else {
+        validationInProgress = false;
         setError(data.error || 'Invalid club secret');
       }
     } catch (err) {
+      console.error('Validation error:', err);
+      validationInProgress = false;
       setError('Failed to validate secret');
     } finally {
       setLoading(false);
     }
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    validateSecret(secret);
   }
 
   return (
