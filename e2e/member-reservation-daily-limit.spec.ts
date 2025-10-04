@@ -359,7 +359,7 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
     // Try to create reservation with same boat on different island
     const secondResult = await createReservationWithBoat(
       page,
-      firstResult.boatName
+      firstResult.boatName || 'TestBoat'
     );
 
     // Should succeed - daily limit is per island
