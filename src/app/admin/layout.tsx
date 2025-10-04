@@ -1,25 +1,43 @@
-import Link from 'next/link';
-import { Building2, MapPin, Waves, Users, Calendar, BarChart3, Settings } from 'lucide-react';
-import { AdminAuthGuard } from '@/components/admin-auth-guard';
+'use client';
 
-export const dynamic = 'force-dynamic';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Building2, MapPin, Waves, Users, Calendar, BarChart3, Settings, LogOut } from 'lucide-react';
+import { AdminAuthGuard } from '@/components/admin-auth-guard';
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+
+  async function handleLogout() {
+    try {
+      const response = await fetch('/api/auth/admin/logout', {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        // Force a full page reload to clear client-side state
+        window.location.href = '/admin/login';
+      }
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  }
+
   return (
     <AdminAuthGuard>
       <div className="flex h-screen bg-gray-50">
         {/* Sidebar */}
-        <aside className="w-64 bg-white border-r border-gray-200">
+        <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
           <div className="p-6">
             <h1 className="text-2xl font-bold text-gray-900">Admin Portal</h1>
             <p className="text-sm text-gray-500 mt-1">Sauna Reservations</p>
           </div>
 
-          <nav className="px-4 space-y-1">
+          <nav className="px-4 space-y-1 flex-1">
             <NavLink href="/admin" icon={<BarChart3 className="w-5 h-5" />}>
               Dashboard
             </NavLink>
@@ -45,6 +63,17 @@ export default function AdminLayout({
               Settings
             </NavLink>
           </nav>
+
+          {/* Logout button at bottom */}
+          <div className="p-4 border-t border-gray-200">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-3 w-full px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              <LogOut className="w-5 h-5" />
+              <span>Logout</span>
+            </button>
+          </div>
         </aside>
 
         {/* Main Content */}
