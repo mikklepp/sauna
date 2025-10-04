@@ -1,51 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { loginAsAdmin } from './helpers/test-data';
+import { getValidClubSecret } from './helpers/auth-helper';
 
 test.describe('Member QR Code Authentication Flow', () => {
   let clubSecret: string;
-  let clubId: string;
 
-  test.beforeAll(async ({ browser }) => {
-    // For this test, we'll use Node.js to directly update the database
-    // since there's no API endpoint for updating club secrets
-    const { PrismaClient } = await import('@prisma/client');
-    const prisma = new PrismaClient();
-
-    try {
-      // Find the first club
-      const clubs = await prisma.club.findMany({ take: 1 });
-
-      if (clubs.length === 0) {
-        throw new Error('No clubs available in database');
-      }
-
-      clubId = clubs[0].id;
-
-      // Update the club's secret to ensure it's valid
-      // Calculate new valid dates (valid from yesterday to 30 days from now)
-      const validFrom = new Date();
-      validFrom.setDate(validFrom.getDate() - 1);
-
-      const validUntil = new Date();
-      validUntil.setDate(validUntil.getDate() + 30);
-
-      // Generate a new secret for testing
-      const testSecret = `TESTQR${Date.now()}`.substring(0, 16).toUpperCase();
-
-      await prisma.club.update({
-        where: { id: clubId },
-        data: {
-          secret: testSecret,
-          secretValidFrom: validFrom,
-          secretValidUntil: validUntil,
-        },
-      });
-
-      clubSecret = testSecret;
-      console.log('Using club secret:', clubSecret);
-    } finally {
-      await prisma.$disconnect();
-    }
+  test.beforeAll(async () => {
+    clubSecret = await getValidClubSecret();
   });
 
   test('should authenticate member via QR code URL with secret parameter', async ({ page }) => {

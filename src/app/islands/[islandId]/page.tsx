@@ -92,7 +92,7 @@ export default function IslandSaunasPage() {
         <div className="container mx-auto px-4 py-4">
           <Button
             variant="ghost"
-            onClick={() => router.push('/app/islands')}
+            onClick={() => router.push('/islands')}
             className="mb-2"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
@@ -107,7 +107,7 @@ export default function IslandSaunasPage() {
       <main className="container mx-auto px-4 py-6">
         <div className="space-y-4">
           {saunas.map((sauna) => (
-            <Card key={sauna.id} className="hover:shadow-lg transition-shadow">
+            <Card key={sauna.id} className="hover:shadow-lg transition-shadow" data-testid="sauna-card">
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div>
@@ -144,7 +144,8 @@ export default function IslandSaunasPage() {
                   )}
                   <Button
                     className="w-full mt-3"
-                    onClick={() => router.push(`/app/islands/${islandId}/reserve?saunaId=${sauna.id}`)}
+                    onClick={() => router.push(`/islands/${islandId}/reserve?saunaId=${sauna.id}`)}
+                    data-testid="reserve-button"
                   >
                     Reserve This Time
                   </Button>
@@ -180,7 +181,7 @@ export default function IslandSaunasPage() {
                         <Button
                           variant="outline"
                           className="w-full mt-2"
-                          onClick={() => router.push(`/app/islands/${islandId}/shared/${shared.id}`)}
+                          onClick={() => router.push(`/islands/${islandId}/shared/${shared.id}`)}
                         >
                           Join Shared Sauna
                         </Button>
@@ -193,7 +194,7 @@ export default function IslandSaunasPage() {
                 <Button
                   variant="ghost"
                   className="w-full"
-                  onClick={() => router.push(`/app/islands/${islandId}/saunas/${sauna.id}/reservations`)}
+                  onClick={() => router.push(`/islands/${islandId}/saunas/${sauna.id}/reservations`)}
                 >
                   <Calendar className="w-4 h-4 mr-2" />
                   View All Reservations
