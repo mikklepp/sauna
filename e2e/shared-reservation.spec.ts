@@ -16,8 +16,7 @@ test.describe('Shared Reservation - Admin Creation', () => {
 
     // Select sauna
     const saunaSelect = page.getByLabel(/sauna/i);
-    await saunaSelect.click();
-    await page.getByRole('option').first().click();
+    await saunaSelect.selectOption({ index: 1 }); // Select first non-empty option
 
     // Set date (future date)
     const tomorrow = new Date();
@@ -84,8 +83,7 @@ test.describe('Shared Reservation - Admin Creation', () => {
     await page.getByRole('button', { name: /create.*shared|new.*shared/i }).click();
 
     const saunaSelect = page.getByLabel(/sauna/i);
-    await saunaSelect.click();
-    await page.getByRole('option').first().click();
+    await saunaSelect.selectOption({ index: 1 }); // Select first non-empty option
 
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);

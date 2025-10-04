@@ -23,8 +23,7 @@ test.describe('Admin Island Management', () => {
 
     // Select club (assuming there's at least one club)
     const clubSelect = page.getByLabel(/club/i);
-    await clubSelect.click();
-    await page.getByRole('option').first().click();
+    await clubSelect.selectOption({ index: 1 }); // Select first non-empty option
 
     // Submit form
     await page.getByRole('button', { name: /create|save/i }).click();
@@ -64,8 +63,7 @@ test.describe('Admin Island Management', () => {
     await page.getByLabel(/island name/i).fill(islandName);
 
     const clubSelect = page.getByLabel(/club/i);
-    await clubSelect.click();
-    await page.getByRole('option').first().click();
+    await clubSelect.selectOption({ index: 1 }); // Select first non-empty option
 
     await page.getByRole('button', { name: /create|save/i }).click();
     await expect(page.getByText(islandName)).toBeVisible();
@@ -102,8 +100,7 @@ test.describe('Admin Sauna Management', () => {
 
     // Select island
     const islandSelect = page.getByLabel(/island/i);
-    await islandSelect.click();
-    await page.getByRole('option').first().click();
+    await islandSelect.selectOption({ index: 1 }); // Select first non-empty option
 
     // Set heating time
     const heatingTimeField = page.getByLabel(/heating time/i);
@@ -174,8 +171,7 @@ test.describe('Admin Boat Management', () => {
 
     // Select club
     const clubSelect = page.getByLabel(/club/i);
-    await clubSelect.click();
-    await page.getByRole('option').first().click();
+    await clubSelect.selectOption({ index: 1 }); // Select first non-empty option
 
     await page.getByRole('button', { name: /create|save/i }).click();
 
@@ -255,8 +251,7 @@ Test CSV Boat,CSV${Date.now()},CSV Captain,555-9999`;
     await page.getByLabel(/membership number/i).fill(membershipNumber);
 
     const clubSelect = page.getByLabel(/club/i);
-    await clubSelect.click();
-    await page.getByRole('option').first().click();
+    await clubSelect.selectOption({ index: 1 }); // Select first non-empty option
 
     await page.getByRole('button', { name: /create|save/i }).click();
     await expect(page.getByText(boatName)).toBeVisible();
