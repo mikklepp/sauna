@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { getTestClubSecret } from './helpers/test-fixtures';
+import { getTestClubSecret, createTestReservation } from './helpers/test-fixtures';
 
 test.describe('Member Reservation List View & Cancellation', () => {
   let clubSecret: string;
@@ -10,61 +10,41 @@ test.describe('Member Reservation List View & Cancellation', () => {
 
   /**
    * Helper to navigate to reservations list for a sauna
+   * Uses known test data and creates a test reservation
    */
   async function navigateToReservationsList(page: Page): Promise<boolean> {
+    // Create a test reservation 2 hours from now
+    await createTestReservation({
+      saunaIndex: 0, // First sauna (North Main Sauna)
+      boatIndex: 0, // First boat (Test Alpha)
+      startTimeOffset: 2, // 2 hours from now
+      durationHours: 1,
+      adults: 2,
+      kids: 1,
+    });
+
     await page.goto(`/auth?secret=${clubSecret}`);
     await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
 
-    // Wait for islands to load
-    await page
-      .waitForSelector(
-        '[data-testid="island-link"], :text("No islands available")',
-        { timeout: 5000 }
-      )
-      .catch(() => {});
-
+    // Click first island (Test North Island)
     const islandLinks = page.locator('[data-testid="island-link"]');
-    const islandCount = await islandLinks.count();
+    await islandLinks.first().click();
+    await page.waitForURL(/\/islands\/[^/]+$/);
+    await page.waitForLoadState('networkidle');
 
-    if (islandCount === 0) {
-      return false;
-    }
+    // Wait for sauna cards to load
+    const saunaCards = page.locator('[data-testid="sauna-card"]');
+    await saunaCards.first().waitFor({ state: 'visible', timeout: 5000 });
 
-    // Find an island with saunas
-    for (let i = 0; i < Math.min(islandCount, 5); i++) {
-      const island = islandLinks.nth(i);
-      const islandText = await island.textContent();
+    // Click "View All Reservations" on first sauna
+    const viewButton = saunaCards
+      .first()
+      .getByRole('button', { name: /view all reservations/i });
+    await viewButton.click();
+    await page.waitForURL(/\/reservations$/);
 
-      if (islandText && /[1-9]\s+(sauna|saunas)/.test(islandText)) {
-        await island.click();
-        await page.waitForURL(/\/islands\/[^/]+$/);
-        await page.waitForLoadState('networkidle');
-
-        // Wait for sauna cards to load
-        await page
-          .waitForSelector('[data-testid="sauna-card"]', { timeout: 5000 })
-          .catch(() => {});
-
-        const saunaCards = page.locator('[data-testid="sauna-card"]');
-        if ((await saunaCards.count()) > 0) {
-          // Click "View All Reservations" on first sauna
-          const viewButton = saunaCards
-            .first()
-            .getByRole('button', { name: /view all reservations/i });
-          if (await viewButton.isVisible()) {
-            await viewButton.click();
-            await page.waitForURL(/\/reservations$/);
-            return true;
-          }
-        }
-
-        // Go back and try next island
-        await page.goto(`/auth?secret=${clubSecret}`);
-        await page.waitForURL(/\/islands/, { timeout: 10000 });
-      }
-    }
-
-    return false;
+    return true;
   }
 
   test('should display reservations list page', async ({ page }) => {
@@ -91,14 +71,14 @@ test.describe('Member Reservation List View & Cancellation', () => {
     expect(hasUpcoming || hasNoReservations).toBe(true);
   });
 
-  test('should show Back to Saunas navigation button', async ({ page }) => {
+  test('should show Back navigation button in header', async ({ page }) => {
     const found = await navigateToReservationsList(page);
     if (!found) {
       test.skip();
     }
 
-    // Should see Back button
-    const backButton = page.getByRole('button', { name: /back to saunas/i });
+    // Should see back button in header
+    const backButton = page.locator('header button').first();
     await expect(backButton).toBeVisible();
 
     // Click back button

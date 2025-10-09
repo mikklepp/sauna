@@ -10,57 +10,24 @@ test.describe('Member Sauna Display & Status', () => {
 
   /**
    * Helper to navigate to an island that has saunas
-   * Returns true if found, false if should skip test
+   * Uses known test data - first island (Test North Island) has 2 saunas
    */
   async function navigateToIslandWithSaunas(page: Page): Promise<boolean> {
     await page.goto(`/auth?secret=${clubSecret}`);
     await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
 
-    // Wait for page to finish loading (either islands load or "no islands" message)
-    await page
-      .waitForSelector(
-        '[data-testid="island-link"], :text("No islands available")',
-        { timeout: 5000 }
-      )
-      .catch(() => {});
-
+    // Click first island (Test North Island - has 2 saunas)
     const islandLinks = page.locator('[data-testid="island-link"]');
-    const islandCount = await islandLinks.count();
+    await islandLinks.first().click();
+    await page.waitForURL(/\/islands\/[^/]+$/);
+    await page.waitForLoadState('networkidle');
 
-    if (islandCount === 0) {
-      return false;
-    }
+    // Wait for sauna cards to load
+    const saunaCards = page.locator('[data-testid="sauna-card"]');
+    await saunaCards.first().waitFor({ state: 'visible', timeout: 5000 });
 
-    // Find an island with saunas (check first few islands)
-    for (let i = 0; i < Math.min(islandCount, 5); i++) {
-      const island = islandLinks.nth(i);
-      const islandText = await island.textContent();
-
-      // Check if island has saunas (description should say "X sauna(s)")
-      if (islandText && /[1-9]\s+(sauna|saunas)/.test(islandText)) {
-        await island.click();
-        await page.waitForURL(/\/islands\/[^/]+$/);
-        await page.waitForLoadState('networkidle');
-
-        // Wait for sauna cards to load
-        await page
-          .waitForSelector('[data-testid="sauna-card"]', { timeout: 5000 })
-          .catch(() => {});
-
-        const saunaCards = page.locator('[data-testid="sauna-card"]');
-        const saunaCardCount = await saunaCards.count();
-
-        if (saunaCardCount > 0) {
-          return true;
-        }
-
-        // Go back and try next island
-        await page.goto(`/auth?secret=${clubSecret}`);
-        await page.waitForURL(/\/islands/, { timeout: 10000 });
-      }
-    }
-
-    return false;
+    return true;
   }
 
   test('should display all saunas for selected island', async ({ page }) => {

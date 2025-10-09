@@ -10,61 +10,32 @@ test.describe('Member Individual Reservation - Happy Path', () => {
 
   /**
    * Helper to navigate to an island with saunas and click Reserve button
+   * Uses known test data - we have 2 islands, first island has 2 saunas
    */
   async function navigateToReservePage(page: Page): Promise<boolean> {
     await page.goto(`/auth?secret=${clubSecret}`);
     await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
 
-    // Wait for islands to load
-    await page
-      .waitForSelector(
-        '[data-testid="island-link"], :text("No islands available")',
-        { timeout: 5000 }
-      )
-      .catch(() => {});
-
+    // Click first island (Test North Island - has 2 saunas)
     const islandLinks = page.locator('[data-testid="island-link"]');
-    const islandCount = await islandLinks.count();
+    await islandLinks.first().click();
+    await page.waitForURL(/\/islands\/[^/]+$/);
+    await page.waitForLoadState('networkidle');
 
-    if (islandCount === 0) {
-      return false;
-    }
+    // Wait for sauna cards to load
+    const saunaCards = page.locator('[data-testid="sauna-card"]');
+    await saunaCards.first().waitFor({ state: 'visible', timeout: 5000 });
 
-    // Find an island with saunas
-    for (let i = 0; i < Math.min(islandCount, 5); i++) {
-      const island = islandLinks.nth(i);
-      const islandText = await island.textContent();
+    // Click the Reserve button on the first sauna
+    const reserveButton = saunaCards
+      .first()
+      .getByRole('button', { name: /reserve/i });
 
-      if (islandText && /[1-9]\s+(sauna|saunas)/.test(islandText)) {
-        await island.click();
-        await page.waitForURL(/\/islands\/[^/]+$/);
-        await page.waitForLoadState('networkidle');
+    await reserveButton.click();
+    await page.waitForURL(/\/islands\/[^/]+\/reserve/);
 
-        // Wait for sauna cards to load
-        await page
-          .waitForSelector('[data-testid="sauna-card"]', { timeout: 5000 })
-          .catch(() => {});
-
-        const saunaCards = page.locator('[data-testid="sauna-card"]');
-        if ((await saunaCards.count()) > 0) {
-          // Click the Reserve button on the first sauna
-          const reserveButton = saunaCards
-            .first()
-            .getByRole('button', { name: /reserve this time/i });
-          if (await reserveButton.isVisible()) {
-            await reserveButton.click();
-            await page.waitForURL(/\/islands\/[^/]+\/reserve/);
-            return true;
-          }
-        }
-
-        // Go back and try next island
-        await page.goto(`/auth?secret=${clubSecret}`);
-        await page.waitForURL(/\/islands/, { timeout: 10000 });
-      }
-    }
-
-    return false;
+    return true;
   }
 
   test('should navigate to reservation page when clicking Reserve button', async ({
