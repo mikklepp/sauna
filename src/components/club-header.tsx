@@ -9,6 +9,7 @@ interface ClubHeaderProps {
   clubName: string;
   clubLogo?: string | null;
   title?: string;
+  subtitle?: string;
   showBack?: boolean;
   backHref?: string;
   actions?: React.ReactNode;
@@ -20,6 +21,7 @@ export function ClubHeader({
   clubName,
   clubLogo,
   title,
+  subtitle,
   showBack = false,
   backHref,
   actions,
@@ -70,6 +72,9 @@ export function ClubHeader({
             </span>
             {title && (
               <span className="text-lg font-semibold text-white">{title}</span>
+            )}
+            {subtitle && (
+              <span className="text-xs text-white/80">{subtitle}</span>
             )}
           </div>
         </div>

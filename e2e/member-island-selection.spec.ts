@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { getValidClubSecret } from './helpers/auth-helper';
+import { getTestClubSecret, TEST_ISLANDS } from './helpers/test-fixtures';
 
 test.describe('Member Island Selection Flow', () => {
   let clubSecret: string;
 
   test.beforeAll(async () => {
-    clubSecret = await getValidClubSecret();
+    clubSecret = getTestClubSecret();
   });
 
   test('should display list of islands after authentication', async ({
@@ -15,21 +15,17 @@ test.describe('Member Island Selection Flow', () => {
     await page.goto(`/auth?secret=${clubSecret}`);
     await page.waitForURL(/\/islands/, { timeout: 10000 });
 
-    // Should see islands page heading
+    // Wait for page to load
+    await page.waitForLoadState('networkidle');
+
+    // Should see main heading (not in ClubHeader)
     await expect(
-      page.getByRole('heading', { name: /select island/i })
+      page.getByRole('heading', { name: /choose your island/i })
     ).toBeVisible();
 
-    // Should see at least one island or "no islands" message
+    // Should see island cards (we have 2 test islands)
     const islandLinks = page.locator('[data-testid="island-link"]');
-    const noIslandsMessage = page.getByText(/no islands available/i);
-
-    const hasIslands = (await islandLinks.count()) > 0;
-    const hasNoIslandsMessage = await noIslandsMessage
-      .isVisible()
-      .catch(() => false);
-
-    expect(hasIslands || hasNoIslandsMessage).toBeTruthy();
+    await expect(islandLinks).toHaveCount(TEST_ISLANDS.length);
   });
 
   test('should show island details when clicking on an island', async ({
@@ -38,37 +34,24 @@ test.describe('Member Island Selection Flow', () => {
     // Authenticate
     await page.goto(`/auth?secret=${clubSecret}`);
     await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
 
-    // Check if there are islands
+    // Get the first island
     const islandLinks = page.locator('[data-testid="island-link"]');
-    const islandCount = await islandLinks.count();
-
-    if (islandCount === 0) {
-      test.skip();
-    }
-
-    // Get the first island's name
     const firstIsland = islandLinks.first();
-    const islandName = await firstIsland
-      .locator('h3, [class*="CardTitle"]')
-      .first()
-      .textContent();
 
     // Click on the island
     await firstIsland.click();
 
     // Should navigate to island detail page
     await page.waitForURL(/\/islands\/[^/]+$/);
+    await page.waitForLoadState('networkidle');
 
-    // Should see the island name in the header
-    if (islandName) {
-      await expect(
-        page.getByRole('heading', { name: new RegExp(islandName.trim(), 'i') })
-      ).toBeVisible();
-    }
+    // Should see the first island's name in ClubHeader title
+    await expect(page.locator('header')).toContainText(TEST_ISLANDS[0].name);
 
-    // Should see instruction text
-    await expect(page.getByText(/select a sauna/i)).toBeVisible();
+    // Should see instruction text for selecting a sauna
+    await expect(page.getByTestId('island-instruction')).toBeVisible();
   });
 
   test('should navigate back to islands list from island detail', async ({
@@ -77,26 +60,22 @@ test.describe('Member Island Selection Flow', () => {
     // Authenticate
     await page.goto(`/auth?secret=${clubSecret}`);
     await page.waitForURL(/\/islands/, { timeout: 10000 });
-
-    // Check if there are islands
-    const islandLinks = page.locator('[data-testid="island-link"]');
-    const islandCount = await islandLinks.count();
-
-    if (islandCount === 0) {
-      test.skip();
-    }
+    await page.waitForLoadState('networkidle');
 
     // Click on first island
+    const islandLinks = page.locator('[data-testid="island-link"]');
     await islandLinks.first().click();
     await page.waitForURL(/\/islands\/[^/]+$/);
+    await page.waitForLoadState('networkidle');
 
-    // Click back button
-    await page.getByRole('button', { name: /back to islands/i }).click();
+    // Click back button in header (ArrowLeft icon button)
+    const backButton = page.locator('header button').first();
+    await backButton.click();
 
     // Should return to islands list
     await page.waitForURL(/\/islands$/);
     await expect(
-      page.getByRole('heading', { name: /select island/i })
+      page.getByRole('heading', { name: /choose your island/i })
     ).toBeVisible();
   });
 
@@ -104,78 +83,45 @@ test.describe('Member Island Selection Flow', () => {
     // Authenticate
     await page.goto(`/auth?secret=${clubSecret}`);
     await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
 
-    // Check if there are islands
+    // Check first island's sauna count matches test data
     const islandLinks = page.locator('[data-testid="island-link"]');
-    const islandCount = await islandLinks.count();
-
-    if (islandCount === 0) {
-      test.skip();
-    }
-
-    // Check first island's sauna count is displayed
     const firstIsland = islandLinks.first();
-    const saunaCountText = await firstIsland
-      .locator('[class*="CardDescription"]')
-      .first()
-      .textContent();
 
-    // Should contain number and "sauna" or "saunas"
-    expect(saunaCountText).toMatch(/\d+\s+(sauna|saunas)/i);
+    // The sauna count is in CardDescription element
+    await expect(firstIsland).toContainText(`${TEST_ISLANDS[0].numberOfSaunas} Sauna`);
   });
 
   test('should allow switching between multiple islands', async ({ page }) => {
     // Authenticate
     await page.goto(`/auth?secret=${clubSecret}`);
     await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
 
-    // Check if there are multiple islands
     const islandLinks = page.locator('[data-testid="island-link"]');
-    const islandCount = await islandLinks.count();
-
-    if (islandCount < 2) {
-      test.skip();
-    }
-
-    // Get names of first two islands
-    const firstIslandName = await islandLinks
-      .nth(0)
-      .locator('h3, [class*="CardTitle"]')
-      .first()
-      .textContent();
-    const secondIslandName = await islandLinks
-      .nth(1)
-      .locator('h3, [class*="CardTitle"]')
-      .first()
-      .textContent();
 
     // Click first island
     await islandLinks.nth(0).click();
     await page.waitForURL(/\/islands\/[^/]+$/);
+    await page.waitForLoadState('networkidle');
 
-    if (firstIslandName) {
-      await expect(
-        page.getByRole('heading', {
-          name: new RegExp(firstIslandName.trim(), 'i'),
-        })
-      ).toBeVisible();
-    }
+    // Should see first island name in header
+    await expect(page.locator('header')).toContainText(TEST_ISLANDS[0].name);
 
-    // Go back
-    await page.getByRole('button', { name: /back to islands/i }).click();
+    // Go back using header back button
+    const backButton = page.locator('header button').first();
+    await backButton.click();
     await page.waitForURL(/\/islands$/);
+    await page.waitForLoadState('networkidle');
 
     // Click second island
     await islandLinks.nth(1).click();
     await page.waitForURL(/\/islands\/[^/]+$/);
+    await page.waitForLoadState('networkidle');
 
-    if (secondIslandName) {
-      await expect(
-        page.getByRole('heading', {
-          name: new RegExp(secondIslandName.trim(), 'i'),
-        })
-      ).toBeVisible();
-    }
+    // Should see second island name in header
+    await expect(page.locator('header')).toContainText(TEST_ISLANDS[1].name);
   });
 
   test('should only show islands belonging to authenticated club', async ({
@@ -189,20 +135,14 @@ test.describe('Member Island Selection Flow', () => {
     // Wait for page to load
     await page.waitForLoadState('networkidle');
 
-    // Verify heading is present
-    await expect(
-      page.getByRole('heading', { name: /select island/i })
-    ).toBeVisible();
-
-    // Get all island names
+    // Should see exactly the test club's islands (no more, no less)
     const islandLinks = page.locator('[data-testid="island-link"]');
-    const hasIslands = (await islandLinks.count()) > 0;
-    const hasNoMessage = await page
-      .getByText(/no islands available/i)
-      .isVisible()
-      .catch(() => false);
+    await expect(islandLinks).toHaveCount(TEST_ISLANDS.length);
 
-    // Should have either islands OR "no islands" message
-    expect(hasIslands || hasNoMessage).toBeTruthy();
+    // Verify the island names match test data
+    for (let i = 0; i < TEST_ISLANDS.length; i++) {
+      const island = islandLinks.nth(i);
+      await expect(island).toContainText(TEST_ISLANDS[i].name);
+    }
   });
 });

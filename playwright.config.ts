@@ -68,4 +68,7 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },
+
+  /* Global setup to reset test fixtures before all tests */
+  globalSetup: require.resolve('./e2e/global-setup.ts'),
 });

@@ -1,11 +1,11 @@
 import { test, expect, Page } from '@playwright/test';
-import { getValidClubSecret } from './helpers/auth-helper';
+import { getTestClubSecret, TEST_BOATS } from './helpers/test-fixtures';
 
 test.describe('Member Individual Reservation - Happy Path', () => {
   let clubSecret: string;
 
   test.beforeAll(async () => {
-    clubSecret = await getValidClubSecret();
+    clubSecret = getTestClubSecret();
   });
 
   /**
@@ -88,19 +88,14 @@ test.describe('Member Individual Reservation - Happy Path', () => {
       test.skip();
     }
 
-    // Enter boat name in search
+    // Enter boat name in search (search for first test boat)
     const searchInput = page.getByTestId('boat-search-input');
-    await searchInput.fill('Test');
+    await searchInput.fill(TEST_BOATS[0].name.substring(0, 10)); // "Test Alpha" -> "Test Alpha"
     await page.waitForTimeout(500); // Wait for debounced search
 
-    // Should have at least one result or "no boats found" message
+    // Should have results
     const boatResults = page.locator('[data-testid="boat-result"]');
-    const noResults = page.getByText(/no boats found/i);
-
-    const hasResults = (await boatResults.count()) > 0;
-    const hasNoResultsMsg = await noResults.isVisible().catch(() => false);
-
-    expect(hasResults || hasNoResultsMsg).toBeTruthy();
+    await expect(boatResults.first()).toBeVisible();
   });
 
   test('should search for boat by membership number', async ({ page }) => {
@@ -109,19 +104,14 @@ test.describe('Member Individual Reservation - Happy Path', () => {
       test.skip();
     }
 
-    // Enter membership number in search
+    // Enter membership number in search (search for test boat membership number)
     const searchInput = page.getByTestId('boat-search-input');
-    await searchInput.fill('MEM');
+    await searchInput.fill('E2E-00'); // Will match all test boats
     await page.waitForTimeout(500); // Wait for debounced search
 
-    // Should have results or no results message
+    // Should have results (all test boats start with E2E-00)
     const boatResults = page.locator('[data-testid="boat-result"]');
-    const noResults = page.getByText(/no boats found/i);
-
-    const hasResults = (await boatResults.count()) > 0;
-    const hasNoResultsMsg = await noResults.isVisible().catch(() => false);
-
-    expect(hasResults || hasNoResultsMsg).toBeTruthy();
+    await expect(boatResults.first()).toBeVisible();
   });
 
   test('should allow selecting party size (adults and kids)', async ({

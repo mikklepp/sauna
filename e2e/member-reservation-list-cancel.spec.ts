@@ -1,11 +1,11 @@
 import { test, expect, Page } from '@playwright/test';
-import { getValidClubSecret } from './helpers/auth-helper';
+import { getTestClubSecret } from './helpers/test-fixtures';
 
 test.describe('Member Reservation List View & Cancellation', () => {
   let clubSecret: string;
 
   test.beforeAll(async () => {
-    clubSecret = await getValidClubSecret();
+    clubSecret = getTestClubSecret();
   });
 
   /**

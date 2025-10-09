@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { Clock, Users, X, Calendar } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -40,7 +40,6 @@ interface ClubData {
 }
 
 export default function ReservationsListPage() {
-  const router = useRouter();
   const params = useParams();
   const islandId = params.islandId as string;
   const saunaId = params.saunaId as string;
