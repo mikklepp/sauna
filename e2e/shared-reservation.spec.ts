@@ -30,19 +30,17 @@ test.describe('Shared Reservation - Admin Creation', () => {
     const dateField = page.getByLabel(/date/i);
     await dateField.fill(dateString);
 
-    // Set start time
+    // Set start time (it's a select dropdown)
     const startTimeField = page.getByLabel(/start time|time/i);
-    await startTimeField.fill('18:00');
+    await startTimeField.selectOption('18:00');
 
-    // Set males duration
-    const malesDurationField = page.getByLabel(/males.*duration|men.*hours/i);
-    await malesDurationField.fill('2');
+    // Set males duration (select dropdown)
+    const malesDurationField = page.getByLabel(/males.*duration|men.*duration/i);
+    await malesDurationField.selectOption('2');
 
-    // Set females duration
-    const femalesDurationField = page.getByLabel(
-      /females.*duration|women.*hours/i
-    );
-    await femalesDurationField.fill('2');
+    // Set females duration (select dropdown)
+    const femalesDurationField = page.getByLabel(/females.*duration|women.*duration/i);
+    await femalesDurationField.selectOption('2');
 
     // Set gender order
     const genderOrderSelect = page.getByLabel(/gender.*order|who.*first/i);
@@ -102,9 +100,9 @@ test.describe('Shared Reservation - Admin Creation', () => {
     const dateString = tomorrow.toISOString().split('T')[0];
 
     await page.getByLabel(/date/i).fill(dateString);
-    await page.getByLabel(/start time|time/i).fill('19:00');
-    await page.getByLabel(/males.*duration/i).fill('2');
-    await page.getByLabel(/females.*duration/i).fill('2');
+    await page.getByLabel(/start time|time/i).selectOption('19:00');
+    await page.getByLabel(/males.*duration|men.*duration/i).selectOption('2');
+    await page.getByLabel(/females.*duration|women.*duration/i).selectOption('2');
 
     const testName = `Delete Me ${Date.now()}`;
     const nameField = page.getByLabel(/name|description/i);
