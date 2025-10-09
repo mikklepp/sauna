@@ -9,11 +9,11 @@ test.describe('Reservation Cancellation', () => {
   });
 
   test('should display reservations list for a sauna', async ({ page }) => {
-    // Create a test reservation
+    // Create a test reservation for today
     await createTestReservation({
-      saunaIndex: 0,
-      boatIndex: 0,
-      startTimeOffset: 2,
+      saunaIndex: 0, // First sauna (North Main Sauna)
+      boatIndex: 0,  // Test Alpha
+      startTimeOffset: 2, // 2 hours from now
       durationHours: 1,
       adults: 2,
       kids: 0,
@@ -26,26 +26,32 @@ test.describe('Reservation Cancellation', () => {
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.click();
-    await page.waitForURL(/\/islands\/[^/]+/);
+    await page.waitForURL(/\/islands\/[^/]+$/);
     await page.waitForLoadState('networkidle');
 
-    // Click "View All Reservations" button
-    const viewReservationsButton = page
-      .getByRole('button', { name: /view all reservations/i })
-      .first();
+    // Click "View All Reservations" button on first sauna
+    const saunaCards = page.locator('[data-testid="sauna-card"]');
+    await saunaCards.first().waitFor({ state: 'visible', timeout: 5000 });
+
+    const viewReservationsButton = saunaCards
+      .first()
+      .getByRole('button', { name: /view all reservations/i });
 
     await viewReservationsButton.click();
-    await page.waitForURL(/\/reservations$/);
+    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
     await page.waitForLoadState('networkidle');
 
-    // Should show reservations list (either "Upcoming" or empty state)
+    // Wait a bit for data to load
+    await page.waitForTimeout(2000);
+
+    // Should show either "Upcoming" section or empty state
     const upcomingHeading = page.getByRole('heading', { name: /upcoming/i });
     const noReservations = page.getByText(/no reservations yet/i);
 
-    // One of these should be visible
     const hasUpcoming = await upcomingHeading.isVisible().catch(() => false);
     const hasEmpty = await noReservations.isVisible().catch(() => false);
 
+    // Page should have loaded content
     expect(hasUpcoming || hasEmpty).toBe(true);
   });
 
