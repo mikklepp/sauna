@@ -131,7 +131,7 @@ export default function IslandSaunasPage() {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-club-primary"></div>
+          <div className="border-club-primary mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2"></div>
           <p className="text-muted-foreground">Loading saunas...</p>
         </div>
       </div>
@@ -175,7 +175,7 @@ export default function IslandSaunasPage() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <CardTitle className="flex items-center gap-2 text-2xl">
-                      <Waves className="h-6 w-6 text-club-primary" />
+                      <Waves className="text-club-primary h-6 w-6" />
                       {sauna.name}
                     </CardTitle>
                     <CardDescription className="mt-2 flex items-center gap-2">
@@ -192,15 +192,15 @@ export default function IslandSaunasPage() {
               </CardHeader>
               <CardContent className="space-y-6 pt-6">
                 {/* Next Available Slot */}
-                <div className="rounded-xl border-2 border-club-primary/20 bg-gradient-to-br from-club-primary/5 to-club-primary/10 p-5">
+                <div className="border-club-primary/20 from-club-primary/5 to-club-primary/10 rounded-xl border-2 bg-gradient-to-br p-5">
                   <div className="mb-3 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Clock className="h-5 w-5 text-club-primary" />
+                      <Clock className="text-club-primary h-5 w-5" />
                       <span className="text-sm font-semibold uppercase tracking-wide text-gray-700">
                         Next Available
                       </span>
                     </div>
-                    <span className="text-2xl font-bold text-club-primary">
+                    <span className="text-club-primary text-2xl font-bold">
                       {formatTime(sauna.nextAvailable.startTime)}
                     </span>
                   </div>
@@ -210,7 +210,7 @@ export default function IslandSaunasPage() {
                     </p>
                   )}
                   <Button
-                    className="w-full bg-club-primary text-white shadow-md transition-all hover:opacity-90 hover:shadow-lg"
+                    className="bg-club-primary w-full text-white shadow-md transition-all hover:opacity-90 hover:shadow-lg"
                     size="lg"
                     onClick={() =>
                       router.push(
@@ -228,13 +228,13 @@ export default function IslandSaunasPage() {
                   sauna.sharedReservationsToday.length > 0 && (
                     <div className="space-y-3">
                       <h4 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-gray-700">
-                        <Users className="h-5 w-5 text-club-secondary" />
+                        <Users className="text-club-secondary h-5 w-5" />
                         Club Sauna Today
                       </h4>
                       {sauna.sharedReservationsToday.map((shared) => (
                         <div
                           key={shared.id}
-                          className="rounded-xl border-2 border-club-secondary/30 bg-gradient-to-br from-club-secondary/10 to-club-secondary/5 p-4"
+                          className="border-club-secondary/30 from-club-secondary/10 to-club-secondary/5 rounded-xl border-2 bg-gradient-to-br p-4"
                         >
                           <div className="mb-3 flex items-center justify-between">
                             <div>
@@ -246,7 +246,7 @@ export default function IslandSaunasPage() {
                               </p>
                             </div>
                             <div className="text-right">
-                              <p className="text-sm font-medium text-club-secondary">
+                              <p className="text-club-secondary text-sm font-medium">
                                 {shared.participants.length}{' '}
                                 {shared.participants.length === 1
                                   ? 'boat'
@@ -256,7 +256,7 @@ export default function IslandSaunasPage() {
                           </div>
                           <Button
                             variant="outline"
-                            className="w-full border-club-secondary/50 text-club-secondary hover:bg-club-secondary/10"
+                            className="border-club-secondary/50 text-club-secondary hover:bg-club-secondary/10 w-full"
                             onClick={() =>
                               router.push(
                                 `/islands/${islandId}/shared/${shared.id}`
@@ -274,7 +274,7 @@ export default function IslandSaunasPage() {
                 <div className="border-t pt-4">
                   <Button
                     variant="ghost"
-                    className="w-full text-club-primary hover:bg-club-primary/10"
+                    className="text-club-primary hover:bg-club-primary/10 w-full"
                     onClick={() =>
                       router.push(
                         `/islands/${islandId}/saunas/${sauna.id}/reservations`

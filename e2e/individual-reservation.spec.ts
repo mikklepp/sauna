@@ -8,13 +8,17 @@ test.describe('Individual Reservation Flow', () => {
     clubSecret = getTestClubSecret();
   });
 
-  test('should display island selection after authentication', async ({ page }) => {
+  test('should display island selection after authentication', async ({
+    page,
+  }) => {
     // Authenticate and navigate to islands
     await page.goto(`/auth?secret=${clubSecret}`);
     await page.waitForURL(/\/islands/, { timeout: 10000 });
 
     // Should show islands page
-    await expect(page.getByRole('heading', { name: /choose your island/i })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /choose your island/i })
+    ).toBeVisible();
 
     // Should show test islands
     const islandLinks = page.locator('[data-testid="island-link"]');
@@ -50,7 +54,9 @@ test.describe('Individual Reservation Flow', () => {
     await expect(saunaCard).toBeVisible();
 
     // Should show status badge (Available, Reserved, or Club Sauna)
-    const statusBadge = page.locator('.badge-available, .badge-reserved, .badge-club-sauna').first();
+    const statusBadge = page
+      .locator('.badge-available, .badge-reserved, .badge-club-sauna')
+      .first();
     await expect(statusBadge).toBeVisible();
 
     // Should show reserve button

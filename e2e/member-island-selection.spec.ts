@@ -90,7 +90,9 @@ test.describe('Member Island Selection Flow', () => {
     const firstIsland = islandLinks.first();
 
     // The sauna count is in CardDescription element
-    await expect(firstIsland).toContainText(`${TEST_ISLANDS[0].numberOfSaunas} Sauna`);
+    await expect(firstIsland).toContainText(
+      `${TEST_ISLANDS[0].numberOfSaunas} Sauna`
+    );
   });
 
   test('should allow switching between multiple islands', async ({ page }) => {

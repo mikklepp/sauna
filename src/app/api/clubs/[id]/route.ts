@@ -13,7 +13,10 @@ import prisma from '@/lib/db';
  * GET /api/clubs/[id]
  * Get a specific club
  */
-export async function GET(_request: NextRequest, props: { params: Promise<{ id: string }> }) {
+export async function GET(
+  _request: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) {
   const params = await props.params;
   try {
     // Allow both admin and club access
@@ -57,7 +60,10 @@ export async function GET(_request: NextRequest, props: { params: Promise<{ id: 
  * PUT /api/clubs/[id]
  * Update a club (admin only)
  */
-export async function PUT(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+export async function PUT(
+  request: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) {
   const params = await props.params;
   try {
     await requireAdminAuth();
@@ -101,7 +107,10 @@ export async function PUT(request: NextRequest, props: { params: Promise<{ id: s
  * DELETE /api/clubs/[id]
  * Delete a club (admin only)
  */
-export async function DELETE(_request: NextRequest, props: { params: Promise<{ id: string }> }) {
+export async function DELETE(
+  _request: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) {
   const params = await props.params;
   try {
     await requireAdminAuth();

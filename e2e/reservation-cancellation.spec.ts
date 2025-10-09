@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { getTestClubSecret, createTestReservation } from './helpers/test-fixtures';
+import {
+  getTestClubSecret,
+  createTestReservation,
+} from './helpers/test-fixtures';
+import prisma from '../src/lib/db';
 
 test.describe('Reservation Cancellation', () => {
   let clubSecret: string;
@@ -8,11 +12,26 @@ test.describe('Reservation Cancellation', () => {
     clubSecret = getTestClubSecret();
   });
 
+  // Clean up reservations before each test to avoid interference
+  test.beforeEach(async () => {
+    const club = await prisma.club.findUnique({
+      where: { secret: clubSecret },
+      include: { islands: { include: { saunas: true } } },
+    });
+
+    if (club) {
+      const saunaIds = club.islands.flatMap((i) => i.saunas.map((s) => s.id));
+      await prisma.reservation.deleteMany({
+        where: { saunaId: { in: saunaIds } },
+      });
+    }
+  });
+
   test('should display reservations list for a sauna', async ({ page }) => {
     // Create a test reservation for today
     await createTestReservation({
       saunaIndex: 0, // First sauna (North Main Sauna)
-      boatIndex: 0,  // Test Alpha
+      boatIndex: 0, // Test Alpha
       startTimeOffset: 2, // 2 hours from now
       durationHours: 1,
       adults: 2,
@@ -58,342 +77,341 @@ test.describe('Reservation Cancellation', () => {
   test('should show cancel button for future reservations', async ({
     page,
   }) => {
-    // First create a reservation
+    // Create a test reservation for the future (can be cancelled)
+    const reservation = await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 1, // Test Beta
+      startTimeOffset: 3, // 3 hours from now (cancellable)
+      durationHours: 1,
+      adults: 2,
+      kids: 1,
+    });
+
+    // Navigate to island
+    await page.goto(`/auth?secret=${clubSecret}`);
+    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
+
     const islandLink = page.locator('[data-testid="island-link"]').first();
-
-    if ((await islandLink.count()) === 0) {
-      test.skip();
-    }
-
     await islandLink.click();
-    await page.waitForURL(/\/islands\/[^/]+/);
+    await page.waitForURL(/\/islands\/[^/]+$/);
+    await page.waitForLoadState('networkidle');
 
-    // Create a reservation
-    const reserveButton = page
-      .getByRole('button', { name: /make reservation/i })
-      .first();
-    await reserveButton.click();
+    // Click "View All Reservations" on first sauna
+    const saunaCards = page.locator('[data-testid="sauna-card"]');
+    await saunaCards.first().waitFor({ state: 'visible', timeout: 5000 });
 
-    const boatSearch = page.getByPlaceholder(/search.*boat/i);
-    await boatSearch.fill('test');
-    await page.waitForTimeout(500);
+    const viewReservationsButton = saunaCards
+      .first()
+      .getByRole('button', { name: /view all reservations/i });
 
-    const firstBoat = page.locator('[data-testid="boat-option"]').first();
-    if ((await firstBoat.count()) > 0) {
-      await firstBoat.click();
-    }
-
-    await page.getByLabel(/adults/i).fill('2');
-    await page.getByRole('button', { name: /continue|next/i }).click();
-    await page.getByRole('button', { name: /confirm/i }).click();
-
-    await page.waitForTimeout(1000);
-
-    // Navigate to reservations list
-    await page.goto('/');
-    await islandLink.click();
-
-    const viewReservationsButton = page
-      .getByRole('button', { name: /view.*reservations/i })
-      .first();
     await viewReservationsButton.click();
+    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
 
-    // Look for cancel button on the reservation we just made
-    const cancelButtons = page.getByRole('button', { name: /cancel/i });
-
-    if ((await cancelButtons.count()) > 0) {
-      await expect(cancelButtons.first()).toBeVisible();
-    }
+    // Should see cancel button on the reservation
+    const cancelButton = page.getByTestId('cancel-button');
+    await expect(cancelButton).toBeVisible({ timeout: 5000 });
   });
 
   test('should cancel a reservation successfully', async ({ page }) => {
-    // Create a reservation first
+    // Create a test reservation
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 2, // Test Gamma
+      startTimeOffset: 2, // 2 hours from now (keeps it today)
+      durationHours: 1,
+      adults: 3,
+      kids: 0,
+    });
+
+    // Navigate to reservations list
+    await page.goto(`/auth?secret=${clubSecret}`);
+    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
+
     const islandLink = page.locator('[data-testid="island-link"]').first();
-
-    if ((await islandLink.count()) === 0) {
-      test.skip();
-    }
-
     await islandLink.click();
-    await page.waitForURL(/\/islands\/[^/]+/);
+    await page.waitForURL(/\/islands\/[^/]+$/);
+    await page.waitForLoadState('networkidle');
 
-    const reserveButton = page
-      .getByRole('button', { name: /make reservation/i })
-      .first();
-    await reserveButton.click();
+    const saunaCards = page.locator('[data-testid="sauna-card"]');
+    const viewReservationsButton = saunaCards
+      .first()
+      .getByRole('button', { name: /view all reservations/i });
 
-    const boatSearch = page.getByPlaceholder(/search.*boat/i);
-    await boatSearch.fill('test');
-    await page.waitForTimeout(500);
-
-    const firstBoat = page.locator('[data-testid="boat-option"]').first();
-    let boatIdentifier = '';
-
-    if ((await firstBoat.count()) > 0) {
-      boatIdentifier = (await firstBoat.textContent()) || '';
-      await firstBoat.click();
-    }
-
-    await page.getByLabel(/adults/i).fill('2');
-    await page.getByRole('button', { name: /continue|next/i }).click();
-    await page.getByRole('button', { name: /confirm/i }).click();
-
-    await page.waitForTimeout(1000);
-
-    // View reservations
-    await page.goto('/');
-    await islandLink.click();
-
-    const viewReservationsButton = page
-      .getByRole('button', { name: /view.*reservations/i })
-      .first();
     await viewReservationsButton.click();
+    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
 
-    // Find the reservation we just made
-    const ourReservation = page
-      .locator(`text=${boatIdentifier}`)
-      .locator('..')
-      .locator('..');
+    // Click cancel button
+    const cancelButton = page.getByTestId('cancel-button');
+    await cancelButton.click();
 
-    if ((await ourReservation.count()) > 0) {
-      const cancelButton = ourReservation.getByRole('button', {
-        name: /cancel/i,
-      });
+    // Should show confirmation dialog
+    await expect(page.getByText(/are you sure/i)).toBeVisible({
+      timeout: 5000,
+    });
 
-      if (await cancelButton.isVisible()) {
-        await cancelButton.click();
+    // Confirm cancellation
+    await page.getByRole('button', { name: /confirm cancel/i }).click();
 
-        // Should show confirmation dialog
-        await expect(page.getByText(/confirm|are you sure/i)).toBeVisible();
-
-        // Confirm cancellation
-        await page
-          .getByRole('button', { name: /confirm|yes|cancel.*reservation/i })
-          .click();
-
-        // Should show success message
-        await expect(page.getByText(/cancelled|success/i)).toBeVisible({
-          timeout: 10000,
-        });
-
-        // Reservation should be removed from list
-        await page.waitForTimeout(500);
-        const stillVisible = await ourReservation.isVisible();
-        expect(stillVisible).toBeFalsy();
-      }
-    }
+    // Wait for success - should show no reservations message
+    await expect(
+      page.getByRole('heading', { name: /no reservations yet/i })
+    ).toBeVisible({ timeout: 5000 });
   });
 
   test('should show "too late to cancel" for reservations within 15 minutes', async ({
     page,
   }) => {
-    // This test is difficult to write because it requires a reservation starting within 15 minutes
-    // We'll check for the UI element that would display this message
+    // Create a test reservation starting in 10 minutes (within 15-minute cutoff)
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 3, // Test Delta
+      startTimeOffset: 10 / 60, // 10 minutes from now
+      durationHours: 1,
+      adults: 2,
+      kids: 0,
+    });
+
+    // Navigate to island
+    await page.goto(`/auth?secret=${clubSecret}`);
+    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
-
-    if ((await islandLink.count()) === 0) {
-      test.skip();
-    }
-
     await islandLink.click();
-    await page.waitForURL(/\/islands\/[^/]+/);
+    await page.waitForURL(/\/islands\/[^/]+$/);
+    await page.waitForLoadState('networkidle');
 
-    const viewReservationsButton = page
-      .getByRole('button', { name: /view.*reservations/i })
-      .first();
+    const saunaCards = page.locator('[data-testid="sauna-card"]');
+    const viewReservationsButton = saunaCards
+      .first()
+      .getByRole('button', { name: /view all reservations/i });
 
-    if (await viewReservationsButton.isVisible()) {
-      await viewReservationsButton.click();
+    await viewReservationsButton.click();
+    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
 
-      // Look for any "too late" messages
-      const tooLateMessage = page.getByText(/too late.*cancel|cannot.*cancel/i);
-
-      // May or may not be visible depending on current reservations
-      if (await tooLateMessage.isVisible()) {
-        await expect(tooLateMessage).toBeVisible();
-      }
-    } else {
-      test.skip();
-    }
+    // Should see "Too late to cancel" message
+    await expect(page.getByTestId('too-late-message')).toBeVisible({
+      timeout: 5000,
+    });
   });
 
   test('should not show cancel button for past reservations', async ({
     page,
   }) => {
+    // Create a test reservation in the past (2 hours ago)
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 4, // Test Epsilon
+      startTimeOffset: -2, // 2 hours ago
+      durationHours: 1,
+      adults: 2,
+      kids: 1,
+    });
+
+    // Navigate to island
+    await page.goto(`/auth?secret=${clubSecret}`);
+    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
+
     const islandLink = page.locator('[data-testid="island-link"]').first();
-
-    if ((await islandLink.count()) === 0) {
-      test.skip();
-    }
-
     await islandLink.click();
-    await page.waitForURL(/\/islands\/[^/]+/);
+    await page.waitForURL(/\/islands\/[^/]+$/);
+    await page.waitForLoadState('networkidle');
 
-    const viewReservationsButton = page
-      .getByRole('button', { name: /view.*reservations/i })
-      .first();
+    const saunaCards = page.locator('[data-testid="sauna-card"]');
+    const viewReservationsButton = saunaCards
+      .first()
+      .getByRole('button', { name: /view all reservations/i });
 
-    if (await viewReservationsButton.isVisible()) {
-      await viewReservationsButton.click();
+    await viewReservationsButton.click();
+    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
 
-      // Look for past reservations (they might be grayed out or styled differently)
-      const pastReservations = page.locator('[data-testid="past-reservation"]');
+    // Should see past reservations section
+    const pastSection = page.getByTestId('past-reservations');
+    await expect(pastSection).toBeVisible({ timeout: 5000 });
 
-      if ((await pastReservations.count()) > 0) {
-        const firstPast = pastReservations.first();
-
-        // Should not have a cancel button
-        const cancelButton = firstPast.getByRole('button', { name: /cancel/i });
-        const hasCancelButton = await cancelButton.isVisible();
-
-        expect(hasCancelButton).toBeFalsy();
-      }
-    } else {
-      test.skip();
-    }
+    // Past reservations should not have cancel buttons
+    const cancelButtons = pastSection.getByTestId('cancel-button');
+    await expect(cancelButtons).toHaveCount(0);
   });
 
   test('should separate past and future reservations visually', async ({
     page,
   }) => {
+    // Create both past and future reservations
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 5, // Test Zeta
+      startTimeOffset: -1, // 1 hour ago
+      durationHours: 1,
+      adults: 2,
+      kids: 0,
+    });
+
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 6, // Test Eta
+      startTimeOffset: 2, // 2 hours from now
+      durationHours: 1,
+      adults: 3,
+      kids: 1,
+    });
+
+    // Navigate to island
+    await page.goto(`/auth?secret=${clubSecret}`);
+    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
+
     const islandLink = page.locator('[data-testid="island-link"]').first();
-
-    if ((await islandLink.count()) === 0) {
-      test.skip();
-    }
-
     await islandLink.click();
-    await page.waitForURL(/\/islands\/[^/]+/);
+    await page.waitForURL(/\/islands\/[^/]+$/);
+    await page.waitForLoadState('networkidle');
 
-    const viewReservationsButton = page
-      .getByRole('button', { name: /view.*reservations/i })
-      .first();
+    const saunaCards = page.locator('[data-testid="sauna-card"]');
+    const viewReservationsButton = saunaCards
+      .first()
+      .getByRole('button', { name: /view all reservations/i });
 
-    if (await viewReservationsButton.isVisible()) {
-      await viewReservationsButton.click();
+    await viewReservationsButton.click();
+    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
 
-      // Check for visual separators
-      const separator = page.locator('[data-testid="past-future-separator"]');
+    // Should have separate sections for past and upcoming
+    const pastSection = page.getByTestId('past-reservations');
+    const upcomingSection = page.getByTestId('upcoming-reservations');
 
-      if (await separator.isVisible()) {
-        await expect(separator).toBeVisible();
-      } else {
-        // Alternative: check for different styling classes or sections
-        const pastSection = page.locator('[data-testid="past-reservations"]');
-        const futureSection = page.locator(
-          '[data-testid="future-reservations"]'
-        );
-
-        if (
-          (await pastSection.isVisible()) &&
-          (await futureSection.isVisible())
-        ) {
-          await expect(pastSection).toBeVisible();
-          await expect(futureSection).toBeVisible();
-        }
-      }
-    } else {
-      test.skip();
-    }
+    await expect(pastSection).toBeVisible({ timeout: 5000 });
+    await expect(upcomingSection).toBeVisible({ timeout: 5000 });
   });
 
   test('should auto-scroll to future reservations', async ({ page }) => {
+    // Create a future reservation
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 7, // Test Theta
+      startTimeOffset: 2, // 2 hours from now (keeps it today)
+      durationHours: 1,
+      adults: 2,
+      kids: 0,
+    });
+
+    // Navigate to island
+    await page.goto(`/auth?secret=${clubSecret}`);
+    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
+
     const islandLink = page.locator('[data-testid="island-link"]').first();
-
-    if ((await islandLink.count()) === 0) {
-      test.skip();
-    }
-
     await islandLink.click();
-    await page.waitForURL(/\/islands\/[^/]+/);
+    await page.waitForURL(/\/islands\/[^/]+$/);
+    await page.waitForLoadState('networkidle');
 
-    const viewReservationsButton = page
-      .getByRole('button', { name: /view.*reservations/i })
-      .first();
+    const saunaCards = page.locator('[data-testid="sauna-card"]');
+    const viewReservationsButton = saunaCards
+      .first()
+      .getByRole('button', { name: /view all reservations/i });
 
-    if (await viewReservationsButton.isVisible()) {
-      await viewReservationsButton.click();
+    await viewReservationsButton.click();
+    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
 
-      // Check if future reservations section is in viewport
-      const futureReservations = page.locator(
-        '[data-testid="future-reservations"]'
-      );
+    // Check if upcoming section is visible and in viewport
+    const upcomingSection = page.getByTestId('upcoming-reservations');
+    await expect(upcomingSection).toBeVisible({ timeout: 5000 });
 
-      if (await futureReservations.isVisible()) {
-        // Verify element is in viewport by checking it's visible and scrolled into view
-        await expect(futureReservations).toBeVisible();
-        const box = await futureReservations.boundingBox();
-        expect(box).toBeTruthy();
-      }
-    } else {
-      test.skip();
-    }
+    const box = await upcomingSection.boundingBox();
+    expect(box).toBeTruthy();
   });
 
   test('should display reservation details in list', async ({ page }) => {
+    // Create a test reservation with specific details
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 0, // Test Alpha
+      startTimeOffset: 3, // 3 hours from now
+      durationHours: 2,
+      adults: 4,
+      kids: 2,
+    });
+
+    // Navigate to island
+    await page.goto(`/auth?secret=${clubSecret}`);
+    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
+
     const islandLink = page.locator('[data-testid="island-link"]').first();
-
-    if ((await islandLink.count()) === 0) {
-      test.skip();
-    }
-
     await islandLink.click();
-    await page.waitForURL(/\/islands\/[^/]+/);
+    await page.waitForURL(/\/islands\/[^/]+$/);
+    await page.waitForLoadState('networkidle');
 
-    const viewReservationsButton = page
-      .getByRole('button', { name: /view.*reservations/i })
-      .first();
+    const saunaCards = page.locator('[data-testid="sauna-card"]');
+    const viewReservationsButton = saunaCards
+      .first()
+      .getByRole('button', { name: /view all reservations/i });
 
-    if (await viewReservationsButton.isVisible()) {
-      await viewReservationsButton.click();
+    await viewReservationsButton.click();
+    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
 
-      const reservationItem = page
-        .locator('[data-testid="reservation-item"]')
-        .first();
+    // Should see reservation items (there may be multiple from other tests)
+    const reservationItems = page.getByTestId('reservation-item');
+    await expect(reservationItems.first()).toBeVisible({ timeout: 5000 });
 
-      if ((await reservationItem.count()) > 0) {
-        // Should show time
-        await expect(reservationItem.getByText(/\d{1,2}:\d{2}/)).toBeVisible();
+    // Find the specific reservation we created (Test Alpha with 4 adults, 2 kids)
+    const ourReservation = page
+      .getByTestId('reservation-boat-name')
+      .filter({ hasText: /test alpha/i });
+    await expect(ourReservation).toBeVisible();
 
-        // Should show boat name or membership number
-        await expect(reservationItem).toContainText(/\w+/);
-
-        // Should show party size
-        await expect(reservationItem.getByText(/\d+.*adults?/i)).toBeVisible();
-      }
-    } else {
-      test.skip();
-    }
+    // Check it has the right party size
+    const parentCard = ourReservation.locator('..').locator('..').locator('..');
+    await expect(
+      parentCard.getByTestId('reservation-party-size')
+    ).toContainText(/4 adults/i);
   });
 
   test('should show empty state when no reservations', async ({ page }) => {
+    // Don't create any reservations - use a different sauna (North Small Sauna)
+    // that hasn't been used by other tests in this suite
+
+    // Navigate to island
+    await page.goto(`/auth?secret=${clubSecret}`);
+    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
+
     const islandLink = page.locator('[data-testid="island-link"]').first();
-
-    if ((await islandLink.count()) === 0) {
-      test.skip();
-    }
-
     await islandLink.click();
-    await page.waitForURL(/\/islands\/[^/]+/);
+    await page.waitForURL(/\/islands\/[^/]+$/);
+    await page.waitForLoadState('networkidle');
 
-    const viewReservationsButton = page
-      .getByRole('button', { name: /view.*reservations/i })
-      .first();
+    // Click on the second sauna card (North Small Sauna)
+    const saunaCards = page.locator('[data-testid="sauna-card"]');
+    await saunaCards.nth(1).waitFor({ state: 'visible', timeout: 5000 });
 
-    if (await viewReservationsButton.isVisible()) {
-      await viewReservationsButton.click();
+    const viewReservationsButton = saunaCards
+      .nth(1)
+      .getByRole('button', { name: /view all reservations/i });
 
-      // If there are no reservations, should show empty state
-      const reservations = page.locator('[data-testid="reservation-item"]');
+    await viewReservationsButton.click();
+    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
 
-      if ((await reservations.count()) === 0) {
-        await expect(
-          page.getByText(/no reservations|no bookings|empty/i)
-        ).toBeVisible();
-      }
-    } else {
-      test.skip();
-    }
+    // Should show empty state
+    await expect(page.getByTestId('empty-state')).toBeVisible({
+      timeout: 5000,
+    });
   });
 });

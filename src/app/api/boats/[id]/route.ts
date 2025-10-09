@@ -17,7 +17,10 @@ import prisma from '@/lib/db';
  * GET /api/boats/[id]
  * Get a specific boat
  */
-export async function GET(_request: NextRequest, props: { params: Promise<{ id: string }> }) {
+export async function GET(
+  _request: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) {
   const params = await props.params;
   try {
     const boatId = getPathParam(params, 'id');
@@ -69,7 +72,10 @@ export async function GET(_request: NextRequest, props: { params: Promise<{ id: 
  * PUT /api/boats/[id]
  * Update a boat (admin only)
  */
-export async function PUT(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+export async function PUT(
+  request: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) {
   const params = await props.params;
   try {
     await requireAdminAuth();
@@ -130,7 +136,10 @@ export async function PUT(request: NextRequest, props: { params: Promise<{ id: s
  * DELETE /api/boats/[id]
  * Delete a boat (admin only)
  */
-export async function DELETE(_request: NextRequest, props: { params: Promise<{ id: string }> }) {
+export async function DELETE(
+  _request: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) {
   const params = await props.params;
   try {
     await requireAdminAuth();

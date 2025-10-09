@@ -115,7 +115,10 @@ export default function ReservePage() {
   }, [searchBoats]);
 
   const clubStyles = club
-    ? getClubColorStyles(club.primaryColor || undefined, club.secondaryColor || undefined)
+    ? getClubColorStyles(
+        club.primaryColor || undefined,
+        club.secondaryColor || undefined
+      )
     : {};
 
   async function handleBoatSelect(boat: Boat) {
@@ -177,7 +180,10 @@ export default function ReservePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100" style={clubStyles}>
+    <div
+      className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100"
+      style={clubStyles}
+    >
       {/* Club Header */}
       {club && (
         <ClubHeader
@@ -193,7 +199,7 @@ export default function ReservePage() {
       )}
 
       {/* Progress Indicator */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50 shadow-sm">
+      <div className="border-b border-gray-200/50 bg-white/80 shadow-sm backdrop-blur-sm">
         <div className="container mx-auto px-4 py-6">
           <div className="mx-auto flex max-w-2xl items-center justify-between">
             <StepIndicator
@@ -205,7 +211,7 @@ export default function ReservePage() {
             />
             <div className="mx-3 h-1 flex-1 rounded-full bg-gray-200">
               <div
-                className={`h-full rounded-full transition-all duration-500 bg-club-primary ${['party-size', 'confirm', 'success'].includes(step) ? 'w-full' : 'w-0'}`}
+                className={`bg-club-primary h-full rounded-full transition-all duration-500 ${['party-size', 'confirm', 'success'].includes(step) ? 'w-full' : 'w-0'}`}
               />
             </div>
             <StepIndicator
@@ -217,7 +223,7 @@ export default function ReservePage() {
             />
             <div className="mx-3 h-1 flex-1 rounded-full bg-gray-200">
               <div
-                className={`h-full rounded-full transition-all duration-500 bg-club-primary ${['confirm', 'success'].includes(step) ? 'w-full' : 'w-0'}`}
+                className={`bg-club-primary h-full rounded-full transition-all duration-500 ${['confirm', 'success'].includes(step) ? 'w-full' : 'w-0'}`}
               />
             </div>
             <StepIndicator
@@ -236,7 +242,7 @@ export default function ReservePage() {
         {/* Step 1: Boat Selection */}
         {step === 'boat' && (
           <Card className="overflow-hidden border-2 border-gray-200/50 shadow-lg animate-in">
-            <CardHeader className="bg-gradient-to-r from-white to-gray-50/50 border-b">
+            <CardHeader className="border-b bg-gradient-to-r from-white to-gray-50/50">
               <CardTitle className="text-club-primary flex items-center gap-2">
                 <Search className="h-5 w-5" />
                 Select Your Boat
@@ -252,7 +258,7 @@ export default function ReservePage() {
                   placeholder="Search boats..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-11 h-12 text-base border-2 focus:border-club-primary"
+                  className="focus:border-club-primary h-12 border-2 pl-11 text-base"
                   data-testid="boat-search-input"
                   aria-label="Boat name or membership number"
                 />
@@ -270,30 +276,36 @@ export default function ReservePage() {
                     key={boat.id}
                     onClick={() => handleBoatSelect(boat)}
                     disabled={loading}
-                    className="w-full rounded-xl border-2 border-gray-200 bg-white p-4 text-left transition-all hover:border-club-primary hover:bg-club-primary/5 hover:shadow-md hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="hover:border-club-primary hover:bg-club-primary/5 w-full rounded-xl border-2 border-gray-200 bg-white p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
                     data-testid="boat-result"
                   >
-                    <div className="font-semibold text-gray-900 text-lg">{boat.name}</div>
+                    <div className="text-lg font-semibold text-gray-900">
+                      {boat.name}
+                    </div>
                     {boat.captainName && (
-                      <div className="text-sm text-gray-600 mt-1">
+                      <div className="mt-1 text-sm text-gray-600">
                         Captain: {boat.captainName}
                       </div>
                     )}
-                    <div className="text-sm font-medium text-club-primary mt-1">
+                    <div className="text-club-primary mt-1 text-sm font-medium">
                       #{boat.membershipNumber}
                     </div>
                   </button>
                 ))}
                 {searchQuery.length >= 2 && boats.length === 0 && (
                   <div className="py-12 text-center">
-                    <p className="text-gray-500 text-lg">No boats found</p>
-                    <p className="text-sm text-gray-400 mt-2">Try a different search term</p>
+                    <p className="text-lg text-gray-500">No boats found</p>
+                    <p className="mt-2 text-sm text-gray-400">
+                      Try a different search term
+                    </p>
                   </div>
                 )}
                 {searchQuery.length < 2 && (
                   <div className="py-12 text-center">
-                    <Search className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-gray-500">Start typing to search boats</p>
+                    <Search className="mx-auto mb-3 h-12 w-12 text-gray-300" />
+                    <p className="text-gray-500">
+                      Start typing to search boats
+                    </p>
                   </div>
                 )}
               </div>
@@ -304,7 +316,7 @@ export default function ReservePage() {
         {/* Step 2: Party Size */}
         {step === 'party-size' && selectedBoat && (
           <Card className="overflow-hidden border-2 border-gray-200/50 shadow-lg animate-in">
-            <CardHeader className="bg-gradient-to-r from-white to-gray-50/50 border-b">
+            <CardHeader className="border-b bg-gradient-to-r from-white to-gray-50/50">
               <CardTitle className="text-club-primary flex items-center gap-2">
                 <Users className="h-5 w-5" />
                 Party Size
@@ -314,8 +326,8 @@ export default function ReservePage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6 pt-6">
-              <div className="rounded-xl border-2 border-club-primary/20 bg-gradient-to-br from-club-primary/5 to-club-primary/10 p-5">
-                <div className="font-semibold text-gray-900 text-lg">
+              <div className="border-club-primary/20 from-club-primary/5 to-club-primary/10 rounded-xl border-2 bg-gradient-to-br p-5">
+                <div className="text-lg font-semibold text-gray-900">
                   {selectedBoat.name}
                 </div>
                 {selectedBoat.captainName && (
@@ -323,14 +335,16 @@ export default function ReservePage() {
                     Captain: {selectedBoat.captainName}
                   </div>
                 )}
-                <div className="text-sm font-medium text-club-primary">
+                <div className="text-club-primary text-sm font-medium">
                   #{selectedBoat.membershipNumber}
                 </div>
               </div>
 
               <div className="space-y-5">
                 <div>
-                  <Label htmlFor="adults" className="text-base font-semibold">Adults *</Label>
+                  <Label htmlFor="adults" className="text-base font-semibold">
+                    Adults *
+                  </Label>
                   <Input
                     id="adults"
                     type="number"
@@ -338,12 +352,14 @@ export default function ReservePage() {
                     max="15"
                     value={adults}
                     onChange={(e) => setAdults(parseInt(e.target.value) || 1)}
-                    className="mt-2 h-12 text-base border-2 focus:border-club-primary"
+                    className="focus:border-club-primary mt-2 h-12 border-2 text-base"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="kids" className="text-base font-semibold">Kids (optional)</Label>
+                  <Label htmlFor="kids" className="text-base font-semibold">
+                    Kids (optional)
+                  </Label>
                   <Input
                     id="kids"
                     type="number"
@@ -351,7 +367,7 @@ export default function ReservePage() {
                     max="15"
                     value={kids}
                     onChange={(e) => setKids(parseInt(e.target.value) || 0)}
-                    className="mt-2 h-12 text-base border-2 focus:border-club-primary"
+                    className="focus:border-club-primary mt-2 h-12 border-2 text-base"
                   />
                 </div>
               </div>
@@ -360,14 +376,14 @@ export default function ReservePage() {
                 <Button
                   variant="outline"
                   onClick={() => setStep('boat')}
-                  className="flex-1 h-12 border-2"
+                  className="h-12 flex-1 border-2"
                 >
                   Back
                 </Button>
                 <Button
                   onClick={() => setStep('confirm')}
                   disabled={adults < 1}
-                  className="flex-1 h-12 bg-club-primary hover:bg-club-primary/90 text-white font-semibold"
+                  className="bg-club-primary hover:bg-club-primary/90 h-12 flex-1 font-semibold text-white"
                 >
                   Continue
                 </Button>
@@ -379,7 +395,7 @@ export default function ReservePage() {
         {/* Step 3: Confirmation */}
         {step === 'confirm' && selectedBoat && saunaInfo && (
           <Card className="overflow-hidden border-2 border-gray-200/50 shadow-lg animate-in">
-            <CardHeader className="bg-gradient-to-r from-white to-gray-50/50 border-b">
+            <CardHeader className="border-b bg-gradient-to-r from-white to-gray-50/50">
               <CardTitle className="text-club-primary flex items-center gap-2">
                 <Check className="h-5 w-5" />
                 Confirm Reservation
@@ -390,41 +406,51 @@ export default function ReservePage() {
             </CardHeader>
             <CardContent className="space-y-6 pt-6">
               <div className="space-y-4">
-                <div className="rounded-xl bg-gradient-to-br from-club-primary/10 to-club-secondary/10 p-5 border-2 border-club-primary/20">
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+                <div className="from-club-primary/10 to-club-secondary/10 border-club-primary/20 rounded-xl border-2 bg-gradient-to-br p-5">
+                  <div className="mb-1 flex items-center gap-2 text-sm text-gray-600">
                     <Calendar className="h-4 w-4" />
                     Time
                   </div>
-                  <div className="text-2xl font-bold text-club-primary">
+                  <div className="text-club-primary text-2xl font-bold">
                     {formatTime(saunaInfo.nextAvailable.startTime)}
                   </div>
-                  <div className="text-sm text-gray-600 mt-1">
+                  <div className="mt-1 text-sm text-gray-600">
                     Duration: 1 hour
                   </div>
                 </div>
 
                 <div className="border-b-2 border-gray-100 pb-4">
-                  <div className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Sauna</div>
-                  <div className="font-semibold text-lg text-gray-900 mt-1">{saunaInfo.sauna.name}</div>
+                  <div className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+                    Sauna
+                  </div>
+                  <div className="mt-1 text-lg font-semibold text-gray-900">
+                    {saunaInfo.sauna.name}
+                  </div>
                 </div>
 
                 <div className="border-b-2 border-gray-100 pb-4">
-                  <div className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Boat</div>
-                  <div className="font-semibold text-lg text-gray-900 mt-1">{selectedBoat.name}</div>
+                  <div className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+                    Boat
+                  </div>
+                  <div className="mt-1 text-lg font-semibold text-gray-900">
+                    {selectedBoat.name}
+                  </div>
                   {selectedBoat.captainName && (
-                    <div className="text-sm text-gray-600 mt-1">
+                    <div className="mt-1 text-sm text-gray-600">
                       Captain: {selectedBoat.captainName}
                     </div>
                   )}
-                  <div className="text-sm font-medium text-club-primary mt-1">
+                  <div className="text-club-primary mt-1 text-sm font-medium">
                     #{selectedBoat.membershipNumber}
                   </div>
                 </div>
 
                 <div>
-                  <div className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Party Size</div>
-                  <div className="font-semibold text-lg text-gray-900 mt-1 flex items-center gap-2">
-                    <Users className="h-5 w-5 text-club-primary" />
+                  <div className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+                    Party Size
+                  </div>
+                  <div className="mt-1 flex items-center gap-2 text-lg font-semibold text-gray-900">
+                    <Users className="text-club-primary h-5 w-5" />
                     {adults} {adults === 1 ? 'adult' : 'adults'}
                     {kids > 0 && `, ${kids} ${kids === 1 ? 'kid' : 'kids'}`}
                   </div>
@@ -441,7 +467,7 @@ export default function ReservePage() {
                 <Button
                   variant="outline"
                   onClick={() => setStep('party-size')}
-                  className="flex-1 h-12 border-2"
+                  className="h-12 flex-1 border-2"
                   disabled={loading}
                 >
                   Back
@@ -449,7 +475,7 @@ export default function ReservePage() {
                 <Button
                   onClick={handleConfirmReservation}
                   disabled={loading}
-                  className="flex-1 h-12 bg-club-primary hover:bg-club-primary/90 text-white font-semibold shadow-lg"
+                  className="bg-club-primary hover:bg-club-primary/90 h-12 flex-1 font-semibold text-white shadow-lg"
                 >
                   {loading ? 'Creating...' : 'Confirm Reservation'}
                 </Button>
@@ -466,43 +492,57 @@ export default function ReservePage() {
                 <Check className="h-10 w-10 text-white" strokeWidth={3} />
               </div>
               <h2
-                className="mb-3 text-3xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent"
+                className="mb-3 bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-3xl font-bold text-transparent"
                 data-testid="success-title"
               >
                 Reservation Confirmed!
               </h2>
-              <p className="mb-8 text-lg text-gray-600">Your sauna is ready and waiting</p>
+              <p className="mb-8 text-lg text-gray-600">
+                Your sauna is ready and waiting
+              </p>
 
-              <div className="mx-auto mb-8 max-w-sm rounded-2xl border-2 border-club-primary/20 bg-gradient-to-br from-club-primary/5 to-club-secondary/10 p-6 text-left shadow-lg">
+              <div className="border-club-primary/20 from-club-primary/5 to-club-secondary/10 mx-auto mb-8 max-w-sm rounded-2xl border-2 bg-gradient-to-br p-6 text-left shadow-lg">
                 <div className="space-y-4">
                   <div>
-                    <div className="flex items-center gap-2 text-sm font-semibold text-gray-500 uppercase tracking-wide">
+                    <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-gray-500">
                       <Calendar className="h-4 w-4" />
                       Time
                     </div>
-                    <div className="font-bold text-2xl text-club-primary mt-1">
+                    <div className="text-club-primary mt-1 text-2xl font-bold">
                       {formatTime(saunaInfo.nextAvailable.startTime)}
                     </div>
                   </div>
                   <div className="border-t-2 border-gray-200 pt-3">
-                    <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Duration</span>
-                    <div className="font-semibold text-lg text-gray-900">1 hour</div>
+                    <span className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+                      Duration
+                    </span>
+                    <div className="text-lg font-semibold text-gray-900">
+                      1 hour
+                    </div>
                   </div>
                   <div className="border-t-2 border-gray-200 pt-3">
-                    <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Sauna</span>
-                    <div className="font-semibold text-lg text-gray-900">{saunaInfo.sauna.name}</div>
+                    <span className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+                      Sauna
+                    </span>
+                    <div className="text-lg font-semibold text-gray-900">
+                      {saunaInfo.sauna.name}
+                    </div>
                   </div>
                   <div className="border-t-2 border-gray-200 pt-3">
-                    <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Boat</span>
-                    <div className="font-semibold text-lg text-gray-900">{selectedBoat.name}</div>
+                    <span className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+                      Boat
+                    </span>
+                    <div className="text-lg font-semibold text-gray-900">
+                      {selectedBoat.name}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-3 max-w-sm mx-auto">
+              <div className="mx-auto max-w-sm space-y-3">
                 <Button
                   onClick={() => router.push(`/islands/${islandId}`)}
-                  className="w-full h-12 bg-club-primary hover:bg-club-primary/90 text-white font-semibold shadow-lg"
+                  className="bg-club-primary hover:bg-club-primary/90 h-12 w-full font-semibold text-white shadow-lg"
                 >
                   Back to Saunas
                 </Button>
@@ -513,7 +553,7 @@ export default function ReservePage() {
                       `/islands/${islandId}/saunas/${saunaId}/reservations`
                     )
                   }
-                  className="w-full h-12 border-2 border-club-primary/30 text-club-primary hover:bg-club-primary/5"
+                  className="border-club-primary/30 text-club-primary hover:bg-club-primary/5 h-12 w-full border-2"
                 >
                   View All Reservations
                 </Button>
@@ -542,17 +582,19 @@ function StepIndicator({
   return (
     <div className="flex flex-col items-center gap-2">
       <div
-        className={`flex h-12 w-12 items-center justify-center rounded-full font-semibold transition-all duration-300 shadow-sm ${
+        className={`flex h-12 w-12 items-center justify-center rounded-full font-semibold shadow-sm transition-all duration-300 ${
           completed
-            ? 'bg-club-primary text-white scale-105 shadow-lg'
+            ? 'bg-club-primary scale-105 text-white shadow-lg'
             : active
-              ? 'bg-club-primary text-white ring-4 ring-club-primary/20'
+              ? 'bg-club-primary ring-club-primary/20 text-white ring-4'
               : 'bg-gray-200 text-gray-500'
         }`}
       >
         {completed ? <Check className="h-6 w-6" /> : icon || number}
       </div>
-      <span className={`text-xs font-medium ${active || completed ? 'text-gray-900' : 'text-gray-500'}`}>
+      <span
+        className={`text-xs font-medium ${active || completed ? 'text-gray-900' : 'text-gray-500'}`}
+      >
         {label}
       </span>
     </div>

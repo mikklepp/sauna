@@ -270,10 +270,15 @@ export async function createTestReservation(options: {
     include: {
       islands: {
         include: {
-          saunas: true,
+          saunas: {
+            orderBy: { name: 'asc' }, // Ensure consistent ordering
+          },
         },
+        orderBy: { name: 'asc' }, // Ensure consistent ordering
       },
-      boats: true,
+      boats: {
+        orderBy: { membershipNumber: 'asc' }, // Ensure consistent ordering
+      },
     },
   });
 
@@ -281,17 +286,40 @@ export async function createTestReservation(options: {
     throw new Error('Test club not found. Run resetTestClub() first.');
   }
 
-  const saunas = club.islands.flatMap((i) => i.saunas);
+  // Flatten saunas in a consistent order
+  const saunas = club.islands
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .flatMap((i) => i.saunas.sort((a, b) => a.name.localeCompare(b.name)));
   const sauna = saunas[saunaIndex];
-  const boat = club.boats[boatIndex];
+  const boat = club.boats.sort((a, b) =>
+    a.membershipNumber.localeCompare(b.membershipNumber)
+  )[boatIndex];
 
   if (!sauna || !boat) {
     throw new Error('Invalid sauna or boat index');
   }
 
+  // Create times ensuring they're all today (for the reservation list which filters by date)
   const now = new Date();
-  const startTime = new Date(now.getTime() + startTimeOffset * 60 * 60 * 1000);
-  const endTime = new Date(startTime.getTime() + durationHours * 60 * 60 * 1000);
+  const todayMidnight = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate()
+  );
+
+  const proposedStartTime = new Date(
+    now.getTime() + startTimeOffset * 60 * 60 * 1000
+  );
+
+  // If the proposed time is before today's midnight, clamp it to 1 hour after midnight (early today)
+  const startTime =
+    proposedStartTime < todayMidnight
+      ? new Date(todayMidnight.getTime() + 60 * 60 * 1000) // 1 AM today
+      : proposedStartTime;
+
+  const endTime = new Date(
+    startTime.getTime() + durationHours * 60 * 60 * 1000
+  );
 
   return await prisma.reservation.create({
     data: {
@@ -340,10 +368,15 @@ export async function createTestSharedReservation(options: {
     include: {
       islands: {
         include: {
-          saunas: true,
+          saunas: {
+            orderBy: { name: 'asc' },
+          },
         },
+        orderBy: { name: 'asc' },
       },
-      boats: true,
+      boats: {
+        orderBy: { membershipNumber: 'asc' },
+      },
     },
   });
 
@@ -351,7 +384,9 @@ export async function createTestSharedReservation(options: {
     throw new Error('Test club not found. Run resetTestClub() first.');
   }
 
-  const saunas = club.islands.flatMap((i) => i.saunas);
+  const saunas = club.islands
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .flatMap((i) => i.saunas.sort((a, b) => a.name.localeCompare(b.name)));
   const sauna = saunas[saunaIndex];
 
   if (!sauna) {
@@ -379,8 +414,11 @@ export async function createTestSharedReservation(options: {
   });
 
   // Add participants
+  const sortedBoats = club.boats.sort((a, b) =>
+    a.membershipNumber.localeCompare(b.membershipNumber)
+  );
   for (const participant of participants) {
-    const boat = club.boats[participant.boatIndex];
+    const boat = sortedBoats[participant.boatIndex];
     if (!boat) {
       throw new Error(`Invalid boat index: ${participant.boatIndex}`);
     }

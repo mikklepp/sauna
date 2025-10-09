@@ -1,5 +1,8 @@
 import { test, expect, Page } from '@playwright/test';
-import { getTestClubSecret, createTestReservation } from './helpers/test-fixtures';
+import {
+  getTestClubSecret,
+  createTestReservation,
+} from './helpers/test-fixtures';
 
 test.describe('Member Reservation List View & Cancellation', () => {
   let clubSecret: string;

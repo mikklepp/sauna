@@ -35,11 +35,15 @@ test.describe('Shared Reservation - Admin Creation', () => {
     await startTimeField.selectOption('18:00');
 
     // Set males duration (select dropdown)
-    const malesDurationField = page.getByLabel(/males.*duration|men.*duration/i);
+    const malesDurationField = page.getByLabel(
+      /males.*duration|men.*duration/i
+    );
     await malesDurationField.selectOption('2');
 
     // Set females duration (select dropdown)
-    const femalesDurationField = page.getByLabel(/females.*duration|women.*duration/i);
+    const femalesDurationField = page.getByLabel(
+      /females.*duration|women.*duration/i
+    );
     await femalesDurationField.selectOption('2');
 
     // Set gender order
@@ -102,7 +106,9 @@ test.describe('Shared Reservation - Admin Creation', () => {
     await page.getByLabel(/date/i).fill(dateString);
     await page.getByLabel(/start time|time/i).selectOption('19:00');
     await page.getByLabel(/males.*duration|men.*duration/i).selectOption('2');
-    await page.getByLabel(/females.*duration|women.*duration/i).selectOption('2');
+    await page
+      .getByLabel(/females.*duration|women.*duration/i)
+      .selectOption('2');
 
     const testName = `Delete Me ${Date.now()}`;
     const nameField = page.getByLabel(/name|description/i);

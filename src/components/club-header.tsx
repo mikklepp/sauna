@@ -39,7 +39,7 @@ export function ClubHeader({
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-club-gradient shadow-sm">
+    <header className="bg-club-gradient sticky top-0 z-50 w-full border-b shadow-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* Left side: Back button or Logo */}
         <div className="flex items-center gap-4">

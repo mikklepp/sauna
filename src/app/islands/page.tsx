@@ -45,7 +45,12 @@ export default function IslandsPage() {
         const data = await response.json();
         // Transform API response to match expected format
         const transformedIslands = (data.data || []).map(
-          (island: IslandData & { _count?: { saunas: number }; club?: ClubData }) => ({
+          (
+            island: IslandData & {
+              _count?: { saunas: number };
+              club?: ClubData;
+            }
+          ) => ({
             ...island,
             numberOfSaunas: island._count?.saunas || island.saunas?.length || 0,
           })
@@ -75,7 +80,7 @@ export default function IslandsPage() {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-club-primary"></div>
+          <div className="border-club-primary mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2"></div>
           <p className="text-muted-foreground">Loading islands...</p>
         </div>
       </div>
@@ -128,7 +133,7 @@ export default function IslandsPage() {
                 }}
               >
                 {/* Island Image Placeholder / Gradient */}
-                <div className="relative h-40 bg-club-gradient">
+                <div className="bg-club-gradient relative h-40">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <MapPin className="h-16 w-16 text-white/30" />
                   </div>
@@ -156,7 +161,7 @@ export default function IslandsPage() {
                         key={sauna.id}
                         className="flex items-center gap-2 text-sm text-gray-600"
                       >
-                        <Waves className="h-4 w-4 text-club-primary" />
+                        <Waves className="text-club-primary h-4 w-4" />
                         <span>{sauna.name}</span>
                       </div>
                     ))}
@@ -168,7 +173,7 @@ export default function IslandsPage() {
                   </div>
 
                   <Button
-                    className="mt-4 w-full bg-club-primary text-white hover:opacity-90"
+                    className="bg-club-primary mt-4 w-full text-white hover:opacity-90"
                     onClick={(e) => {
                       e.stopPropagation();
                       router.push(`/islands/${island.id}`);

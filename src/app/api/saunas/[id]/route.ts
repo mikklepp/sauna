@@ -17,7 +17,10 @@ import prisma from '@/lib/db';
  * GET /api/saunas/[id]
  * Get a specific sauna
  */
-export async function GET(_request: NextRequest, props: { params: Promise<{ id: string }> }) {
+export async function GET(
+  _request: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) {
   const params = await props.params;
   try {
     const saunaId = getPathParam(params, 'id');
@@ -77,7 +80,10 @@ export async function GET(_request: NextRequest, props: { params: Promise<{ id: 
  * PUT /api/saunas/[id]
  * Update a sauna (admin only)
  */
-export async function PUT(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+export async function PUT(
+  request: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) {
   const params = await props.params;
   try {
     await requireAdminAuth();
@@ -122,7 +128,10 @@ export async function PUT(request: NextRequest, props: { params: Promise<{ id: s
  * DELETE /api/saunas/[id]
  * Delete a sauna (admin only)
  */
-export async function DELETE(_request: NextRequest, props: { params: Promise<{ id: string }> }) {
+export async function DELETE(
+  _request: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) {
   const params = await props.params;
   try {
     await requireAdminAuth();

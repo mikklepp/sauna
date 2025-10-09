@@ -7,6 +7,7 @@ This document describes the design system implemented for the Sauna Reservation 
 ## Design Baseline
 
 The design system is built on proven patterns from:
+
 - **Radix UI** - Accessible component primitives
 - **Tailwind CSS** - Utility-first styling
 - **Shadcn/ui** - Component architecture
@@ -25,18 +26,21 @@ The design system is built on proven patterns from:
 ### Three User Experiences
 
 #### 1. Member-Facing Pages (Club-Branded)
+
 - **Pages**: `/islands`, `/islands/[islandId]`, reservation flows
 - **Branding**: Club logo + primary/secondary colors
 - **Style**: Vacation-ready, welcoming, gradient backgrounds
 - **Components**: ClubHeader, status badges, club-colored buttons
 
 #### 2. Admin Portal (Professional)
+
 - **Pages**: `/admin/*`
 - **Branding**: System colors (blue/green)
 - **Style**: Professional, data-dense, dashboard-like
 - **Components**: Tables, forms, charts
 
 #### 3. Island Device (Touch-First)
+
 - **Pages**: `/island-device/*`
 - **Branding**: Minimal, large touch targets
 - **Style**: High contrast, 60px+ buttons, simple navigation
@@ -56,6 +60,7 @@ All colors use HSL format for CSS custom properties, enabling easy manipulation:
 ### Color Categories
 
 #### System Colors (Admin/Base)
+
 - `--primary`: System blue (221.2 83.2% 53.3%)
 - `--secondary`: Neutral gray (210 40% 96.1%)
 - `--muted`: Subtle gray (210 40% 96.1%)
@@ -63,12 +68,14 @@ All colors use HSL format for CSS custom properties, enabling easy manipulation:
 - `--destructive`: Error red (0 84.2% 60.2%)
 
 #### Status Colors
+
 - `--success`: Green (142 76% 36%) - Available, completed
 - `--warning`: Orange (38 92% 50%) - Pending, caution
 - `--error`: Red (0 84.2% 60.2%) - Reserved, errors
 - `--info`: Blue (199 89% 48%) - Information
 
 #### Club Branding (Dynamic)
+
 - `--club-primary`: Main club color (set via inline styles)
 - `--club-primary-foreground`: Contrast text color
 - `--club-secondary`: Secondary club color
@@ -77,10 +84,12 @@ All colors use HSL format for CSS custom properties, enabling easy manipulation:
 ## Typography
 
 ### Font Stack
+
 - **Sans**: 'Inter Variable', system-ui fallbacks
 - **Mono**: 'JetBrains Mono', 'Fira Code', monospace
 
 ### Heading Scale
+
 - `h1`: 4xl (2.25rem) - Page titles
 - `h2`: 3xl (1.875rem) - Section headers
 - `h3`: 2xl (1.5rem) - Card titles
@@ -91,11 +100,13 @@ All colors use HSL format for CSS custom properties, enabling easy manipulation:
 ## Component Library
 
 ### ClubHeader
+
 Reusable branded header component.
 
 **Location**: `src/components/club-header.tsx`
 
 **Props**:
+
 ```typescript
 interface ClubHeaderProps {
   clubName: string;
@@ -110,6 +121,7 @@ interface ClubHeaderProps {
 ```
 
 **Features**:
+
 - Gradient background using club colors
 - Logo display with Next.js Image optimization
 - Back button navigation
@@ -121,6 +133,7 @@ interface ClubHeaderProps {
 Pre-built badge utilities for common status indicators.
 
 **Usage**:
+
 ```tsx
 <span className="badge-available">Available</span>
 <span className="badge-reserved">Reserved</span>
@@ -130,6 +143,7 @@ Pre-built badge utilities for common status indicators.
 ```
 
 **Styles**:
+
 - Available: Green background, success text
 - Reserved: Red background, error text
 - Club Sauna: Secondary color background, bold text
@@ -175,33 +189,38 @@ Pre-built badge utilities for common status indicators.
 ## Club Theme Utilities
 
 ### Location
+
 `src/lib/club-theme.ts`
 
 ### Functions
 
 #### `hexToHSL(hex: string): string`
+
 Converts hex color to HSL format for CSS variables.
 
 ```typescript
-hexToHSL('#3B82F6') // Returns: "221.2 83.2% 53.3%"
+hexToHSL('#3B82F6'); // Returns: "221.2 83.2% 53.3%"
 ```
 
 #### `getContrastColor(hexColor: string): string`
+
 Calculates optimal foreground color (black/white) for contrast.
 
 ```typescript
-getContrastColor('#3B82F6') // Returns: "210 40% 98%" (white)
-getContrastColor('#FFFFFF') // Returns: "222.2 84% 4.9%" (black)
+getContrastColor('#3B82F6'); // Returns: "210 40% 98%" (white)
+getContrastColor('#FFFFFF'); // Returns: "222.2 84% 4.9%" (black)
 ```
 
 #### `applyClubTheme(primaryColor?: string, secondaryColor?: string)`
+
 Applies club theme to document root (client-side only).
 
 ```typescript
-applyClubTheme('#3B82F6', '#10B981')
+applyClubTheme('#3B82F6', '#10B981');
 ```
 
 #### `getClubColorStyles(primaryColor?: string, secondaryColor?: string): React.CSSProperties`
+
 Generates inline React styles for club colors.
 
 ```typescript
@@ -210,10 +229,11 @@ const styles = getClubColorStyles('#3B82F6', '#10B981');
 ```
 
 #### `getClubGradient(primaryColor: string, secondaryColor: string, angle?: number): string`
+
 Creates gradient CSS string.
 
 ```typescript
-getClubGradient('#3B82F6', '#10B981', 135)
+getClubGradient('#3B82F6', '#10B981', 135);
 // Returns: "linear-gradient(135deg, #3B82F6 0%, #10B981 100%)"
 ```
 
@@ -302,9 +322,7 @@ export default function MemberPage() {
         />
       )}
 
-      <main className="container mx-auto px-4 py-8">
-        {/* Page content */}
-      </main>
+      <main className="container mx-auto px-4 py-8">{/* Page content */}</main>
     </div>
   );
 }
@@ -316,7 +334,7 @@ export default function MemberPage() {
 <Card className="overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-xl">
   <CardHeader className="border-b bg-gradient-to-r from-white to-gray-50">
     <CardTitle className="flex items-center gap-2">
-      <Icon className="h-6 w-6 text-club-primary" />
+      <Icon className="text-club-primary h-6 w-6" />
       Card Title
     </CardTitle>
     <CardDescription>
@@ -324,9 +342,7 @@ export default function MemberPage() {
     </CardDescription>
   </CardHeader>
 
-  <CardContent className="pt-6">
-    {/* Card content */}
-  </CardContent>
+  <CardContent className="pt-6">{/* Card content */}</CardContent>
 </Card>
 ```
 
@@ -348,12 +364,12 @@ export default function MemberPage() {
 ### Gradient Section
 
 ```tsx
-<div className="rounded-xl border-2 border-club-primary/20 bg-gradient-to-br from-club-primary/5 to-club-primary/10 p-5">
+<div className="border-club-primary/20 from-club-primary/5 to-club-primary/10 rounded-xl border-2 bg-gradient-to-br p-5">
   <div className="flex items-center justify-between">
     <span className="text-sm font-semibold uppercase tracking-wide text-gray-700">
       Section Title
     </span>
-    <span className="text-2xl font-bold text-club-primary">
+    <span className="text-club-primary text-2xl font-bold">
       Highlighted Value
     </span>
   </div>
@@ -384,6 +400,7 @@ src/
 ## Color Accessibility
 
 All color combinations are designed to meet WCAG AA standards:
+
 - Contrast ratio ≥ 4.5:1 for normal text
 - Contrast ratio ≥ 3:1 for large text
 - `getContrastColor()` automatically selects optimal foreground color

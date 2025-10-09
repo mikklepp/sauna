@@ -53,7 +53,9 @@ const serwist = new Serwist({
     // Font files
     {
       matcher({ url }) {
-        return /\.(?:eot|otf|ttc|ttf|woff|woff2|font\.css)$/i.test(url.pathname);
+        return /\.(?:eot|otf|ttc|ttf|woff|woff2|font\.css)$/i.test(
+          url.pathname
+        );
       },
       handler: new StaleWhileRevalidate({
         cacheName: 'static-font-assets',
@@ -156,7 +158,10 @@ const serwist = new Serwist({
     // Next.js data
     {
       matcher({ url }) {
-        return url.pathname.startsWith('/_next/data/') && url.pathname.endsWith('.json');
+        return (
+          url.pathname.startsWith('/_next/data/') &&
+          url.pathname.endsWith('.json')
+        );
       },
       handler: new StaleWhileRevalidate({
         cacheName: 'next-data',
