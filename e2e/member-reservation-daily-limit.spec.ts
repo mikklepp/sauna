@@ -9,62 +9,33 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
   });
 
   /**
-   * Helper to navigate to reservation page for a specific island
+   * Helper to navigate to reservation page
+   * Uses known test data - navigates to first island's first sauna
    */
   async function navigateToReservePage(page: Page): Promise<boolean> {
     await page.goto(`/auth?secret=${clubSecret}`);
     await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
 
-    // Wait for islands to load
-    await page
-      .waitForSelector(
-        '[data-testid="island-link"], :text("No islands available")',
-        { timeout: 5000 }
-      )
-      .catch(() => {});
-
+    // Click first island (Test North Island - has 2 saunas)
     const islandLinks = page.locator('[data-testid="island-link"]');
-    const islandCount = await islandLinks.count();
+    await islandLinks.first().click();
+    await page.waitForURL(/\/islands\/[^/]+$/);
+    await page.waitForLoadState('networkidle');
 
-    if (islandCount === 0) {
-      return false;
-    }
+    // Wait for sauna cards to load
+    const saunaCards = page.locator('[data-testid="sauna-card"]');
+    await saunaCards.first().waitFor({ state: 'visible', timeout: 5000 });
 
-    // Find an island with saunas
-    for (let i = 0; i < Math.min(islandCount, 5); i++) {
-      const island = islandLinks.nth(i);
-      const islandText = await island.textContent();
+    // Click the Reserve button on the first sauna
+    const reserveButton = saunaCards
+      .first()
+      .getByRole('button', { name: /reserve/i });
 
-      if (islandText && /[1-9]\s+(sauna|saunas)/.test(islandText)) {
-        await island.click();
-        await page.waitForURL(/\/islands\/[^/]+$/);
-        await page.waitForLoadState('networkidle');
+    await reserveButton.click();
+    await page.waitForURL(/\/islands\/[^/]+\/reserve/);
 
-        // Wait for sauna cards to load
-        await page
-          .waitForSelector('[data-testid="sauna-card"]', { timeout: 5000 })
-          .catch(() => {});
-
-        const saunaCards = page.locator('[data-testid="sauna-card"]');
-        if ((await saunaCards.count()) > 0) {
-          // Click the Reserve button on the first sauna
-          const reserveButton = saunaCards
-            .first()
-            .getByRole('button', { name: /reserve this time/i });
-          if (await reserveButton.isVisible()) {
-            await reserveButton.click();
-            await page.waitForURL(/\/islands\/[^/]+\/reserve/);
-            return true;
-          }
-        }
-
-        // Go back and try next island
-        await page.goto(`/auth?secret=${clubSecret}`);
-        await page.waitForURL(/\/islands/, { timeout: 10000 });
-      }
-    }
-
-    return false;
+    return true;
   }
 
   /**
@@ -202,165 +173,71 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
       test.skip();
     }
 
-    // Try to find a boat that already has a reservation
-    // We'll search and try a few boats
+    // First, create a reservation with a known boat
+    const result = await createReservationWithBoat(page, 'Test Alpha');
+    expect(result.success).toBe(true);
+
+    // Now try to reserve with same boat again on same island
+    await navigateToReservePage(page);
+
+    // Search for the same boat
     const searchInput = page.getByTestId('boat-search-input');
-    await searchInput.fill('Test');
+    await searchInput.fill('Test Alpha');
     await page.waitForTimeout(500);
 
     const boatResults = page.locator('[data-testid="boat-result"]');
-    const boatCount = await boatResults.count();
+    await boatResults.first().click();
 
-    if (boatCount === 0) {
-      test.skip();
-    }
+    // Should show daily limit error
+    const errorMsg = page.getByText(/already has a reservation/i);
+    await expect(errorMsg).toBeVisible({ timeout: 5000 });
 
-    // Try boats until we find one with daily limit error
-    let foundError = false;
-    for (let i = 0; i < Math.min(boatCount, 5); i++) {
-      const boat = boatResults.nth(i);
-      await boat.click();
-
-      // Wait for either adults input or error
-      const adultsInput = page.getByLabel(/adults/i);
-      const errorMsg = page.getByText(/already has a reservation/i);
-
-      await Promise.race([
-        adultsInput
-          .waitFor({ state: 'visible', timeout: 5000 })
-          .catch(() => {}),
-        errorMsg.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {}),
-      ]);
-
-      if (await errorMsg.isVisible().catch(() => false)) {
-        // Found a boat with daily limit error
-        foundError = true;
-
-        // Verify error message is displayed and properly formatted
-        await expect(errorMsg).toBeVisible();
-        const errorText = await errorMsg.textContent();
-        expect(errorText).toMatch(/already has a reservation/i);
-        break;
-      }
-
-      // This boat doesn't have reservation, try next one
-      await page.goto(page.url());
-      await page.waitForLoadState('networkidle');
-      await searchInput.fill('Test');
-      await page.waitForTimeout(500);
-    }
-
-    // If we didn't find any boat with error, create a reservation and try again
-    if (!foundError) {
-      const result = await createReservationWithBoat(page, 'Test');
-      if (result.success && result.boatName) {
-        // Now try to reserve with same boat again
-        await page.goto(page.url());
-        await page.waitForLoadState('networkidle');
-
-        const searchInput2 = page.getByTestId('boat-search-input');
-        await searchInput2.fill(result.boatName);
-        await page.waitForTimeout(500);
-
-        const boatResults2 = page.locator('[data-testid="boat-result"]');
-        if ((await boatResults2.count()) > 0) {
-          await boatResults2.first().click();
-
-          const errorMsg = page.getByText(/already has a reservation/i);
-          await expect(errorMsg).toBeVisible({ timeout: 5000 });
-          foundError = true;
-        }
-      }
-    }
-
-    // Should have found at least one boat with daily limit
-    expect(foundError).toBe(true);
+    const errorText = await errorMsg.textContent();
+    expect(errorText).toMatch(/already has a reservation/i);
   });
 
   test('should allow same boat to reserve on different islands same day', async ({
     page,
   }) => {
+    // Navigate to first island (Test North Island) and create reservation
     await page.goto(`/auth?secret=${clubSecret}`);
     await page.waitForURL(/\/islands/, { timeout: 10000 });
-
-    // Wait for islands to load
-    await page
-      .waitForSelector(
-        '[data-testid="island-link"], :text("No islands available")',
-        { timeout: 5000 }
-      )
-      .catch(() => {});
+    await page.waitForLoadState('networkidle');
 
     const islandLinks = page.locator('[data-testid="island-link"]');
-    const islandCount = await islandLinks.count();
-
-    // Need at least 2 islands for this test
-    if (islandCount < 2) {
-      test.skip();
-    }
-
-    // Find two islands with saunas
-    const islandsWithSaunas: number[] = [];
-    for (let i = 0; i < islandCount && islandsWithSaunas.length < 2; i++) {
-      const island = islandLinks.nth(i);
-      const islandText = await island.textContent();
-
-      if (islandText && /[1-9]\s+(sauna|saunas)/.test(islandText)) {
-        islandsWithSaunas.push(i);
-      }
-    }
-
-    if (islandsWithSaunas.length < 2) {
-      test.skip();
-    }
-
-    // Navigate to first island and create reservation
-    await islandLinks.nth(islandsWithSaunas[0]).click();
+    await islandLinks.first().click();
     await page.waitForURL(/\/islands\/[^/]+$/);
     await page.waitForLoadState('networkidle');
 
     const saunaCards = page.locator('[data-testid="sauna-card"]');
-    if ((await saunaCards.count()) === 0) {
-      test.skip();
-    }
-
     const reserveButton = saunaCards
       .first()
-      .getByRole('button', { name: /reserve this time/i });
+      .getByRole('button', { name: /reserve/i });
     await reserveButton.click();
     await page.waitForURL(/\/islands\/[^/]+\/reserve/);
 
-    const firstResult = await createReservationWithBoat(page, 'Test');
+    // Create reservation with Test Beta boat
+    const firstResult = await createReservationWithBoat(page, 'Test Beta');
+    expect(firstResult.success).toBe(true);
 
-    if (!firstResult.success || !firstResult.boatName) {
-      test.skip();
-    }
-
-    // Navigate to second island
+    // Navigate to second island (Test South Island)
     await page.goto(`/auth?secret=${clubSecret}`);
     await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
 
-    const islandLinks2 = page.locator('[data-testid="island-link"]');
-    await islandLinks2.nth(islandsWithSaunas[1]).click();
+    await islandLinks.nth(1).click(); // Second island
     await page.waitForURL(/\/islands\/[^/]+$/);
     await page.waitForLoadState('networkidle');
 
     const saunaCards2 = page.locator('[data-testid="sauna-card"]');
-    if ((await saunaCards2.count()) === 0) {
-      test.skip();
-    }
-
     const reserveButton2 = saunaCards2
       .first()
-      .getByRole('button', { name: /reserve this time/i });
+      .getByRole('button', { name: /reserve/i });
     await reserveButton2.click();
     await page.waitForURL(/\/islands\/[^/]+\/reserve/);
 
     // Try to create reservation with same boat on different island
-    const secondResult = await createReservationWithBoat(
-      page,
-      firstResult.boatName || 'TestBoat'
-    );
+    const secondResult = await createReservationWithBoat(page, 'Test Beta');
 
     // Should succeed - daily limit is per island
     expect(secondResult.success).toBe(true);
