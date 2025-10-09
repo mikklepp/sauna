@@ -1,52 +1,61 @@
 import { test, expect } from '@playwright/test';
+import { getTestClubSecret, TEST_ISLANDS } from './helpers/test-fixtures';
 
 test.describe('Individual Reservation Flow', () => {
-  test.beforeEach(async ({ page }) => {
-    // Navigate to home page - assuming there's a way to select an island
-    await page.goto('/');
+  let clubSecret: string;
+
+  test.beforeAll(async () => {
+    clubSecret = getTestClubSecret();
   });
 
-  test('should display island selection', async ({ page }) => {
-    // Should show available islands or club secret entry
-    const hasIslands = await page.getByText(/select.*island/i).isVisible();
-    const hasSecretEntry = await page.getByLabel(/club secret/i).isVisible();
+  test('should display island selection after authentication', async ({ page }) => {
+    // Authenticate and navigate to islands
+    await page.goto(`/auth?secret=${clubSecret}`);
+    await page.waitForURL(/\/islands/, { timeout: 10000 });
 
-    expect(hasIslands || hasSecretEntry).toBeTruthy();
+    // Should show islands page
+    await expect(page.getByRole('heading', { name: /choose your island/i })).toBeVisible();
+
+    // Should show test islands
+    const islandLinks = page.locator('[data-testid="island-link"]');
+    await expect(islandLinks).toHaveCount(TEST_ISLANDS.length);
   });
 
   test('should navigate to island view', async ({ page }) => {
-    // Try to find and click on an island
-    const islandLink = page.locator('[data-testid="island-link"]').first();
+    // Authenticate
+    await page.goto(`/auth?secret=${clubSecret}`);
+    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
 
-    if ((await islandLink.count()) > 0) {
-      await islandLink.click();
-      await expect(page).toHaveURL(/\/islands\/[^/]+/);
-    } else {
-      // Skip if no islands available
-      test.skip();
-    }
+    // Click first island
+    const islandLink = page.locator('[data-testid="island-link"]').first();
+    await islandLink.click();
+    await expect(page).toHaveURL(/\/islands\/[^/]+/);
   });
 
   test('should display saunas with availability', async ({ page }) => {
-    // Navigate to a specific island (assumes there's test data)
+    // Authenticate
+    await page.goto(`/auth?secret=${clubSecret}`);
+    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
+
+    // Click first island (Test North Island - has 2 saunas)
     const islandLink = page.locator('[data-testid="island-link"]').first();
-
-    if ((await islandLink.count()) === 0) {
-      test.skip();
-    }
-
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+/);
+    await page.waitForLoadState('networkidle');
 
     // Should show saunas
     const saunaCard = page.locator('[data-testid="sauna-card"]').first();
     await expect(saunaCard).toBeVisible();
 
-    // Should show status
-    await expect(page.getByText(/available|in use/i)).toBeVisible();
+    // Should show status badge (Available, Reserved, or Club Sauna)
+    const statusBadge = page.locator('.badge-available, .badge-reserved, .badge-club-sauna').first();
+    await expect(statusBadge).toBeVisible();
 
-    // Should show next available time
-    await expect(page.getByText(/next available|available at/i)).toBeVisible();
+    // Should show reserve button
+    const reserveButton = saunaCard.getByRole('button', { name: /reserve/i });
+    await expect(reserveButton).toBeVisible();
   });
 
   test('should complete individual reservation workflow', async ({ page }) => {
