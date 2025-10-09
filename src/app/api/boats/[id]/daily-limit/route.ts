@@ -17,11 +17,12 @@ import type { DailyLimitCheck } from '@/types';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const club = await requireClubAuth();
-    const boatId = getPathParam(params, 'id');
+    const resolvedParams = await params;
+    const boatId = getPathParam(resolvedParams, 'id');
     const islandId = getQueryParam(request, 'islandId');
     const dateStr = getQueryParam(request, 'date');
 

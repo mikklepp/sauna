@@ -80,7 +80,7 @@ export async function evaluateClubSaunas(): Promise<EvaluationResult> {
 
           // Cancel the shared reservation
           await db.sharedReservations.update(clubSauna.id, {
-            autoCancelledAt: new Date(),
+            autoCancelledAt: new Date().toISOString(),
             syncStatus: 'pending',
           });
 

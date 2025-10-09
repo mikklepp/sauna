@@ -1421,4 +1421,16 @@ Take your time, think deeply, and build something great. This is a real-world ap
 - **Ask questions** if anything is unclear - better to clarify than assume
 - **Show your work** - explain key decisions and trade-offs
 
+## Things to Improve on
+
+- Design, service does not look well designed even with teh design system in place
+- Island Device Test cases
+- NPM feedback should be reviewed
+- API documentation should be created, reviewed and API usage rationalized
+- Software versions updated, next-js 15 in particular
+- PWA still not proven at all.
+- Vercel & prisma should have production and devel environments
+- Vercel performance monitoring would be a good ad. MixPanel for sure.
+- Architecture diagrams? Function lists? Code might be overly redundant?
+
 Good luck! I'm excited to see what you build. 🚀

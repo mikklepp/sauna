@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { use, useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,12 @@ interface Club {
   secretValidUntil: string;
 }
 
-export default function ClubQRCodePage({ params }: { params: { id: string } }) {
+export default function ClubQRCodePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const resolvedParams = use(params);
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [club, setClub] = useState<Club | null>(null);
@@ -24,7 +29,7 @@ export default function ClubQRCodePage({ params }: { params: { id: string } }) {
 
   const fetchClub = useCallback(async () => {
     try {
-      const response = await fetch(`/api/clubs/${params.id}`);
+      const response = await fetch(`/api/clubs/${resolvedParams.id}`);
       if (!response.ok) throw new Error('Failed to fetch club');
       const data = await response.json();
       setClub(data);
@@ -34,7 +39,7 @@ export default function ClubQRCodePage({ params }: { params: { id: string } }) {
     } finally {
       setLoading(false);
     }
-  }, [params.id, router]);
+  }, [resolvedParams.id, router]);
 
   const generateQRCode = useCallback(async () => {
     if (!club) return;

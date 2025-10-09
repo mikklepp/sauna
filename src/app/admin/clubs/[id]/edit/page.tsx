@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { use, useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -16,7 +16,12 @@ interface Club {
   secretValidUntil: string;
 }
 
-export default function EditClubPage({ params }: { params: { id: string } }) {
+export default function EditClubPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const resolvedParams = use(params);
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -28,7 +33,7 @@ export default function EditClubPage({ params }: { params: { id: string } }) {
 
   const fetchClub = useCallback(async () => {
     try {
-      const response = await fetch(`/api/clubs/${params.id}`);
+      const response = await fetch(`/api/clubs/${resolvedParams.id}`);
       if (!response.ok) throw new Error('Failed to fetch club');
       const data = await response.json();
       setClub(data);
@@ -42,7 +47,7 @@ export default function EditClubPage({ params }: { params: { id: string } }) {
     } finally {
       setLoading(false);
     }
-  }, [params.id, router]);
+  }, [resolvedParams.id, router]);
 
   useEffect(() => {
     fetchClub();
@@ -59,7 +64,7 @@ export default function EditClubPage({ params }: { params: { id: string } }) {
     setSaving(true);
 
     try {
-      const response = await fetch(`/api/clubs/${params.id}`, {
+      const response = await fetch(`/api/clubs/${resolvedParams.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),

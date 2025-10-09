@@ -77,7 +77,7 @@ export async function verifyClubSession(
  */
 export async function setClubSessionCookie(clubId: string): Promise<void> {
   const token = await createClubSession(clubId);
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
 
   cookieStore.set('club_session', token, {
     httpOnly: true,
@@ -92,7 +92,7 @@ export async function setClubSessionCookie(clubId: string): Promise<void> {
  * Get club from session cookie
  */
 export async function getClubFromSession(): Promise<Club | null> {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const token = cookieStore.get('club_session');
 
   if (!token) {
@@ -114,8 +114,8 @@ export async function getClubFromSession(): Promise<Club | null> {
 /**
  * Clear club session
  */
-export function clearClubSession(): void {
-  const cookieStore = cookies();
+export async function clearClubSession(): Promise<void> {
+  const cookieStore = await cookies();
   cookieStore.delete('club_session');
 }
 
@@ -190,7 +190,7 @@ export async function verifyAdminSession(
  */
 export async function setAdminSessionCookie(username: string): Promise<void> {
   const token = await createAdminSession(username);
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
 
   cookieStore.set('admin_session', token, {
     httpOnly: true,
@@ -207,7 +207,7 @@ export async function setAdminSessionCookie(username: string): Promise<void> {
 export async function getAdminFromSession(): Promise<{
   username: string;
 } | null> {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const token = cookieStore.get('admin_session');
 
   if (!token) {
@@ -225,8 +225,8 @@ export async function getAdminFromSession(): Promise<{
 /**
  * Clear admin session
  */
-export function clearAdminSession(): void {
-  const cookieStore = cookies();
+export async function clearAdminSession(): Promise<void> {
+  const cookieStore = await cookies();
   cookieStore.delete('admin_session');
 }
 
