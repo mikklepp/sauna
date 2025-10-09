@@ -1,35 +1,52 @@
 import { test, expect } from '@playwright/test';
+import { getTestClubSecret, createTestReservation } from './helpers/test-fixtures';
 
 test.describe('Reservation Cancellation', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+  let clubSecret: string;
+
+  test.beforeAll(async () => {
+    clubSecret = getTestClubSecret();
   });
 
   test('should display reservations list for a sauna', async ({ page }) => {
+    // Create a test reservation
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 0,
+      startTimeOffset: 2,
+      durationHours: 1,
+      adults: 2,
+      kids: 0,
+    });
+
+    // Navigate to island
+    await page.goto(`/auth?secret=${clubSecret}`);
+    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
+
     const islandLink = page.locator('[data-testid="island-link"]').first();
-
-    if ((await islandLink.count()) === 0) {
-      test.skip();
-    }
-
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+/);
+    await page.waitForLoadState('networkidle');
 
-    // Find "View Reservations" button
+    // Click "View All Reservations" button
     const viewReservationsButton = page
-      .getByRole('button', { name: /view.*reservations|see.*reservations/i })
+      .getByRole('button', { name: /view all reservations/i })
       .first();
 
-    if (await viewReservationsButton.isVisible()) {
-      await viewReservationsButton.click();
+    await viewReservationsButton.click();
+    await page.waitForURL(/\/reservations$/);
+    await page.waitForLoadState('networkidle');
 
-      // Should show reservations list page
-      await expect(
-        page.getByText(/reservations|today.*schedule/i)
-      ).toBeVisible();
-    } else {
-      test.skip();
-    }
+    // Should show reservations list (either "Upcoming" or empty state)
+    const upcomingHeading = page.getByRole('heading', { name: /upcoming/i });
+    const noReservations = page.getByText(/no reservations yet/i);
+
+    // One of these should be visible
+    const hasUpcoming = await upcomingHeading.isVisible().catch(() => false);
+    const hasEmpty = await noReservations.isVisible().catch(() => false);
+
+    expect(hasUpcoming || hasEmpty).toBe(true);
   });
 
   test('should show cancel button for future reservations', async ({
