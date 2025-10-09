@@ -78,7 +78,7 @@ test.describe('Reservation Cancellation', () => {
     page,
   }) => {
     // Create a test reservation for the future (can be cancelled)
-    const reservation = await createTestReservation({
+    await createTestReservation({
       saunaIndex: 0,
       boatIndex: 1, // Test Beta
       startTimeOffset: 3, // 3 hours from now (cancellable)
