@@ -17,10 +17,8 @@ import prisma from '@/lib/db';
  * GET /api/islands/[id]
  * Get a specific island
  */
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(_request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const islandId = getPathParam(params, 'id');
 
@@ -73,10 +71,8 @@ export async function GET(
  * PUT /api/islands/[id]
  * Update an island (admin only)
  */
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     await requireAdminAuth();
     const islandId = getPathParam(params, 'id');
@@ -115,10 +111,8 @@ export async function PUT(
  * DELETE /api/islands/[id]
  * Delete an island (admin only)
  */
-export async function DELETE(
-  _request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(_request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     await requireAdminAuth();
     const islandId = getPathParam(params, 'id');

@@ -13,10 +13,8 @@ import prisma from '@/lib/db';
  * Get complete club configuration (islands, saunas, boats)
  * Used for Island Device initialization and user app setup
  */
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(_request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const authenticatedClub = await requireClubAuth();
     const clubId = getPathParam(params, 'id');

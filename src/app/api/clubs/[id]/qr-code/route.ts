@@ -15,10 +15,8 @@ import prisma from '@/lib/db';
  * Returns the data needed to generate a QR code on the client side
  * QR code contains: club secret for authentication
  */
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(_request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     await requireAdminAuth();
     const clubId = getPathParam(params, 'id');

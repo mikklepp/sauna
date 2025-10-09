@@ -15,10 +15,8 @@ import { startOfDay } from 'date-fns';
  *
  * This allows user-created reservations (via web app) to sync TO the Island Device
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { islandId: string } }
-) {
+export async function GET(request: NextRequest, props: { params: Promise<{ islandId: string }> }) {
+  const params = await props.params;
   try {
     const islandId = getPathParam(params, 'islandId');
     const sinceParam = getQueryParam(request, 'since');

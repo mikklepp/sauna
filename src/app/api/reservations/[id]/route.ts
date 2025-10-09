@@ -13,10 +13,8 @@ import prisma from '@/lib/db';
  * GET /api/reservations/[id]
  * Get a specific reservation
  */
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(_request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const club = await requireClubAuth();
     const id = getPathParam(params, 'id');
@@ -52,10 +50,8 @@ export async function GET(
  * DELETE /api/reservations/[id]
  * Cancel a reservation
  */
-export async function DELETE(
-  _request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(_request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const club = await requireClubAuth();
     const id = getPathParam(params, 'id');

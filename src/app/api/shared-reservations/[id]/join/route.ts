@@ -15,10 +15,8 @@ import { startOfDay, endOfDay } from 'date-fns';
  * POST /api/shared-reservations/[id]/join
  * Join a shared reservation
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const club = await requireClubAuth();
     const sharedReservationId = getPathParam(params, 'id');

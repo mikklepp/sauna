@@ -14,10 +14,8 @@ import prisma from '@/lib/db';
  * POST /api/clubs/[id]/theme
  * Update club theme (logo, colors) - admin only
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     await requireAdminAuth();
     const clubId = getPathParam(params, 'id');

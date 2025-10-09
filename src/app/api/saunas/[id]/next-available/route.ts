@@ -18,10 +18,8 @@ import { startOfDay, endOfDay } from 'date-fns';
  * GET /api/saunas/[id]/next-available
  * Get the next available time slot for a sauna
  */
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(_request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const club = await requireClubAuth();
     const saunaId = getPathParam(params, 'id');

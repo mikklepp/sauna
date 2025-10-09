@@ -15,10 +15,8 @@ import type { SaunaAnnualReport } from '@/types';
  * GET /api/reports/sauna/[id]?year=2024
  * Get annual report for a sauna
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     await requireAdminAuth();
     const saunaId = getPathParam(params, 'id');
