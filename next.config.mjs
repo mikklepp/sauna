@@ -42,7 +42,8 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/:path*',
+        // Apply security headers to HTML pages only, not static assets
+        source: '/((?!_next/static|_next/image|favicon.ico).*)',
         headers: [
           {
             key: 'X-DNS-Prefetch-Control',
