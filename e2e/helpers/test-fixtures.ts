@@ -394,7 +394,9 @@ export async function createTestSharedReservation(options: {
   }
 
   const now = new Date();
-  const startDateTime = new Date(now.getTime() + startTimeOffset * 60 * 60 * 1000);
+  const startDateTime = new Date(
+    now.getTime() + startTimeOffset * 60 * 60 * 1000
+  );
 
   // Date should be the day only (midnight)
   const date = new Date(startDateTime);
@@ -402,7 +404,12 @@ export async function createTestSharedReservation(options: {
 
   // startTime should be a DateTime with the time we want (stored as @db.Time in postgres)
   const startTime = new Date(date);
-  startTime.setHours(startDateTime.getHours(), startDateTime.getMinutes(), 0, 0);
+  startTime.setHours(
+    startDateTime.getHours(),
+    startDateTime.getMinutes(),
+    0,
+    0
+  );
 
   const sharedReservation = await prisma.sharedReservation.create({
     data: {

@@ -102,9 +102,9 @@ test.describe('Member Reservation List View & Cancellation', () => {
     await page.waitForLoadState('networkidle');
 
     // Should see sauna cards
-    await expect(page.locator('[data-testid="sauna-card"]').first()).toBeVisible(
-      { timeout: 5000 }
-    );
+    await expect(
+      page.locator('[data-testid="sauna-card"]').first()
+    ).toBeVisible({ timeout: 5000 });
   });
 
   test('should display upcoming reservations section when reservations exist', async ({
@@ -194,7 +194,9 @@ test.describe('Member Reservation List View & Cancellation', () => {
     await expect(cancelButtons).toHaveCount(0);
   });
 
-  test('should show boat information in reservation cards', async ({ page }) => {
+  test('should show boat information in reservation cards', async ({
+    page,
+  }) => {
     // Create a test reservation
     await createTestReservation({
       saunaIndex: 0,

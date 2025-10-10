@@ -57,7 +57,9 @@ test.describe('Shared Reservation - Admin Creation', () => {
     // The admin list page only has delete buttons, not edit buttons
   });
 
-  test('should show delete button for shared reservations', async ({ page }) => {
+  test('should show delete button for shared reservations', async ({
+    page,
+  }) => {
     const testName = `Test Shared ${Date.now()}`;
 
     // Create a test shared reservation
@@ -75,7 +77,9 @@ test.describe('Shared Reservation - Admin Creation', () => {
     await page.waitForLoadState('networkidle');
 
     // Find the reservation with our test name
-    const reservationCard = page.getByTestId('shared-reservation-item').filter({ hasText: testName });
+    const reservationCard = page
+      .getByTestId('shared-reservation-item')
+      .filter({ hasText: testName });
     await expect(reservationCard).toBeVisible({ timeout: 5000 });
 
     // Should have a delete button
@@ -309,7 +313,9 @@ test.describe('Club Sauna Auto-creation', () => {
     await page.getByRole('button', { name: /save|update/i }).click();
 
     // Should show success message
-    await expect(page.getByText(/success|updated|saved/i)).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/success|updated|saved/i)).toBeVisible({
+      timeout: 5000,
+    });
 
     // Verify the change persisted by re-opening edit form
     await page.waitForTimeout(500);

@@ -192,7 +192,11 @@ export default function SharedReservationsPage() {
       ) : (
         <div className="space-y-4">
           {filteredReservations.map((reservation) => (
-            <Card key={reservation.id} className="p-6" data-testid="shared-reservation-item">
+            <Card
+              key={reservation.id}
+              className="p-6"
+              data-testid="shared-reservation-item"
+            >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="mb-2 flex items-center gap-2">
