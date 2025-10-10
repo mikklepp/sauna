@@ -267,22 +267,32 @@
 
   /* Status Badge Utilities */
   .badge-available {
-    @apply bg-success/10 text-success inline-flex items-center rounded-full px-3 py-1 text-sm font-medium;
+    @apply inline-flex items-center rounded-full px-3 py-1 text-sm font-medium;
+    background-color: hsl(var(--success) / 0.1);
+    color: hsl(var(--success));
   }
 
   .badge-reserved {
-    @apply bg-error/10 text-error inline-flex items-center rounded-full px-3 py-1 text-sm font-medium;
+    @apply inline-flex items-center rounded-full px-3 py-1 text-sm font-medium;
+    background-color: hsl(var(--error) / 0.1);
+    color: hsl(var(--error));
   }
 
   .badge-club-sauna {
-    @apply bg-club-secondary/20 text-club-secondary inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold;
+    @apply inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold;
+    background-color: hsl(var(--club-secondary) / 0.2);
+    color: hsl(var(--club-secondary));
   }
 
   .badge-pending {
-    @apply bg-warning/10 text-warning inline-flex items-center rounded-full px-3 py-1 text-sm font-medium;
+    @apply inline-flex items-center rounded-full px-3 py-1 text-sm font-medium;
+    background-color: hsl(var(--warning) / 0.1);
+    color: hsl(var(--warning));
   }
 
   .badge-info {
-    @apply bg-info/10 text-info inline-flex items-center rounded-full px-3 py-1 text-sm font-medium;
+    @apply inline-flex items-center rounded-full px-3 py-1 text-sm font-medium;
+    background-color: hsl(var(--info) / 0.1);
+    color: hsl(var(--info));
   }
 }
