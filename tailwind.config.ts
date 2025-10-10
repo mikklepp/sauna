@@ -8,6 +8,22 @@ const config = {
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
   ],
+  safelist: [
+    // Gradient classes used dynamically
+    'from-blue-500',
+    'to-indigo-600',
+    'from-green-500',
+    'to-emerald-600',
+    'from-purple-500',
+    'to-pink-600',
+    // Background gradients
+    'bg-gradient-to-br',
+    'bg-gradient-to-r',
+    // Shadow variants
+    'shadow-blue-500/30',
+    'shadow-green-500/30',
+    'shadow-purple-500/30',
+  ],
   prefix: '',
   theme: {
     container: {
@@ -74,7 +90,10 @@ const config = {
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require('tailwindcss-animate'),
+  ],
 } satisfies Config;
 
 export default config;
