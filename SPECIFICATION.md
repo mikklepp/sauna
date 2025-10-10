@@ -1421,19 +1421,115 @@ Take your time, think deeply, and build something great. This is a real-world ap
 - **Ask questions** if anything is unclear - better to clarify than assume
 - **Show your work** - explain key decisions and trade-offs
 
-## Things to Improve on
+## Todo List
 
-- "Unsupported metadata themeColor is configured in metadata export in several files. Please move it to viewport export instead" Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
-- Design, service does not look well designed even with the design system in place
-- Fix build so that Github action uploads an artifact for testing: No files were found with the provided path: .next. No artifacts will be uploaded.
-- Island Device Test cases
-- Prisma Update available 5.22.0 -> 6.17.0, following https://pris.ly/d/major-version-upgrade
-- NPM feedback should be reviewed
-- API documentation should be created, reviewed and API usage rationalized
-- Software versions updated, next-js 15 in particular
-- PWA still not proven at all.
-- Vercel & prisma should have production and devel environments
-- Vercel performance monitoring would be a good ad. MixPanel for sure.
-- Architecture diagrams? Function lists? Code might be overly redundant?
+### Phase 1: Quick Wins ✅ COMPLETED
+
+- ✅ Fix themeColor metadata warnings (moved to viewport export)
+- ✅ Fix GitHub Actions artifact upload (.next directory path)
+- ✅ Review and fix NPM audit security issues (documented in SECURITY_NOTES.md)
+- ✅ Create Island Device E2E test cases (33 tests passing)
+
+### Phase 2: Missing API Implementations
+
+**Priority:** High (required for Island Device functionality)
+**Estimated Time:** 4-6 hours
+
+1. **Island Device Configuration API** (`/api/island-device/configure`)
+   - POST endpoint to validate device token and return configuration
+   - Should return: club, island, saunas, boats data
+   - Should mark device as configured in database
+   - Token validation and expiration handling
+   - **Files to create:**
+     - `src/app/api/island-device/configure/route.ts`
+
+2. **Device Synchronization API** (`/api/sync/device`)
+   - POST endpoint for bidirectional sync between device and backend
+   - Handle conflict resolution (Island Device is source of truth)
+   - Update lastSyncAt timestamp
+   - **Files to create:**
+     - `src/app/api/sync/device/route.ts`
+
+3. **Shared Reservations Delete API** (`/api/shared-reservations/[id]`)
+   - DELETE endpoint to remove shared reservations
+   - Cascade delete participants
+   - Admin authentication required
+   - **Files to create:**
+     - `src/app/api/shared-reservations/[id]/route.ts`
+
+4. **Pre-commit Hooks for Code Quality**
+   - Add ESLint check to pre-commit
+   - Add TypeScript type check to pre-commit
+   - Ensure code quality before commits
+   - **Files to modify:**
+     - `.husky/pre-commit`
+     - `package.json` (lint-staged configuration)
+
+### Phase 3: Design & UI Polish
+
+**Priority:** Medium
+**Estimated Time:** 6-8 hours
+
+- Design improvements across all pages
+- Consistent visual design system application
+- Improve user experience and accessibility
+- Mobile responsiveness review
+
+### Phase 4: Infrastructure Upgrades
+
+**Priority:** Medium-High
+**Estimated Time:** 6-8 hours
+
+1. **Prisma Upgrade** (5.22.0 → 6.17.0)
+   - Follow upgrade guide: https://pris.ly/d/major-version-upgrade
+   - Test all database operations after upgrade
+   - Update types and regenerate client
+
+2. **Next.js Upgrade** (14.x → 15.x)
+   - Review breaking changes
+   - Update dependencies
+   - Test all functionality
+   - Update configurations
+
+3. **Dependency Security**
+   - Upgrade vite to 7.1.9 (breaking change)
+   - Upgrade vitest to latest
+   - Address esbuild vulnerability (dev-only)
+
+### Phase 5: DevOps & Environments
+
+**Priority:** High (before production launch)
+**Estimated Time:** 4-6 hours
+
+1. **Vercel Environments**
+   - Set up production environment
+   - Set up development/staging environment
+   - Separate databases for prod/dev
+   - Environment-specific variables
+
+2. **Monitoring & Analytics**
+   - Vercel performance monitoring
+   - Error tracking (Sentry or similar)
+   - Optional: MixPanel or Posthog for analytics
+   - Uptime monitoring
+
+3. **PWA Validation**
+   - Test PWA functionality thoroughly
+   - Offline capability verification
+   - Service worker testing
+   - Add to home screen testing
+   - iOS Safari compatibility
+
+### Phase 6: Documentation & Optimization
+
+**Priority:** Low-Medium
+**Estimated Time:** 8-10 hours
+
+- API documentation (OpenAPI/Swagger)
+- Architecture diagrams
+- Function lists and dependency graphs
+- Code redundancy review and refactoring
+- Performance optimization
+- Lighthouse score improvements
 
 Good luck! I'm excited to see what you build. 🚀

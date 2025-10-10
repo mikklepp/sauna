@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 
@@ -9,12 +9,15 @@ export const metadata: Metadata = {
   description:
     'Offline-capable sauna reservation system for island communities',
   manifest: '/manifest.json',
-  themeColor: '#0070f3',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
     title: 'Sauna Reservations',
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#0070f3',
 };
 
 export default function RootLayout({
