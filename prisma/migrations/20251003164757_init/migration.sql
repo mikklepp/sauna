@@ -246,3 +246,6 @@ ALTER TABLE "shared_reservation_participants" ADD CONSTRAINT "shared_reservation
 
 -- AddForeignKey
 ALTER TABLE "shared_reservation_participants" ADD CONSTRAINT "shared_reservation_participants_boatId_fkey" FOREIGN KEY ("boatId") REFERENCES "boats"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "island_devices" ADD CONSTRAINT "island_devices_islandId_fkey" FOREIGN KEY ("islandId") REFERENCES "islands"("id") ON DELETE CASCADE ON UPDATE CASCADE;

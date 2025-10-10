@@ -45,15 +45,16 @@ model Island {
   clubId          String
   name            String
   numberOfSaunas  Int      @default(1)
-  
+
   // Timestamps
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-  
+
   // Relations
-  club            Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  club            Club          @relation(fields: [clubId], references: [id], onDelete: Cascade)
   saunas          Sauna[]
-  
+  islandDevice    IslandDevice?
+
   @@index([clubId])
   @@map("islands")
 }
@@ -219,19 +220,22 @@ model SharedReservationParticipant {
 model IslandDevice {
   id              String   @id @default(uuid())
   islandId        String   @unique
-  
+
   // Device identification
   deviceToken     String   @unique
   deviceName      String?
-  
+
   // Configuration
   isConfigured    Boolean  @default(false)
   lastSyncAt      DateTime?
-  
+
   // Timestamps
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-  
+
+  // Relations
+  island          Island   @relation(fields: [islandId], references: [id], onDelete: Cascade)
+
   @@index([deviceToken])
   @@map("island_devices")
 }
