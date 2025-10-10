@@ -17,7 +17,7 @@ export default function HomePage() {
             </span>
           </div>
           <div className="flex gap-4">
-            <Link href="/app/auth">
+            <Link href="/auth">
               <Button variant="outline">Member Access</Button>
             </Link>
             <Link href="/admin">
@@ -39,7 +39,7 @@ export default function HomePage() {
           access for members, and automated shared sauna scheduling.
         </p>
         <div className="flex justify-center gap-4">
-          <Link href="/app/auth">
+          <Link href="/auth">
             <Button size="lg">
               <Smartphone className="mr-2 h-5 w-5" />
               Access with QR Code
