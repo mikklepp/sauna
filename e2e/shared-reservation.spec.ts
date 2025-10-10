@@ -52,7 +52,7 @@ test.describe('Shared Reservation - Admin Creation', () => {
     await page.waitForURL(/\/admin\/shared-reservations$/);
   });
 
-  test.skip('should edit a shared reservation', async ({ page }) => {
+  test.skip('should edit a shared reservation', async () => {
     // Note: Edit functionality for shared reservations is not implemented in the admin UI
     // The admin list page only has delete buttons, not edit buttons
   });
