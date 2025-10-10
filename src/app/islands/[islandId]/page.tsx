@@ -205,8 +205,20 @@ export default function IslandSaunasPage() {
                     </span>
                   </div>
                   {sauna.nextAvailable.reason === 'heating' && (
-                    <p className="mb-3 text-sm text-gray-600">
-                      Includes {sauna.heatingTimeHours}h heating time
+                    <p className="mb-3 rounded-md bg-amber-50 p-2 text-sm text-amber-800">
+                      <span className="font-semibold">
+                        Sauna is currently unheated.
+                      </span>{' '}
+                      Includes {sauna.heatingTimeHours}h heating time.
+                    </p>
+                  )}
+                  {(sauna.nextAvailable.reason === 'next_free' ||
+                    sauna.nextAvailable.reason === 'buffer') && (
+                    <p className="mb-3 rounded-md bg-green-50 p-2 text-sm text-green-800">
+                      <span className="font-semibold">
+                        Sauna is currently reserved (heated).
+                      </span>{' '}
+                      Available after current reservation.
                     </p>
                   )}
                   <Button

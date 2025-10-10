@@ -52,20 +52,25 @@ A dedicated sauna reservation system for island communities, providing streamlin
 
 ### 2.3 Time Slot Logic
 
-#### When Sauna is Currently Reserved (In Use)
+#### When Sauna is Currently Reserved (In Use/Heated)
 
 - Next available time = next free hour slot
 - **Exception**: If the next free slot is within 15 minutes, skip to the following slot
+- **UI Display**: Clearly indicate the sauna is currently reserved and heated
 - Example: Current time 2:48 PM, current reservation ends 3:00 PM
   - Next slot would be 3:00 PM (in 12 minutes)
   - System skips and offers 4:00 PM instead
+  - Display: "Sauna is currently reserved until 3:00 PM. Next available: 4:00 PM (sauna will be heated)"
 
-#### When Sauna is Not Currently Reserved
+#### When Sauna is Not Currently Reserved (Cold/Unheated)
 
-- Propose a time slot based on configurable heating time (default 2-3 hours) in the future
-- Rationale: Allows sufficient heating time for the sauna
-- Example: Current time 2:00 PM, sauna not in use, heating time 2 hours
-  - Offer time slot at 4:00 PM
+- Propose a time slot based on configurable heating time (default 2-3 hours in future)
+- **Heating time is configured in decimal hours** (e.g., 2.5h, 3.0h)
+- Rationale: Allows sufficient heating time for a cold sauna
+- **UI Display**: Clearly indicate the sauna is currently unheated and requires heating time
+- Example: Current time 2:00 PM, sauna not in use, heating time 2.5 hours
+  - Offer time slot at 4:30 PM (rounded to 5:00 PM)
+  - Display: "Sauna is currently unheated. Next available: 5:00 PM (includes 2.5h heating time)"
 
 #### When Shared Sauna Reservation Exists for Current Date
 
@@ -1466,6 +1471,8 @@ Take your time, think deeply, and build something great. This is a real-world ap
      - `package.json` (lint-staged configuration)
 
 ### Phase 3: Design & UI Polish
+
+XXX: We are here, except that github ci build fails due to no artifacts found.
 
 **Priority:** Medium
 **Estimated Time:** 6-8 hours

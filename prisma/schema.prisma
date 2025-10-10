@@ -63,8 +63,8 @@ model Sauna {
   id                    String   @id @default(uuid())
   islandId              String
   name                  String
-  heatingTimeHours      Int      @default(2)
-  
+  heatingTimeHours      Float    @default(2.0) // Decimal hours (e.g., 2.5h)
+
   // Club Sauna automation
   autoClubSaunaEnabled  Boolean  @default(false)
   
