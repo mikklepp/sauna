@@ -38,6 +38,9 @@ export async function GET(_request: NextRequest) {
           select: {
             id: true,
             name: true,
+            logoUrl: true,
+            primaryColor: true,
+            secondaryColor: true,
           },
         },
         saunas: {
@@ -98,6 +101,9 @@ export async function POST(request: NextRequest) {
           select: {
             id: true,
             name: true,
+            logoUrl: true,
+            primaryColor: true,
+            secondaryColor: true,
           },
         },
         saunas: true,
