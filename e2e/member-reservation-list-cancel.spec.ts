@@ -1,8 +1,9 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import {
   getTestClubSecret,
   createTestReservation,
 } from './helpers/test-fixtures';
+import prisma from '../src/lib/db';
 
 test.describe('Member Reservation List View & Cancellation', () => {
   let clubSecret: string;
@@ -11,69 +12,88 @@ test.describe('Member Reservation List View & Cancellation', () => {
     clubSecret = getTestClubSecret();
   });
 
-  /**
-   * Helper to navigate to reservations list for a sauna
-   * Uses known test data and creates a test reservation
-   */
-  async function navigateToReservationsList(page: Page): Promise<boolean> {
-    // Create a test reservation 2 hours from now
+  // Clean up reservations before each test to avoid interference
+  test.beforeEach(async () => {
+    const club = await prisma.club.findUnique({
+      where: { secret: clubSecret },
+      include: { islands: { include: { saunas: true } } },
+    });
+
+    if (club) {
+      const saunaIds = club.islands.flatMap((i) => i.saunas.map((s) => s.id));
+      await prisma.reservation.deleteMany({
+        where: { saunaId: { in: saunaIds } },
+      });
+    }
+  });
+
+  test('should display reservations list page', async ({ page }) => {
+    // Create a test reservation
     await createTestReservation({
-      saunaIndex: 0, // First sauna (North Main Sauna)
-      boatIndex: 0, // First boat (Test Alpha)
-      startTimeOffset: 2, // 2 hours from now
+      saunaIndex: 0,
+      boatIndex: 0,
+      startTimeOffset: 2,
       durationHours: 1,
       adults: 2,
       kids: 1,
     });
 
+    // Navigate to reservations page
     await page.goto(`/auth?secret=${clubSecret}`);
     await page.waitForURL(/\/islands/, { timeout: 10000 });
     await page.waitForLoadState('networkidle');
 
-    // Click first island (Test North Island)
-    const islandLinks = page.locator('[data-testid="island-link"]');
-    await islandLinks.first().click();
+    const islandLink = page.locator('[data-testid="island-link"]').first();
+    await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
     await page.waitForLoadState('networkidle');
 
-    // Wait for sauna cards to load
     const saunaCards = page.locator('[data-testid="sauna-card"]');
     await saunaCards.first().waitFor({ state: 'visible', timeout: 5000 });
 
-    // Click "View All Reservations" on first sauna
+    const viewButton = saunaCards
+      .first()
+      .getByRole('button', { name: /view all reservations/i });
+    await viewButton.click();
+    await page.waitForURL(/\/reservations$/);
+    await page.waitForLoadState('networkidle');
+
+    // Should see page content
+    await expect(page.locator('main')).toBeVisible();
+    await expect(page.getByTestId('upcoming-reservations')).toBeVisible({
+      timeout: 5000,
+    });
+  });
+
+  test('should navigate back from reservations list', async ({ page }) => {
+    // Create a test reservation
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 0,
+      startTimeOffset: 2,
+      durationHours: 1,
+      adults: 2,
+      kids: 0,
+    });
+
+    // Navigate to reservations page
+    await page.goto(`/auth?secret=${clubSecret}`);
+    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
+
+    const islandLink = page.locator('[data-testid="island-link"]').first();
+    await islandLink.click();
+    await page.waitForURL(/\/islands\/[^/]+$/);
+    await page.waitForLoadState('networkidle');
+
+    const saunaCards = page.locator('[data-testid="sauna-card"]');
     const viewButton = saunaCards
       .first()
       .getByRole('button', { name: /view all reservations/i });
     await viewButton.click();
     await page.waitForURL(/\/reservations$/);
 
-    return true;
-  }
-
-  test('should display reservations list page', async ({ page }) => {
-    const found = await navigateToReservationsList(page);
-    if (!found) {
-      test.skip();
-    }
-
-    // Should be on reservations page
-    expect(page.url()).toMatch(/\/reservations$/);
-
-    // Page should have loaded content (either reservations or empty state)
-    await page.waitForLoadState('networkidle');
-
-    // Should see page content (any of these indicates successful load)
-    const hasContent = await page.locator('main').isVisible();
-    expect(hasContent).toBe(true);
-  });
-
-  test('should navigate back from reservations list', async ({ page }) => {
-    const found = await navigateToReservationsList(page);
-    if (!found) {
-      test.skip();
-    }
-
-    // Navigate back by going to island URL
+    // Navigate back
     const currentUrl = page.url();
     const islandUrl = currentUrl.replace(/\/saunas\/[^/]+\/reservations$/, '');
 
@@ -81,220 +101,286 @@ test.describe('Member Reservation List View & Cancellation', () => {
     await page.waitForURL(/\/islands\/[^/]+$/);
     await page.waitForLoadState('networkidle');
 
-    // Should see sauna cards on island page
-    await expect(
-      page.locator('[data-testid="sauna-card"]').first()
-    ).toBeVisible({ timeout: 5000 });
+    // Should see sauna cards
+    await expect(page.locator('[data-testid="sauna-card"]').first()).toBeVisible(
+      { timeout: 5000 }
+    );
   });
 
   test('should display upcoming reservations section when reservations exist', async ({
     page,
   }) => {
-    const found = await navigateToReservationsList(page);
-    if (!found) {
-      test.skip();
-    }
+    // Create a test reservation
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 0,
+      startTimeOffset: 2,
+      durationHours: 1,
+      adults: 2,
+      kids: 1,
+    });
 
-    // Check if there are upcoming reservations
-    const upcomingHeading = page.getByRole('heading', { name: /upcoming/i });
-    const hasUpcoming = await upcomingHeading.isVisible().catch(() => false);
+    // Navigate to reservations page
+    await page.goto(`/auth?secret=${clubSecret}`);
+    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
 
-    if (!hasUpcoming) {
-      // No upcoming reservations, test not applicable
-      test.skip();
-    }
+    const islandLink = page.locator('[data-testid="island-link"]').first();
+    await islandLink.click();
+    await page.waitForURL(/\/islands\/[^/]+$/);
+    await page.waitForLoadState('networkidle');
+
+    const saunaCards = page.locator('[data-testid="sauna-card"]');
+    const viewButton = saunaCards
+      .first()
+      .getByRole('button', { name: /view all reservations/i });
+    await viewButton.click();
+    await page.waitForURL(/\/reservations$/);
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
 
     // Should see Upcoming section
-    await expect(upcomingHeading).toBeVisible();
+    await expect(page.getByRole('heading', { name: /upcoming/i })).toBeVisible({
+      timeout: 5000,
+    });
 
-    // Should have reservation time displayed (looking for time format like "2:00 PM - 3:00 PM")
-    const timeHeading = page.getByRole('heading', { level: 3 }).first();
-    await expect(timeHeading).toBeVisible();
-    const timeText = await timeHeading.textContent();
-    expect(timeText).toMatch(/\d{1,2}:\d{2}\s?(AM|PM)?/i);
+    // Should have reservation time displayed
+    await expect(page.getByTestId('reservation-time')).toBeVisible();
   });
 
   test('should display past reservations in "Earlier Today" section', async ({
     page,
   }) => {
-    const found = await navigateToReservationsList(page);
-    if (!found) {
-      test.skip();
-    }
-
-    // Check if there are past reservations
-    const earlierHeading = page.getByRole('heading', {
-      name: /earlier today/i,
+    // Create a past reservation
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 1,
+      startTimeOffset: -1, // 1 hour ago
+      durationHours: 1,
+      adults: 2,
+      kids: 0,
     });
-    const hasEarlier = await earlierHeading.isVisible().catch(() => false);
 
-    if (!hasEarlier) {
-      // No past reservations today, test not applicable
-      test.skip();
-    }
+    // Navigate to reservations page
+    await page.goto(`/auth?secret=${clubSecret}`);
+    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
+
+    const islandLink = page.locator('[data-testid="island-link"]').first();
+    await islandLink.click();
+    await page.waitForURL(/\/islands\/[^/]+$/);
+    await page.waitForLoadState('networkidle');
+
+    const saunaCards = page.locator('[data-testid="sauna-card"]');
+    const viewButton = saunaCards
+      .first()
+      .getByRole('button', { name: /view all reservations/i });
+    await viewButton.click();
+    await page.waitForURL(/\/reservations$/);
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
 
     // Should see "Earlier Today" section
-    await expect(earlierHeading).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /earlier today/i })
+    ).toBeVisible({ timeout: 5000 });
 
-    // Past reservations should be displayed (somewhat dimmed/muted)
-    // They should not have cancel buttons
-    const earlierSection = page.locator('div', { has: earlierHeading });
-    const reservations = earlierSection
-      .locator('div')
-      .filter({ hasText: /\d{1,2}:\d{2}/ });
+    // Should see past reservations section
+    await expect(page.getByTestId('past-reservations')).toBeVisible();
 
-    if ((await reservations.count()) > 0) {
-      // Verify no cancel button in past reservations
-      const cancelButtons = earlierSection
-        .getByRole('button')
-        .filter({ hasText: /cancel|x/i });
-      expect(await cancelButtons.count()).toBe(0);
-    }
+    // Past reservations should not have cancel buttons
+    const pastSection = page.getByTestId('past-reservations');
+    const cancelButtons = pastSection.getByTestId('cancel-button');
+    await expect(cancelButtons).toHaveCount(0);
   });
 
-  test('should show boat information in reservation cards', async ({
-    page,
-  }) => {
-    const found = await navigateToReservationsList(page);
-    if (!found) {
-      test.skip();
-    }
+  test('should show boat information in reservation cards', async ({ page }) => {
+    // Create a test reservation
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 0, // Test Alpha
+      startTimeOffset: 2,
+      durationHours: 1,
+      adults: 2,
+      kids: 0,
+    });
 
-    // Check if there are any reservations
-    const upcomingHeading = page.getByRole('heading', { name: /upcoming/i });
-    const hasReservations = await upcomingHeading
-      .isVisible()
-      .catch(() => false);
+    // Navigate to reservations page
+    await page.goto(`/auth?secret=${clubSecret}`);
+    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
 
-    if (!hasReservations) {
-      test.skip();
-    }
+    const islandLink = page.locator('[data-testid="island-link"]').first();
+    await islandLink.click();
+    await page.waitForURL(/\/islands\/[^/]+$/);
+    await page.waitForLoadState('networkidle');
 
-    // Get first reservation
-    const upcomingSection = page.locator('div', { has: upcomingHeading });
-    const firstReservation = upcomingSection
-      .locator('div')
-      .filter({ hasText: /\d{1,2}:\d{2}/ })
-      .first();
+    const saunaCards = page.locator('[data-testid="sauna-card"]');
+    const viewButton = saunaCards
+      .first()
+      .getByRole('button', { name: /view all reservations/i });
+    await viewButton.click();
+    await page.waitForURL(/\/reservations$/);
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
 
-    // Should show boat information (look for membership number pattern)
-    const boatInfo = firstReservation.locator('text=#').first();
-    await expect(boatInfo).toBeVisible();
+    // Should show boat name
+    await expect(page.getByTestId('reservation-boat-name')).toContainText(
+      /test alpha/i
+    );
+
+    // Should show membership number
+    await expect(page.getByText(/#E2E-001/)).toBeVisible();
   });
 
   test('should show party size (adults and kids) in reservation cards', async ({
     page,
   }) => {
-    const found = await navigateToReservationsList(page);
-    if (!found) {
-      test.skip();
-    }
+    // Create a test reservation with adults and kids
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 0,
+      startTimeOffset: 2,
+      durationHours: 1,
+      adults: 3,
+      kids: 2,
+    });
 
-    // Check if there are any reservations
-    const upcomingHeading = page.getByRole('heading', { name: /upcoming/i });
-    const hasReservations = await upcomingHeading
-      .isVisible()
-      .catch(() => false);
+    // Navigate to reservations page
+    await page.goto(`/auth?secret=${clubSecret}`);
+    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
 
-    if (!hasReservations) {
-      test.skip();
-    }
+    const islandLink = page.locator('[data-testid="island-link"]').first();
+    await islandLink.click();
+    await page.waitForURL(/\/islands\/[^/]+$/);
+    await page.waitForLoadState('networkidle');
 
-    // Get first reservation
-    const upcomingSection = page.locator('div', { has: upcomingHeading });
-    const reservationText = await upcomingSection.textContent();
+    const saunaCards = page.locator('[data-testid="sauna-card"]');
+    const viewButton = saunaCards
+      .first()
+      .getByRole('button', { name: /view all reservations/i });
+    await viewButton.click();
+    await page.waitForURL(/\/reservations$/);
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
 
-    // Should show party size (e.g., "2 adults" or "2 adults, 1 kid")
-    expect(reservationText).toMatch(/\d+\s+adult/i);
+    // Should show party size
+    const partySize = page.getByTestId('reservation-party-size');
+    await expect(partySize).toContainText(/3 adults/i);
+    await expect(partySize).toContainText(/2 kids/i);
   });
 
   test('should show cancel button for upcoming reservations (>15 min before start)', async ({
     page,
   }) => {
-    const found = await navigateToReservationsList(page);
-    if (!found) {
-      test.skip();
-    }
+    // Create a test reservation 2 hours from now (cancellable)
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 0,
+      startTimeOffset: 2,
+      durationHours: 1,
+      adults: 2,
+      kids: 0,
+    });
 
-    // Check if there are upcoming reservations
-    const upcomingHeading = page.getByRole('heading', { name: /upcoming/i });
-    const hasReservations = await upcomingHeading
-      .isVisible()
-      .catch(() => false);
+    // Navigate to reservations page
+    await page.goto(`/auth?secret=${clubSecret}`);
+    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
 
-    if (!hasReservations) {
-      test.skip();
-    }
+    const islandLink = page.locator('[data-testid="island-link"]').first();
+    await islandLink.click();
+    await page.waitForURL(/\/islands\/[^/]+$/);
+    await page.waitForLoadState('networkidle');
 
-    // Look for cancel button (X icon)
-    const upcomingSection = page.locator('div', { has: upcomingHeading });
-    const cancelButton = upcomingSection.getByRole('button').first();
+    const saunaCards = page.locator('[data-testid="sauna-card"]');
+    const viewButton = saunaCards
+      .first()
+      .getByRole('button', { name: /view all reservations/i });
+    await viewButton.click();
+    await page.waitForURL(/\/reservations$/);
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
 
-    // Should have cancel button OR "Too late to cancel" message
-    const hasCancelButton = await cancelButton.isVisible().catch(() => false);
-    const tooLateMsg = await page
-      .getByText(/too late to cancel/i)
-      .isVisible()
-      .catch(() => false);
-
-    expect(hasCancelButton || tooLateMsg).toBe(true);
+    // Should see cancel button
+    await expect(page.getByTestId('cancel-button')).toBeVisible({
+      timeout: 5000,
+    });
   });
 
   test('should show "Too late to cancel" for reservations starting in <15 minutes', async ({
     page,
   }) => {
-    const found = await navigateToReservationsList(page);
-    if (!found) {
-      test.skip();
-    }
+    // Create a test reservation starting in 10 minutes
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 0,
+      startTimeOffset: 10 / 60, // 10 minutes
+      durationHours: 1,
+      adults: 2,
+      kids: 0,
+    });
 
-    // This test will only pass if there's a reservation starting soon
-    const tooLateMsg = page.getByText(/too late to cancel/i);
-    const isVisible = await tooLateMsg.isVisible().catch(() => false);
+    // Navigate to reservations page
+    await page.goto(`/auth?secret=${clubSecret}`);
+    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
 
-    if (!isVisible) {
-      // No reservations starting soon, test not applicable
-      test.skip();
-    }
+    const islandLink = page.locator('[data-testid="island-link"]').first();
+    await islandLink.click();
+    await page.waitForURL(/\/islands\/[^/]+$/);
+    await page.waitForLoadState('networkidle');
 
-    // Verify message is displayed
-    await expect(tooLateMsg).toBeVisible();
+    const saunaCards = page.locator('[data-testid="sauna-card"]');
+    const viewButton = saunaCards
+      .first()
+      .getByRole('button', { name: /view all reservations/i });
+    await viewButton.click();
+    await page.waitForURL(/\/reservations$/);
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
 
-    // Verify no cancel button is shown for this reservation
-    const parentSection = page.locator('div', { has: tooLateMsg });
-    const cancelButton = parentSection
-      .getByRole('button')
-      .filter({ hasText: /x/i });
-    expect(await cancelButton.count()).toBe(0);
+    // Should see "Too late to cancel" message
+    await expect(page.getByTestId('too-late-message')).toBeVisible({
+      timeout: 5000,
+    });
   });
 
   test('should open cancel confirmation dialog when clicking cancel button', async ({
     page,
   }) => {
-    const found = await navigateToReservationsList(page);
-    if (!found) {
-      test.skip();
-    }
+    // Create a test reservation
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 0,
+      startTimeOffset: 2,
+      durationHours: 1,
+      adults: 2,
+      kids: 0,
+    });
 
-    // Find a cancellable reservation
-    const upcomingHeading = page.getByRole('heading', { name: /upcoming/i });
-    const hasReservations = await upcomingHeading
-      .isVisible()
-      .catch(() => false);
+    // Navigate to reservations page
+    await page.goto(`/auth?secret=${clubSecret}`);
+    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
 
-    if (!hasReservations) {
-      test.skip();
-    }
+    const islandLink = page.locator('[data-testid="island-link"]').first();
+    await islandLink.click();
+    await page.waitForURL(/\/islands\/[^/]+$/);
+    await page.waitForLoadState('networkidle');
 
-    // Find cancel button
-    const upcomingSection = page.locator('div', { has: upcomingHeading });
-    const cancelButton = upcomingSection.getByRole('button').first();
-
-    if (!(await cancelButton.isVisible().catch(() => false))) {
-      test.skip();
-    }
+    const saunaCards = page.locator('[data-testid="sauna-card"]');
+    const viewButton = saunaCards
+      .first()
+      .getByRole('button', { name: /view all reservations/i });
+    await viewButton.click();
+    await page.waitForURL(/\/reservations$/);
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
 
     // Click cancel button
+    const cancelButton = page.getByTestId('cancel-button');
     await cancelButton.click();
 
     // Should open confirmation dialog
@@ -304,31 +390,44 @@ test.describe('Member Reservation List View & Cancellation', () => {
     await expect(page.getByText(/are you sure/i)).toBeVisible();
 
     // Should show reservation details in dialog
-    await expect(page.getByText(/time:/i)).toBeVisible();
-    await expect(page.getByText(/boat:/i)).toBeVisible();
+    await expect(page.getByText(/time/i)).toBeVisible();
+    await expect(page.getByText(/boat/i)).toBeVisible();
   });
 
   test('should close cancel dialog when clicking "Keep Reservation"', async ({
     page,
   }) => {
-    const found = await navigateToReservationsList(page);
-    if (!found) {
-      test.skip();
-    }
+    // Create a test reservation
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 0,
+      startTimeOffset: 2,
+      durationHours: 1,
+      adults: 2,
+      kids: 0,
+    });
 
-    // Find and click cancel button
-    const upcomingHeading = page.getByRole('heading', { name: /upcoming/i });
-    if (!(await upcomingHeading.isVisible().catch(() => false))) {
-      test.skip();
-    }
+    // Navigate to reservations page
+    await page.goto(`/auth?secret=${clubSecret}`);
+    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
 
-    const upcomingSection = page.locator('div', { has: upcomingHeading });
-    const cancelButton = upcomingSection.getByRole('button').first();
+    const islandLink = page.locator('[data-testid="island-link"]').first();
+    await islandLink.click();
+    await page.waitForURL(/\/islands\/[^/]+$/);
+    await page.waitForLoadState('networkidle');
 
-    if (!(await cancelButton.isVisible().catch(() => false))) {
-      test.skip();
-    }
+    const saunaCards = page.locator('[data-testid="sauna-card"]');
+    const viewButton = saunaCards
+      .first()
+      .getByRole('button', { name: /view all reservations/i });
+    await viewButton.click();
+    await page.waitForURL(/\/reservations$/);
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
 
+    // Click cancel button
+    const cancelButton = page.getByTestId('cancel-button');
     await cancelButton.click();
 
     // Wait for dialog
@@ -345,38 +444,44 @@ test.describe('Member Reservation List View & Cancellation', () => {
       page.getByRole('heading', { name: /cancel reservation/i })
     ).not.toBeVisible({ timeout: 2000 });
 
-    // Reservation should still be in the list
-    await expect(upcomingHeading).toBeVisible();
+    // Reservation should still be visible
+    await expect(page.getByTestId('upcoming-reservations')).toBeVisible();
   });
 
   test('should successfully cancel reservation when confirming', async ({
     page,
   }) => {
-    const found = await navigateToReservationsList(page);
-    if (!found) {
-      test.skip();
-    }
+    // Create a test reservation
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 0,
+      startTimeOffset: 2,
+      durationHours: 1,
+      adults: 2,
+      kids: 0,
+    });
 
-    // Find a cancellable reservation
-    const upcomingHeading = page.getByRole('heading', { name: /upcoming/i });
-    if (!(await upcomingHeading.isVisible().catch(() => false))) {
-      test.skip();
-    }
+    // Navigate to reservations page
+    await page.goto(`/auth?secret=${clubSecret}`);
+    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
 
-    const upcomingSection = page.locator('div', { has: upcomingHeading });
-    const cancelButton = upcomingSection.getByRole('button').first();
+    const islandLink = page.locator('[data-testid="island-link"]').first();
+    await islandLink.click();
+    await page.waitForURL(/\/islands\/[^/]+$/);
+    await page.waitForLoadState('networkidle');
 
-    if (!(await cancelButton.isVisible().catch(() => false))) {
-      test.skip();
-    }
+    const saunaCards = page.locator('[data-testid="sauna-card"]');
+    const viewButton = saunaCards
+      .first()
+      .getByRole('button', { name: /view all reservations/i });
+    await viewButton.click();
+    await page.waitForURL(/\/reservations$/);
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
 
-    // Get the count of reservations before cancellation
-    const reservationsBeforeCount = await upcomingSection
-      .locator('div')
-      .filter({ hasText: /\d{1,2}:\d{2}/ })
-      .count();
-
-    // Click cancel
+    // Click cancel button
+    const cancelButton = page.getByTestId('cancel-button');
     await cancelButton.click();
 
     // Wait for dialog and confirm
@@ -387,32 +492,9 @@ test.describe('Member Reservation List View & Cancellation', () => {
     const confirmButton = page.getByRole('button', { name: /confirm cancel/i });
     await confirmButton.click();
 
-    // Wait for page to update
-    await page.waitForTimeout(1000);
-
-    // Check result - either the reservation is removed OR the list shows "No reservations"
-    const stillHasUpcoming = await upcomingHeading
-      .isVisible()
-      .catch(() => false);
-
-    if (stillHasUpcoming) {
-      // If still has upcoming, count should be less
-      const reservationsAfterCount = await upcomingSection
-        .locator('div')
-        .filter({ hasText: /\d{1,2}:\d{2}/ })
-        .count();
-      expect(reservationsAfterCount).toBeLessThan(reservationsBeforeCount);
-    } else {
-      // No more upcoming reservations, should show "No reservations" or just "Earlier Today"
-      const noReservations = page.getByText(/no reservations/i);
-      const earlierToday = page.getByRole('heading', {
-        name: /earlier today/i,
-      });
-
-      const hasNoMsg = await noReservations.isVisible().catch(() => false);
-      const hasEarlier = await earlierToday.isVisible().catch(() => false);
-
-      expect(hasNoMsg || hasEarlier).toBe(true);
-    }
+    // Should show no reservations or empty state
+    await expect(page.getByTestId('empty-state')).toBeVisible({
+      timeout: 5000,
+    });
   });
 });

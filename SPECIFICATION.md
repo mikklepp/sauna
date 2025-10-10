@@ -1423,8 +1423,11 @@ Take your time, think deeply, and build something great. This is a real-world ap
 
 ## Things to Improve on
 
-- Design, service does not look well designed even with teh design system in place
+- "Unsupported metadata themeColor is configured in metadata export in several files. Please move it to viewport export instead" Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+- Design, service does not look well designed even with the design system in place
+- Fix build so that Github action uploads an artifact for testing: No files were found with the provided path: .next. No artifacts will be uploaded.
 - Island Device Test cases
+- Prisma Update available 5.22.0 -> 6.17.0, following https://pris.ly/d/major-version-upgrade
 - NPM feedback should be reviewed
 - API documentation should be created, reviewed and API usage rationalized
 - Software versions updated, next-js 15 in particular

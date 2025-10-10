@@ -136,7 +136,10 @@ export default function SharedReservationsPage() {
             Manage shared sauna events and Club Sauna reservations
           </p>
         </div>
-        <Button onClick={() => router.push('/admin/shared-reservations/new')}>
+        <Button
+          onClick={() => router.push('/admin/shared-reservations/new')}
+          data-testid="create-shared-button"
+        >
           <Plus className="mr-2 h-4 w-4" />
           Create Shared Reservation
         </Button>
@@ -189,7 +192,7 @@ export default function SharedReservationsPage() {
       ) : (
         <div className="space-y-4">
           {filteredReservations.map((reservation) => (
-            <Card key={reservation.id} className="p-6">
+            <Card key={reservation.id} className="p-6" data-testid="shared-reservation-item">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="mb-2 flex items-center gap-2">
@@ -234,6 +237,7 @@ export default function SharedReservationsPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => handleDelete(reservation.id, reservation.name)}
+                  data-testid="delete-button"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
