@@ -115,14 +115,27 @@ describe('calculateNextAvailable', () => {
   });
 
   describe('when sauna is not currently reserved', () => {
-    it('should apply heating time to determine start time', () => {
-      const now = new Date('2025-01-15T14:30:00');
+    it('should apply heating time from current time (not start of hour)', () => {
+      const now = new Date('2025-01-15T14:30:00'); // 2:30 PM
 
       const result = calculateNextAvailable(mockSauna, null, [], now);
 
-      // With 2 hours heating time, from 14:00 (current hour) -> 16:00
-      expect(result.startTime).toEqual(new Date('2025-01-15T16:00:00'));
-      expect(result.endTime).toEqual(new Date('2025-01-15T17:00:00'));
+      // With 2 hours heating time from 14:30 -> 16:30, rounded up to next hour = 17:00
+      expect(result.startTime).toEqual(new Date('2025-01-15T17:00:00'));
+      expect(result.endTime).toEqual(new Date('2025-01-15T18:00:00'));
+      expect(result.reason).toBe('heating');
+    });
+
+    it('should ensure full heating time even when close to end of hour', () => {
+      // Regression test for the bug: at 3:40 PM with 2-hour heating time
+      const now = new Date('2025-01-15T15:40:00'); // 3:40 PM
+
+      const result = calculateNextAvailable(mockSauna, null, [], now);
+
+      // With 2 hours heating time from 15:40 -> 17:40, rounded up to next hour = 18:00
+      // This ensures we have at least 2 hours heating time, not 1 hour 20 minutes
+      expect(result.startTime).toEqual(new Date('2025-01-15T18:00:00'));
+      expect(result.endTime).toEqual(new Date('2025-01-15T19:00:00'));
       expect(result.reason).toBe('heating');
     });
 
@@ -135,8 +148,8 @@ describe('calculateNextAvailable', () => {
           saunaId: 'sauna-1',
           boatId: 'boat-1',
           cancelledAt: null,
-          startTime: new Date('2025-01-15T16:00:00'),
-          endTime: new Date('2025-01-15T17:00:00'),
+          startTime: new Date('2025-01-15T17:00:00'), // Heating time slot is reserved
+          endTime: new Date('2025-01-15T18:00:00'),
           adults: 2,
           kids: 0,
           status: 'ACTIVE',
@@ -152,8 +165,8 @@ describe('calculateNextAvailable', () => {
         now
       );
 
-      expect(result.startTime).toEqual(new Date('2025-01-15T17:00:00'));
-      expect(result.endTime).toEqual(new Date('2025-01-15T18:00:00'));
+      expect(result.startTime).toEqual(new Date('2025-01-15T18:00:00'));
+      expect(result.endTime).toEqual(new Date('2025-01-15T19:00:00'));
     });
   });
 });

@@ -46,7 +46,11 @@ export function calculateNextAvailable(
   }
 
   // Case 2: Sauna is not currently reserved - apply heating time
-  const heatingTimeSlot = addHours(currentHour, sauna.heatingTimeHours);
+  // Calculate heating time from NOW (not start of hour), then round up to next hour
+  const heatingTimeFromNow = addHours(now, sauna.heatingTimeHours);
+
+  // Round up to next full hour (ensuring we have at least the full heating time)
+  const heatingTimeSlot = startOfHour(addHours(heatingTimeFromNow, 1));
 
   // Ensure heating time slot hasn't passed (if checking in past)
   const proposedSlot = isAfter(heatingTimeSlot, currentHour)
