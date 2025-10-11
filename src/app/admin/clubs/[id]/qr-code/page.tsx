@@ -45,12 +45,14 @@ export default function ClubQRCodePage({
     if (!club) return;
 
     try {
-      const qrData = JSON.stringify({
-        clubId: club.id,
-        secret: club.secret,
-      });
+      // Generate authentication URL for members
+      const baseUrl =
+        typeof window !== 'undefined'
+          ? window.location.origin
+          : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      const authUrl = `${baseUrl}/auth?secret=${encodeURIComponent(club.secret)}`;
 
-      const url = await QRCode.toDataURL(qrData, {
+      const url = await QRCode.toDataURL(authUrl, {
         width: 400,
         margin: 2,
         color: {
@@ -106,7 +108,7 @@ export default function ClubQRCodePage({
       <Card className="p-6">
         <h1 className="mb-2 text-2xl font-bold">{club.name} - QR Code</h1>
         <p className="mb-6 text-gray-600">
-          Use this QR code to configure Island Devices
+          Use this QR code for member authentication to {club.name}
         </p>
 
         <div className="flex flex-col items-center space-y-6">
@@ -153,13 +155,13 @@ export default function ClubQRCodePage({
               How to use this QR Code
             </h3>
             <ol className="list-inside list-decimal space-y-1 text-sm text-blue-800">
-              <li>Open the Island Device app on a tablet or mobile device</li>
-              <li>Scan this QR code with the device camera</li>
+              <li>Display this QR code at your club (print or on a screen)</li>
+              <li>Members scan the QR code with their mobile device camera</li>
               <li>
-                The device will automatically configure with the club
-                credentials
+                They will be automatically authenticated and redirected to the
+                island selection page
               </li>
-              <li>Select the island to complete the setup</li>
+              <li>Members can then make sauna and boat reservations</li>
             </ol>
           </div>
         </div>

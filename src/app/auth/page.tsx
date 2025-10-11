@@ -37,7 +37,6 @@ export default function AuthPage() {
         validateSecret(secretParam);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function validateSecret(secretToValidate: string) {

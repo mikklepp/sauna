@@ -379,19 +379,17 @@ A dedicated sauna reservation system for island communities, providing streamlin
   - "Keep Reservation" (default/safe action)
 - Dismissible (tap outside or back button)
 
-### 4.7 QR Code Scanning (User Device Mode)
+### 4.7 QR Code Authentication (Web App)
 
-- Initial app launch on user's personal device
-- "Scan Club QR Code" screen
-- Camera access for QR code scanning
-- QR code contains:
-  - Club ID
-  - Club Secret (annual rotating)
+- Members scan QR code displayed at the club
+- QR code contains authentication URL with embedded club secret:
+  - Format: `https://your-app.com/auth?secret=ABC123`
+  - Club Secret (annually rotating, expires December 31st)
 - Upon successful scan:
-  - Validate club secret with backend
-  - Download club configuration (islands, saunas, boats)
-  - Present island selection screen
-  - Store credentials for session
+  - Member's device opens the authentication URL
+  - Backend validates club secret automatically
+  - Member is authenticated and redirected to island selection
+  - Session stored in browser cookies
 
 ### 4.8 Island Selection (User Device Mode)
 
@@ -1115,7 +1113,7 @@ User Access (Mobile/Web) → Backend API → Island Device (if online)
 24. **Sync Retry Logic**: How many times should user access points retry syncing to Island Device?
 25. **Gender Self-Selection**: For shared reservations, how do users indicate which time slot (male/female) they're joining?
 26. **Web App vs Mobile App**: Should user access be primarily web-based, mobile app, or both?
-27. **QR Code URL Format**: Should QR codes contain direct authentication URLs for web app convenience?
+27. **QR Code URL Format**: ✅ **DECIDED** - QR codes contain direct authentication URLs (`/auth?secret=ABC123`) for seamless member access
 28. **Session Duration**: How long should web app sessions remain active?
 29. **Browser Compatibility**: Which browsers must the web app support?
 30. **Theme Preview**: Should admins be able to preview theme changes before publishing?
