@@ -38,14 +38,15 @@ export default function ClubThemePage() {
     try {
       const response = await fetch(`/api/clubs/${clubId}`);
       if (!response.ok) throw new Error('Failed to fetch club');
-      const data = await response.json();
-      setClub(data);
+      const result = await response.json();
+      const club = result.data;
+      setClub(club);
       setFormData({
-        primaryColor: data.primaryColor || '#1e40af',
-        secondaryColor: data.secondaryColor || '#7c3aed',
-        logoUrl: data.logoUrl,
+        primaryColor: club.primaryColor || '#1e40af',
+        secondaryColor: club.secondaryColor || '#7c3aed',
+        logoUrl: club.logoUrl,
       });
-      setLogoPreview(data.logoUrl);
+      setLogoPreview(club.logoUrl);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to load club');
       router.push('/admin/clubs');

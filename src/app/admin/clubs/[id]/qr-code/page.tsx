@@ -31,8 +31,8 @@ export default function ClubQRCodePage({
     try {
       const response = await fetch(`/api/clubs/${resolvedParams.id}`);
       if (!response.ok) throw new Error('Failed to fetch club');
-      const data = await response.json();
-      setClub(data);
+      const result = await response.json();
+      setClub(result.data);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to load club');
       router.push('/admin/clubs');
