@@ -11,9 +11,13 @@ import { ArrowLeft } from 'lucide-react';
 interface Club {
   id: string;
   name: string;
-  timezone: string;
+  secret: string;
   secretValidFrom: string;
   secretValidUntil: string;
+  logoUrl: string | null;
+  primaryColor: string | null;
+  secondaryColor: string | null;
+  timezone: string;
 }
 
 export default function EditClubPage({
@@ -35,11 +39,12 @@ export default function EditClubPage({
     try {
       const response = await fetch(`/api/clubs/${resolvedParams.id}`);
       if (!response.ok) throw new Error('Failed to fetch club');
-      const data = await response.json();
-      setClub(data);
+      const result = await response.json();
+      const club = result.data;
+      setClub(club);
       setFormData({
-        name: data.name,
-        timezone: data.timezone,
+        name: club.name,
+        timezone: club.timezone,
       });
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to load club');
