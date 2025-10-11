@@ -61,7 +61,6 @@ class WorkerManager {
       // eslint-disable-next-line no-console
       console.log('[Worker Manager] All workers initialized');
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error('[Worker Manager] Initialization failed:', err);
       throw err;
     }
@@ -97,7 +96,6 @@ class WorkerManager {
 
       // Listen for errors
       worker.addEventListener('error', (event) => {
-        // eslint-disable-next-line no-console
         console.error(`[Worker Manager] ${type} error:`, event.message);
         status.error = event.message;
         status.isRunning = false;
@@ -111,7 +109,6 @@ class WorkerManager {
       // eslint-disable-next-line no-console
       console.log(`[Worker Manager] ${type} initialized and scheduled`);
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error(`[Worker Manager] Failed to initialize ${type}:`, err);
       throw err;
     }
