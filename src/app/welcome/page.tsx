@@ -195,7 +195,11 @@ export default function WelcomePage() {
           <Button variant="outline" onClick={handleContinue} className="flex-1">
             Skip for Now
           </Button>
-          <Button onClick={handleContinue} className="flex-1">
+          <Button
+            onClick={handleContinue}
+            className="flex-1"
+            data-testid="continue-to-reservations"
+          >
             Continue to Reservations
           </Button>
         </div>

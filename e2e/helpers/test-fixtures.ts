@@ -115,6 +115,102 @@ export const TEST_BOATS = [
     captainName: 'Test Captain Theta',
     phoneNumber: '+358 40 888 8888',
   },
+  {
+    name: 'Test Iota',
+    membershipNumber: 'E2E-009',
+    captainName: 'Test Captain Iota',
+    phoneNumber: '+358 40 999 9999',
+  },
+  {
+    name: 'Test Kappa',
+    membershipNumber: 'E2E-010',
+    captainName: 'Test Captain Kappa',
+    phoneNumber: null,
+  },
+  {
+    name: 'Test Lambda',
+    membershipNumber: 'E2E-011',
+    captainName: 'Test Captain Lambda',
+    phoneNumber: '+358 41 111 1111',
+  },
+  {
+    name: 'Test Mu',
+    membershipNumber: 'E2E-012',
+    captainName: 'Test Captain Mu',
+    phoneNumber: '+358 41 222 2222',
+  },
+  {
+    name: 'Test Nu',
+    membershipNumber: 'E2E-013',
+    captainName: 'Test Captain Nu',
+    phoneNumber: null,
+  },
+  {
+    name: 'Test Xi',
+    membershipNumber: 'E2E-014',
+    captainName: 'Test Captain Xi',
+    phoneNumber: '+358 41 444 4444',
+  },
+  {
+    name: 'Test Omicron',
+    membershipNumber: 'E2E-015',
+    captainName: 'Test Captain Omicron',
+    phoneNumber: '+358 41 555 5555',
+  },
+  {
+    name: 'Test Pi',
+    membershipNumber: 'E2E-016',
+    captainName: 'Test Captain Pi',
+    phoneNumber: null,
+  },
+  {
+    name: 'Test Rho',
+    membershipNumber: 'E2E-017',
+    captainName: 'Test Captain Rho',
+    phoneNumber: '+358 41 777 7777',
+  },
+  {
+    name: 'Test Sigma',
+    membershipNumber: 'E2E-018',
+    captainName: 'Test Captain Sigma',
+    phoneNumber: '+358 41 888 8888',
+  },
+  {
+    name: 'Test Tau',
+    membershipNumber: 'E2E-019',
+    captainName: 'Test Captain Tau',
+    phoneNumber: null,
+  },
+  {
+    name: 'Test Upsilon',
+    membershipNumber: 'E2E-020',
+    captainName: 'Test Captain Upsilon',
+    phoneNumber: '+358 42 000 0000',
+  },
+  {
+    name: 'Test Phi',
+    membershipNumber: 'E2E-021',
+    captainName: 'Test Captain Phi',
+    phoneNumber: '+358 42 111 1111',
+  },
+  {
+    name: 'Test Chi',
+    membershipNumber: 'E2E-022',
+    captainName: 'Test Captain Chi',
+    phoneNumber: null,
+  },
+  {
+    name: 'Test Psi',
+    membershipNumber: 'E2E-023',
+    captainName: 'Test Captain Psi',
+    phoneNumber: '+358 42 333 3333',
+  },
+  {
+    name: 'Test Omega',
+    membershipNumber: 'E2E-024',
+    captainName: 'Test Captain Omega',
+    phoneNumber: '+358 42 444 4444',
+  },
 ] as const;
 
 /**
@@ -122,6 +218,7 @@ export const TEST_BOATS = [
  * This ensures every test run starts with a known, clean state.
  */
 export async function resetTestClub() {
+  // eslint-disable-next-line no-console
   console.log('🧹 Resetting test club data...');
 
   // Find existing test club
@@ -139,6 +236,7 @@ export async function resetTestClub() {
 
   // Delete all test club data if it exists (cascade will handle related data)
   if (existingClub) {
+    // eslint-disable-next-line no-console
     console.log('  Deleting existing test club and related data...');
     await prisma.club.delete({
       where: { id: existingClub.id },
@@ -151,12 +249,14 @@ export async function resetTestClub() {
   });
 
   if (existingAdmin) {
+    // eslint-disable-next-line no-console
     console.log('  Deleting existing test admin...');
     await prisma.adminUser.delete({
       where: { id: existingAdmin.id },
     });
   }
 
+  // eslint-disable-next-line no-console
   console.log('  Creating fresh test admin...');
   const adminPasswordHash = await bcrypt.hash(TEST_ADMIN.password, 10);
   await prisma.adminUser.create({
@@ -168,11 +268,13 @@ export async function resetTestClub() {
     },
   });
 
+  // eslint-disable-next-line no-console
   console.log('  Creating fresh test club...');
   const club = await prisma.club.create({
     data: TEST_CLUB,
   });
 
+  // eslint-disable-next-line no-console
   console.log('  Creating test islands...');
   const islands = await Promise.all(
     TEST_ISLANDS.map((island) =>
@@ -186,6 +288,7 @@ export async function resetTestClub() {
     )
   );
 
+  // eslint-disable-next-line no-console
   console.log('  Creating test saunas...');
   const saunas = await Promise.all(
     TEST_SAUNAS.map((sauna) =>
@@ -200,6 +303,7 @@ export async function resetTestClub() {
     )
   );
 
+  // eslint-disable-next-line no-console
   console.log('  Creating test boats...');
   const boats = await Promise.all(
     TEST_BOATS.map((boat) =>
@@ -215,6 +319,7 @@ export async function resetTestClub() {
     )
   );
 
+  // eslint-disable-next-line no-console
   console.log('✅ Test club reset complete!');
 
   return {
