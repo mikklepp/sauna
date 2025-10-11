@@ -58,7 +58,7 @@ export default function AuthPage() {
 
       if (response.ok && data.success) {
         // Use window.location for full page reload to ensure cookies are sent
-        window.location.href = '/islands';
+        window.location.href = '/welcome';
       } else {
         validationInProgress = false;
         setError(data.error || 'Invalid club secret');
