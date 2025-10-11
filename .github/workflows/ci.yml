@@ -104,6 +104,20 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
 
+      - name: Debug - Check build output
+	run: |
+	  echo "=== Current directory ==="
+	  pwd
+	  echo "=== Root contents ==="
+	  ls -la
+	  echo "=== Looking for .next ==="
+	  find . -name ".next" -type d
+	  echo "=== Check if .next exists ==="
+	  [ -d .next ] && echo ".next EXISTS" || echo ".next DOES NOT EXIST"
+          echo "=== Contents if exists ==="
+          [ -d .next ] && ls -la .next/ || echo "Cannot list .next"
+
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
