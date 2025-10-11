@@ -142,11 +142,15 @@ export default function EditClubPage({
             <div className="space-y-1 text-sm text-gray-600">
               <p>
                 <strong>Valid From:</strong>{' '}
-                {new Date(club.secretValidFrom).toLocaleString()}
+                {club.secretValidFrom
+                  ? new Date(club.secretValidFrom).toLocaleString()
+                  : 'Not set'}
               </p>
               <p>
                 <strong>Valid Until:</strong>{' '}
-                {new Date(club.secretValidUntil).toLocaleString()}
+                {club.secretValidUntil
+                  ? new Date(club.secretValidUntil).toLocaleString()
+                  : 'Not set'}
               </p>
               <p className="mt-2 text-xs">
                 Secret codes cannot be changed directly. They are rotated

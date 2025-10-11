@@ -50,7 +50,16 @@ export async function GET(
       return errorResponse('Club not found', 404);
     }
 
-    return successResponse(clubData);
+    // Ensure dates are properly serialized to ISO strings
+    const response = {
+      ...clubData,
+      secretValidFrom: clubData.secretValidFrom.toISOString(),
+      secretValidUntil: clubData.secretValidUntil.toISOString(),
+      createdAt: clubData.createdAt.toISOString(),
+      updatedAt: clubData.updatedAt.toISOString(),
+    };
+
+    return successResponse(response);
   } catch (error) {
     return handleApiError(error);
   }
@@ -101,6 +110,18 @@ export async function PUT(
   } catch (error) {
     return handleApiError(error);
   }
+}
+
+/**
+ * PATCH /api/clubs/[id]
+ * Partially update a club (admin only)
+ */
+export async function PATCH(
+  request: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) {
+  // PATCH is just an alias for PUT in this case
+  return PUT(request, props);
 }
 
 /**
