@@ -122,7 +122,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
-          path: .next/
+          path: sauna/.next
           retention-days: 1
           if-no-files-found: error
 
