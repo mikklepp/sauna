@@ -517,6 +517,39 @@ See `prisma/schema.prisma` for the complete schema definition.
 
 ## API Documentation
 
+### Interactive API Documentation
+
+The API provides a complete **OpenAPI 3.1 specification** that is auto-generated from TypeScript types and Zod validation schemas:
+
+- **OpenAPI Spec (JSON):** `GET /api/openapi`
+- **Interactive Swagger UI:** `/api-docs`
+- **Detailed Documentation:** [`docs/API.md`](./docs/API.md)
+- **OpenAPI Guide:** [`docs/OPENAPI.md`](./docs/OPENAPI.md)
+
+**Features:**
+
+- ✅ Auto-synced with code (Zod schemas + TypeScript types)
+- ✅ Interactive API explorer (Swagger UI)
+- ✅ Generate client SDKs for any language
+- ✅ Import into Postman, Insomnia, etc.
+- ✅ Contract testing support
+
+**Quick Start:**
+
+```bash
+# Access Swagger UI
+open http://localhost:3000/api-docs
+
+# Download OpenAPI spec
+curl http://localhost:3000/api/openapi > openapi.json
+
+# Generate TypeScript client
+npx @openapitools/openapi-generator-cli generate \
+  -i http://localhost:3000/api/openapi \
+  -g typescript-fetch \
+  -o ./generated/api-client
+```
+
 ### Authentication
 
 All user-facing endpoints require club secret authentication via cookie or header.

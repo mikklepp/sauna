@@ -412,6 +412,7 @@ export async function createTestReservation(options: {
     now.getDate()
   );
 
+  // TODO: always use the next-available time as returned by the API
   const proposedStartTime = new Date(
     now.getTime() + startTimeOffset * 60 * 60 * 1000
   );

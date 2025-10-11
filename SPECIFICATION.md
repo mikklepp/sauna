@@ -1288,10 +1288,10 @@ Work through the system in a logical order, such as:
 - ✅ Shared reservations (advance booking, gender scheduling)
 - ✅ **Automatic "Club Sauna" feature with LOCAL scheduled jobs on Island Device**
   - **CRITICAL**: Must work completely offline on Island Device
-  - Auto-create shared reservations at midnight (locally)
   - Auto-evaluate at 20:00 (locally) and cancel if < 3 boats
+  - Auto-create shared reservations for tomorrow at 20:00 (locally)
   - Auto-convert participants to individual reservations
-  - Backend runs same jobs for web-based redundancy
+  - Backend runs same jobs in single daily cron at 20:00 UTC
 - ✅ One reservation per boat per island per day (individual OR shared)
 - ✅ 15-minute cancellation cutoff
 - ✅ Island Device priority (offline-capable, source of truth)
@@ -1314,7 +1314,7 @@ Work through the system in a logical order, such as:
 - **Deployment**: Vercel
 - **Scheduled Jobs**:
   - **Island Device**: Local scheduler/cron in mobile app (works offline)
-  - **Backend**: Vercel Cron Functions for web-based redundancy
+  - **Backend**: Single daily Vercel Cron at 20:00 UTC (Club Sauna management + secret renewal)
 - **Testing**: Vitest, React Testing Library, Playwright
 - **CI/CD**: GitHub Actions
 
@@ -1444,7 +1444,7 @@ Take your time, think deeply, and build something great. This is a real-world ap
 4. ✅ **Pre-commit Hooks for Code Quality**
 5. ✅ **Club Secret Automatic Renewal System**
    - Server startup check via instrumentation.ts
-   - Daily cron job (midnight UTC)
+   - Daily cron job at 20:00 UTC (combined with Club Sauna operations)
    - Manual renewal script
    - Secrets expire December 31st each year
 

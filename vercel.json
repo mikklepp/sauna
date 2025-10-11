@@ -32,15 +32,7 @@
 
   "crons": [
     {
-      "path": "/api/cron/renew-club-secrets",
-      "schedule": "0 0 * * *"
-    },
-    {
-      "path": "/api/cron/generate-club-sauna",
-      "schedule": "0 0 * * *"
-    },
-    {
-      "path": "/api/cron/evaluate-club-sauna",
+      "path": "/api/cron/daily",
       "schedule": "0 20 * * *"
     }
   ],
