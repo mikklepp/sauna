@@ -50,16 +50,7 @@ export async function GET(
       return errorResponse('Club not found', 404);
     }
 
-    // Ensure dates are properly serialized to ISO strings
-    const response = {
-      ...clubData,
-      secretValidFrom: clubData.secretValidFrom.toISOString(),
-      secretValidUntil: clubData.secretValidUntil.toISOString(),
-      createdAt: clubData.createdAt.toISOString(),
-      updatedAt: clubData.updatedAt.toISOString(),
-    };
-
-    return successResponse(response);
+    return successResponse(clubData);
   } catch (error) {
     return handleApiError(error);
   }
