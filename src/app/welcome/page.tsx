@@ -170,7 +170,9 @@ export default function WelcomePage() {
           <ul className="space-y-2">
             <li className="flex gap-2">
               <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600" />
-              <span>Stay logged in - no need to scan the QR code again</span>
+              <span>
+                Stay logged in until December 31st - no need to scan QR again
+              </span>
             </li>
             <li className="flex gap-2">
               <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600" />

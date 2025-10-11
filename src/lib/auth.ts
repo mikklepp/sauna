@@ -73,17 +73,37 @@ export async function verifyClubSession(
 }
 
 /**
- * Set club session cookie
+ * Set club session cookie with expiry matching the club secret validity
  */
 export async function setClubSessionCookie(clubId: string): Promise<void> {
   const token = await createClubSession(clubId);
   const cookieStore = await cookies();
 
+  // Get club to check secret expiry
+  const club = await prisma.club.findUnique({
+    where: { id: clubId },
+    select: { secretValidUntil: true },
+  });
+
+  // Calculate maxAge until secret expires (or default to 30 days if not found)
+  let maxAge = 30 * 24 * 60 * 60; // 30 days default
+  if (club) {
+    const now = new Date();
+    const expiryDate = new Date(club.secretValidUntil);
+    const secondsUntilExpiry = Math.floor(
+      (expiryDate.getTime() - now.getTime()) / 1000
+    );
+    // Use expiry time but cap at 1 year for sanity
+    maxAge = Math.min(secondsUntilExpiry, 365 * 24 * 60 * 60);
+    // Ensure at least 1 day
+    maxAge = Math.max(maxAge, 24 * 60 * 60);
+  }
+
   cookieStore.set('club_session', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 7 * 24 * 60 * 60, // 7 days
+    maxAge,
     path: '/',
   });
 }
