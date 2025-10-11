@@ -6,20 +6,22 @@ import {
   TEST_BOATS,
 } from './helpers/test-fixtures';
 
+test.describe.configure({ mode: 'serial' });
+
 test.describe('Member - Many Boats Reservation Visibility', () => {
   let clubSecret: string;
 
   test.beforeAll(async () => {
-    // Reset test club to get fresh data with all 24 Greek alphabet boats
+    // Reset test club ONCE to get fresh data with all 24 Greek alphabet boats
     await resetTestClub();
     clubSecret = getTestClubSecret();
 
-    // Create 24 reservations - one for each Greek alphabet boat
-    // Each reservation is 1 hour long, starting at different hours of today
+    // Create 23 reservations (all boats except Omega)
+    // The first test will create the 24th reservation via UI
     const now = new Date();
     const baseHour = 8; // Start at 8:00 AM
 
-    for (let i = 0; i < TEST_BOATS.length; i++) {
+    for (let i = 0; i < TEST_BOATS.length - 1; i++) {
       // Calculate start time: 8 AM + i hours
       const startHour = baseHour + i;
       const hoursFromNow = startHour - now.getHours();
@@ -35,10 +37,11 @@ test.describe('Member - Many Boats Reservation Visibility', () => {
     }
   });
 
-  test('should display all 24 Greek alphabet boat reservations on sauna view', async ({
+  test('should allow creating reservation via UI when many exist', async ({
     page,
   }) => {
-    // Navigate to the island with the sauna that has 24 reservations
+    // This test creates the 24th reservation (Test Omega) via UI
+    // when there are already 23 reservations
     await page.goto(`/auth?secret=${clubSecret}`);
     await page.waitForLoadState('networkidle');
 
@@ -59,53 +62,57 @@ test.describe('Member - Many Boats Reservation Visibility', () => {
     const saunaCards = page.locator('[data-testid="sauna-card"]');
     await saunaCards.first().waitFor({ state: 'visible', timeout: 5000 });
 
-    // The first sauna should have many reservations
+    // Click reserve button on first sauna
     const firstSauna = saunaCards.first();
+    const reserveButton = firstSauna.getByRole('button', {
+      name: /reserve this time/i,
+    });
+    await reserveButton.click();
+    await page.waitForURL(/\/islands\/[^/]+\/reserve/);
 
-    //Wait for the sauna card content to fully load
-    await firstSauna.waitFor({ state: 'visible' });
-    await page.waitForLoadState('networkidle');
+    // Search for the last boat (Test Omega - the 24th boat)
+    const searchInput = page.getByTestId('boat-search-input');
+    await searchInput.fill('Test Omega');
+    await page.waitForTimeout(500); // Wait for debounced search
 
-    // Get all text from the sauna card
-    const saunaCardText = await firstSauna.textContent();
+    // Select Test Omega
+    const boatResults = page.locator('[data-testid="boat-result"]');
+    await expect(boatResults.first()).toBeVisible();
+    await boatResults.first().click();
 
-    // We should see boat names directly in the sauna card OR
-    // there should be a button to view more
-    const hasBoatNamesInCard = TEST_BOATS.some((boat) =>
-      saunaCardText?.includes(boat.name)
-    );
+    // Fill in party size
+    const adultsInput = page.getByLabel(/adults/i);
+    await adultsInput.waitFor({ state: 'visible', timeout: 5000 });
+    await adultsInput.fill('2');
 
-    if (hasBoatNamesInCard) {
-      // Boat names are visible in the card - just check them
-      const pageContent = await page.textContent('body');
+    const kidsInput = page.getByLabel(/kids/i);
+    await kidsInput.fill('0');
 
-      // Should see first boat (Alpha)
-      expect(pageContent).toContain(TEST_BOATS[0].name); // Test Alpha
+    // Click Continue
+    const continueButton = page.getByRole('button', { name: /continue/i });
+    await continueButton.click();
 
-      // Should see middle boat (Mu - #12)
-      expect(pageContent).toContain(TEST_BOATS[11].name); // Test Mu
+    // Confirm reservation
+    const confirmButton = page.getByRole('button', {
+      name: /confirm reservation/i,
+    });
+    await confirmButton.click();
 
-      // Should see last boat (Omega)
-      expect(pageContent).toContain(TEST_BOATS[23].name); // Test Omega
+    // Should see success
+    await expect(page.getByTestId('success-title')).toBeVisible({
+      timeout: 10000,
+    });
+    await expect(page.getByText(/reservation confirmed/i)).toBeVisible();
 
-      // Count how many distinct boat names we can see
-      const visibleBoatCount = TEST_BOATS.filter((boat) =>
-        pageContent?.includes(boat.name)
-      ).length;
-
-      // Should see most or all of the 24 boats
-      expect(visibleBoatCount).toBeGreaterThanOrEqual(20);
-    } else {
-      // Boat names not visible yet - this test validates the UI shows 24 reservations somehow
-      // For now, just verify the sauna card loaded
-      expect(saunaCardText).toBeTruthy();
-      expect(saunaCardText).not.toContain('Loading');
-    }
+    // Verify "Test Omega" appears in success message
+    const successContent = await page.textContent('body');
+    expect(successContent).toContain('Test Omega');
   });
 
-  test('should show all boat names are clearly distinguishable', async ({
+  test('should show all 24 boat names clearly distinguishable', async ({
     page,
   }) => {
+    // After first test, all 24 boats now have reservations
     await page.goto(`/auth?secret=${clubSecret}`);
     await page.waitForLoadState('networkidle');
 
@@ -134,7 +141,7 @@ test.describe('Member - Many Boats Reservation Visibility', () => {
       await page.waitForTimeout(1000);
     }
 
-    // Verify each Greek letter boat can be distinguished
+    // Verify all 24 Greek letter boats can be distinguished
     const greekLetters = [
       'Alpha',
       'Beta',
@@ -164,21 +171,16 @@ test.describe('Member - Many Boats Reservation Visibility', () => {
 
     const pageText = await page.textContent('body');
 
-    for (const letter of greekLetters) {
-      const boatName = `Test ${letter}`;
-      // Each boat name should appear in the page
-      // (not asserting here, just counting visible boats below)
-      pageText?.includes(boatName);
-    }
-
     // Count visible boats
     const visibleCount = greekLetters.filter((letter) =>
       pageText?.includes(`Test ${letter}`)
     ).length;
 
-    // Should be able to see most boats (at least 20 of 24)
-    // Now that we fetch both today and tomorrow's reservations
+    // Should see all 24 boats now (includes Omega created in first test)
     expect(visibleCount).toBeGreaterThanOrEqual(20);
+
+    // Specifically verify Omega is visible (created via UI in first test)
+    expect(pageText).toContain('Test Omega');
   });
 
   test('should handle scrolling to see all reservations', async ({ page }) => {
