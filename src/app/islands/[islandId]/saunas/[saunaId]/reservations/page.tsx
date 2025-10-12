@@ -81,9 +81,7 @@ export default function ReservationsListPage() {
       }
 
       // Get all future reservations starting from today
-      const resRes = await fetch(
-        `/api/reservations?saunaId=${saunaId}&future=true`
-      );
+      const resRes = await fetch(`/api/reservations?saunaId=${saunaId}`);
       if (resRes.ok) {
         const resData = await resRes.json();
         setReservations(resData.data || []);

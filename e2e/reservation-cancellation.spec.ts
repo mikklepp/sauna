@@ -20,7 +20,9 @@ test.describe('Reservation Cancellation', () => {
     });
 
     if (club) {
-      const saunaIds = club.islands.flatMap((i) => i.saunas.map((s) => s.id));
+      const saunaIds = club.islands.flatMap((i: { saunas: any[] }) =>
+        i.saunas.map((s) => s.id)
+      );
       await prisma.reservation.deleteMany({
         where: { saunaId: { in: saunaIds } },
       });

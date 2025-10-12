@@ -276,11 +276,6 @@ registry.registerPath({
         description: 'Date to query (ISO 8601, optional, defaults to today)',
         example: '2025-10-11',
       }),
-      future: z.boolean().optional().openapi({
-        description:
-          'If true, get all future reservations from date (default: false)',
-        example: false,
-      }),
     }),
   },
   responses: {

@@ -145,10 +145,8 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * GET /api/reservations?saunaId=xxx&date=xxx&future=true
- * Get reservations for a sauna
- * - If future=true: Get all reservations from the given date (default today) onwards
- * - Otherwise: Get reservations for the specific date only
+ * GET /api/reservations?saunaId=xxx&date=xxx
+ * Get all reservations for a sauna from the given date (default today) onwards
  */
 export async function GET(request: NextRequest) {
   try {
@@ -156,7 +154,6 @@ export async function GET(request: NextRequest) {
 
     const saunaId = getQueryParam(request, 'saunaId');
     const dateStr = getQueryParam(request, 'date');
-    const future = getQueryParam(request, 'future') === 'true';
 
     if (!saunaId) {
       return errorResponse('saunaId query parameter is required', 400);
@@ -176,25 +173,14 @@ export async function GET(request: NextRequest) {
     const date = dateStr ? new Date(dateStr) : new Date();
     const dayStart = startOfDay(date);
 
-    // Build where clause based on future parameter
-    const whereClause = future
-      ? {
-          saunaId,
-          startTime: {
-            gte: dayStart, // All reservations from this date onwards
-          },
-        }
-      : {
-          saunaId,
-          startTime: {
-            gte: dayStart,
-            lte: endOfDay(date), // Only this specific day
-          },
-        };
-
     // Get reservations
     const reservations = await prisma.reservation.findMany({
-      where: whereClause,
+      where: {
+        saunaId,
+        startTime: {
+          gte: dayStart, // All reservations from this date onwards
+        },
+      },
       include: {
         boat: true,
       },

@@ -393,11 +393,18 @@ export async function createTestReservation(options: {
 
   // Flatten saunas in a consistent order
   const saunas = club.islands
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .flatMap((i) => i.saunas.sort((a, b) => a.name.localeCompare(b.name)));
+    .sort((a: { name: string }, b: { name: string }) =>
+      a.name.localeCompare(b.name)
+    )
+    .flatMap((i: { saunas: any[] }) =>
+      i.saunas.sort((a: { name: string }, b: { name: string }) =>
+        a.name.localeCompare(b.name)
+      )
+    );
   const sauna = saunas[saunaIndex];
-  const boat = club.boats.sort((a, b) =>
-    a.membershipNumber.localeCompare(b.membershipNumber)
+  const boat = club.boats.sort(
+    (a: { membershipNumber: string }, b: { membershipNumber: any }) =>
+      a.membershipNumber.localeCompare(b.membershipNumber)
   )[boatIndex];
 
   if (!sauna || !boat) {
@@ -491,8 +498,14 @@ export async function createTestSharedReservation(options: {
   }
 
   const saunas = club.islands
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .flatMap((i) => i.saunas.sort((a, b) => a.name.localeCompare(b.name)));
+    .sort((a: { name: string }, b: { name: any }) =>
+      a.name.localeCompare(b.name)
+    )
+    .flatMap((i: { saunas: any[] }) =>
+      i.saunas.sort((a: { name: string }, b: { name: any }) =>
+        a.name.localeCompare(b.name)
+      )
+    );
   const sauna = saunas[saunaIndex];
 
   if (!sauna) {
@@ -533,8 +546,9 @@ export async function createTestSharedReservation(options: {
   });
 
   // Add participants
-  const sortedBoats = club.boats.sort((a, b) =>
-    a.membershipNumber.localeCompare(b.membershipNumber)
+  const sortedBoats = club.boats.sort(
+    (a: { membershipNumber: string }, b: { membershipNumber: any }) =>
+      a.membershipNumber.localeCompare(b.membershipNumber)
   );
   for (const participant of participants) {
     const boat = sortedBoats[participant.boatIndex];
