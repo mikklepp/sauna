@@ -53,10 +53,16 @@ test.describe('Member Reservation List View & Cancellation', () => {
 
     const viewButton = saunaCards
       .first()
-      .getByRole('button', { name: /view all reservations/i });
+      .getByTestId('view-all-reservations-button');
     await viewButton.click();
-    await page.waitForURL(/\/reservations$/);
+    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
     await page.waitForLoadState('networkidle');
+
+    // Wait for reservations to load
+    await page
+      .locator('[data-testid="reservation-item"]')
+      .first()
+      .waitFor({ state: 'visible', timeout: 5000 });
 
     // Should see page content
     await expect(page.locator('main')).toBeVisible();
@@ -88,9 +94,9 @@ test.describe('Member Reservation List View & Cancellation', () => {
     const saunaCards = page.locator('[data-testid="sauna-card"]');
     const viewButton = saunaCards
       .first()
-      .getByRole('button', { name: /view all reservations/i });
+      .getByTestId('view-all-reservations-button');
     await viewButton.click();
-    await page.waitForURL(/\/reservations$/);
+    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
 
     // Navigate back
     const currentUrl = page.url();
@@ -131,11 +137,16 @@ test.describe('Member Reservation List View & Cancellation', () => {
     const saunaCards = page.locator('[data-testid="sauna-card"]');
     const viewButton = saunaCards
       .first()
-      .getByRole('button', { name: /view all reservations/i });
+      .getByTestId('view-all-reservations-button');
     await viewButton.click();
-    await page.waitForURL(/\/reservations$/);
+    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+
+    // Wait for reservations to load
+    await page
+      .locator('[data-testid="reservation-item"]')
+      .first()
+      .waitFor({ state: 'visible', timeout: 5000 });
 
     // Should see Upcoming section
     await expect(page.getByRole('heading', { name: /upcoming/i })).toBeVisible({
@@ -171,11 +182,16 @@ test.describe('Member Reservation List View & Cancellation', () => {
     const saunaCards = page.locator('[data-testid="sauna-card"]');
     const viewButton = saunaCards
       .first()
-      .getByRole('button', { name: /view all reservations/i });
+      .getByTestId('view-all-reservations-button');
     await viewButton.click();
-    await page.waitForURL(/\/reservations$/);
+    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+
+    // Wait for reservations to load
+    await page
+      .locator('[data-testid="reservation-item"]')
+      .first()
+      .waitFor({ state: 'visible', timeout: 5000 });
 
     // Should see "Earlier Today" section
     await expect(
@@ -216,11 +232,16 @@ test.describe('Member Reservation List View & Cancellation', () => {
     const saunaCards = page.locator('[data-testid="sauna-card"]');
     const viewButton = saunaCards
       .first()
-      .getByRole('button', { name: /view all reservations/i });
+      .getByTestId('view-all-reservations-button');
     await viewButton.click();
-    await page.waitForURL(/\/reservations$/);
+    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+
+    // Wait for reservations to load
+    await page
+      .locator('[data-testid="reservation-item"]')
+      .first()
+      .waitFor({ state: 'visible', timeout: 5000 });
 
     // Should show boat name
     await expect(page.getByTestId('reservation-boat-name')).toContainText(
@@ -256,11 +277,16 @@ test.describe('Member Reservation List View & Cancellation', () => {
     const saunaCards = page.locator('[data-testid="sauna-card"]');
     const viewButton = saunaCards
       .first()
-      .getByRole('button', { name: /view all reservations/i });
+      .getByTestId('view-all-reservations-button');
     await viewButton.click();
-    await page.waitForURL(/\/reservations$/);
+    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+
+    // Wait for reservations to load
+    await page
+      .locator('[data-testid="reservation-item"]')
+      .first()
+      .waitFor({ state: 'visible', timeout: 5000 });
 
     // Should show party size
     const partySize = page.getByTestId('reservation-party-size');
@@ -293,11 +319,16 @@ test.describe('Member Reservation List View & Cancellation', () => {
     const saunaCards = page.locator('[data-testid="sauna-card"]');
     const viewButton = saunaCards
       .first()
-      .getByRole('button', { name: /view all reservations/i });
+      .getByTestId('view-all-reservations-button');
     await viewButton.click();
-    await page.waitForURL(/\/reservations$/);
+    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+
+    // Wait for reservations to load
+    await page
+      .locator('[data-testid="reservation-item"]')
+      .first()
+      .waitFor({ state: 'visible', timeout: 5000 });
 
     // Should see cancel button
     await expect(page.getByTestId('cancel-button')).toBeVisible({
@@ -330,11 +361,16 @@ test.describe('Member Reservation List View & Cancellation', () => {
     const saunaCards = page.locator('[data-testid="sauna-card"]');
     const viewButton = saunaCards
       .first()
-      .getByRole('button', { name: /view all reservations/i });
+      .getByTestId('view-all-reservations-button');
     await viewButton.click();
-    await page.waitForURL(/\/reservations$/);
+    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+
+    // Wait for reservations to load
+    await page
+      .locator('[data-testid="reservation-item"]')
+      .first()
+      .waitFor({ state: 'visible', timeout: 5000 });
 
     // Should see "Too late to cancel" message
     await expect(page.getByTestId('too-late-message')).toBeVisible({
@@ -367,11 +403,16 @@ test.describe('Member Reservation List View & Cancellation', () => {
     const saunaCards = page.locator('[data-testid="sauna-card"]');
     const viewButton = saunaCards
       .first()
-      .getByRole('button', { name: /view all reservations/i });
+      .getByTestId('view-all-reservations-button');
     await viewButton.click();
-    await page.waitForURL(/\/reservations$/);
+    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+
+    // Wait for reservations to load
+    await page
+      .locator('[data-testid="reservation-item"]')
+      .first()
+      .waitFor({ state: 'visible', timeout: 5000 });
 
     // Click cancel button
     const cancelButton = page.getByTestId('cancel-button');
@@ -413,11 +454,16 @@ test.describe('Member Reservation List View & Cancellation', () => {
     const saunaCards = page.locator('[data-testid="sauna-card"]');
     const viewButton = saunaCards
       .first()
-      .getByRole('button', { name: /view all reservations/i });
+      .getByTestId('view-all-reservations-button');
     await viewButton.click();
-    await page.waitForURL(/\/reservations$/);
+    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+
+    // Wait for reservations to load
+    await page
+      .locator('[data-testid="reservation-item"]')
+      .first()
+      .waitFor({ state: 'visible', timeout: 5000 });
 
     // Click cancel button
     const cancelButton = page.getByTestId('cancel-button');
@@ -466,11 +512,16 @@ test.describe('Member Reservation List View & Cancellation', () => {
     const saunaCards = page.locator('[data-testid="sauna-card"]');
     const viewButton = saunaCards
       .first()
-      .getByRole('button', { name: /view all reservations/i });
+      .getByTestId('view-all-reservations-button');
     await viewButton.click();
-    await page.waitForURL(/\/reservations$/);
+    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+
+    // Wait for reservations to load
+    await page
+      .locator('[data-testid="reservation-item"]')
+      .first()
+      .waitFor({ state: 'visible', timeout: 5000 });
 
     // Click cancel button
     const cancelButton = page.getByTestId('cancel-button');
