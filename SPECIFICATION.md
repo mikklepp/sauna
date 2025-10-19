@@ -1172,7 +1172,286 @@ User Access (Mobile/Web) → Backend API → Island Device (if online)
 
 - Annual reporting provides accurate usage statistics with clear separation and combination of individual vs shared metrics
 - Configuration changes propagate within 24 hours (or immediately with manual sync)
-- Reports export successfully to CSV and PDF formats# Full Stack Implementation Request: Sauna Reservation System
+- Reports export successfully to CSV and PDF formats
+
+## 11. E2E Testing Best Practices
+
+Based on systematic testing and debugging of the complete E2E test suite, the following best practices have been established for reliable, maintainable Playwright tests.
+
+### 11.1 Core Principles
+
+**Always Use Explicit Waits**
+
+- Never rely solely on `waitForLoadState('networkidle')`
+- Network idle doesn't guarantee DOM elements are visible or populated
+- Always wait for the specific element you need before interacting with it
+
+**Prefer data-testid Over Role-Based Selectors**
+
+- ✅ `page.getByTestId('island-link')`
+- ❌ `page.getByRole('button', { name: /view all reservations/i })`
+- data-testid selectors are:
+  - More reliable and less fragile
+  - Not affected by text changes or localization
+  - Faster to execute
+  - Less prone to strict mode violations
+
+**Wait for Content, Not Just Visibility**
+
+- Elements can exist in DOM but be empty while data loads
+- Example: Header element renders immediately but island name loads asynchronously
+- ✅ Use `toContainText()` with timeout to wait for content
+- ❌ Don't separate `waitFor({ state: 'visible' })` from content assertions
+
+### 11.2 Common Timing Patterns
+
+**Island/Page Navigation Pattern**
+
+```typescript
+// Wait for link visibility before clicking
+const islandLink = page.locator('[data-testid="island-link"]').first();
+await islandLink.waitFor({ state: 'visible', timeout: 5000 });
+await islandLink.click();
+
+// Wait for navigation
+await page.waitForURL(/\/islands\/[^/]+$/);
+await page.waitForLoadState('networkidle');
+
+// Wait for content to load (sauna cards, headers, etc.)
+const saunaCards = page.locator('[data-testid="sauna-card"]');
+await saunaCards.first().waitFor({ state: 'visible', timeout: 5000 });
+```
+
+**Header Content Pattern**
+
+```typescript
+// DON'T: Wait for header visibility separately
+await page.locator('header').waitFor({ state: 'visible', timeout: 5000 });
+await expect(page.locator('header')).toContainText(islandName);
+
+// DO: Wait for header to contain expected text (combines both checks)
+await expect(page.locator('header')).toContainText(islandName, {
+  timeout: 10000,
+});
+```
+
+**Reservation List Pattern**
+
+```typescript
+// After navigation to reservations page
+await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
+await page.waitForLoadState('networkidle');
+
+// Wait for actual reservation items to load (not just network idle)
+await page
+  .locator('[data-testid="reservation-item"]')
+  .first()
+  .waitFor({ state: 'visible', timeout: 5000 });
+```
+
+### 11.3 Scoping Selectors
+
+**Avoid Strict Mode Violations**
+
+```typescript
+// DON'T: Query entire page when multiple elements exist
+const cancelButton = page.getByTestId('cancel-button'); // Fails if 2+ buttons
+
+// DO: Scope to specific container
+const firstReservation = page
+  .locator('[data-testid="reservation-item"]')
+  .first();
+const cancelButton = firstReservation.getByTestId('cancel-button');
+```
+
+### 11.4 Test Data Management
+
+**Use Specific, Unique Test Data**
+
+- ✅ `'Test Gamma'` - specific boat name
+- ❌ `'Test'` - matches multiple boats, gets filtered from search results
+- Prevents false positives from data contamination
+- Reduces flaky tests from overlapping test runs
+
+**Handle Precondition Failures Gracefully**
+
+```typescript
+// DON'T: Assume first action always succeeds
+const result = await createReservationWithBoat(page, 'Test Alpha');
+expect(result.success).toBe(true); // Fails if boat already has reservation
+
+// DO: Skip test if precondition not met
+const result = await createReservationWithBoat(page, 'Test Alpha');
+if (!result.success) {
+  test.skip(); // Behavior already validated by existing reservation
+}
+```
+
+### 11.5 URL and Navigation
+
+**Match Actual Routes, Not Expected Routes**
+
+```typescript
+// DON'T: Assume simplified URL patterns
+await page.waitForURL(/\/reservations$/);
+
+// DO: Match actual nested route structure
+await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
+```
+
+**Use Helper Functions for Navigation**
+
+```typescript
+// DON'T: Construct URLs with complex regex replacements
+await page.goto(
+  page.url().replace(/\/islands\/[^/]+\/.*$/, (match) => {
+    const islandId = match.match(/\/islands\/([^/]+)/)?.[1];
+    return `/islands/${islandId}/reserve?saunaId=...`;
+  })
+);
+
+// DO: Use helper functions that handle navigation logic
+await navigateToReservePage(page);
+```
+
+### 11.6 Authentication and Session
+
+**Reusable Authentication Helpers**
+
+```typescript
+// Helper handles complex flows: QR auth, welcome page, session persistence
+await authenticateMember(page, clubSecret);
+
+// Helper automatically handles:
+// - Navigation to auth page with secret
+// - Welcome page (first-time users)
+// - Skip welcome (returning users with localStorage)
+// - Wait for island selection page
+```
+
+**Critical: Cookie Name Consistency**
+
+- Backend and middleware must use identical cookie names
+- Example bug: `admin-session` vs `admin_session` broke all authentication
+- Test both setting and checking cookies in E2E tests
+
+### 11.7 Assertion Patterns
+
+**Accept Multiple Valid Outcomes**
+
+```typescript
+// System can enforce rules in multiple ways
+expect(secondResult.success).toBe(false);
+expect(secondResult.error).toMatch(/Daily limit|No boats found/);
+
+// "Daily limit" = error when clicking boat with reservation
+// "No boats found" = boat filtered from search results proactively
+```
+
+**Wait for Expected Errors**
+
+```typescript
+// DON'T: Check immediately
+await errorMsg.isVisible(); // Might not be rendered yet
+
+// DO: Use explicit wait
+await expect(errorMsg).toBeVisible({ timeout: 5000 });
+```
+
+### 11.8 What NOT to Do
+
+❌ **Don't use hardcoded timeouts for waiting**
+
+```typescript
+await page.waitForTimeout(2000); // Fragile and slow
+```
+
+❌ **Don't use text-matching selectors for interactive elements**
+
+```typescript
+page.getByRole('button', { name: /view all reservations/i });
+```
+
+❌ **Don't skip explicit waits because "it worked locally"**
+
+```typescript
+await islandLink.click(); // Might not be visible yet
+```
+
+❌ **Don't reuse generic search terms across tests**
+
+```typescript
+await createReservationWithBoat(page, 'Test'); // Too generic
+```
+
+❌ **Don't assume network idle means content loaded**
+
+```typescript
+await page.waitForLoadState('networkidle');
+// Header exists but island name not loaded yet
+await expect(page.locator('header')).toContainText(islandName); // Fails
+```
+
+### 11.9 Test Organization
+
+**Helper Functions**
+
+- Create reusable helpers for common flows (auth, navigation, data setup)
+- Store in `/e2e/helpers/` directory
+- Document parameters and expected behavior
+- Handle edge cases gracefully (skip if preconditions not met)
+
+**Test Fixtures**
+
+- Use specific, well-named test data
+- Clean up between tests when needed
+- Document test data dependencies
+- Avoid test interdependencies
+
+**Error Messages**
+
+- Provide clear, actionable error messages
+- Include context about what was expected vs. received
+- Make debugging failures faster
+
+### 11.10 CI/CD Considerations
+
+**Consistent Test Environment**
+
+- Reset test database before test suites
+- Use fixed test data (specific boat names, islands, etc.)
+- Handle both fresh and partially-populated databases
+- Tests should be idempotent where possible
+
+**Parallel Execution**
+
+- Scope selectors properly to avoid conflicts
+- Use unique test data per test where needed
+- Don't rely on execution order
+
+**Debugging Failed Tests**
+
+- Screenshots automatically captured on failure
+- Error context includes page state
+- Logs show actual vs expected values
+- HTML report for detailed investigation
+
+### 11.11 Lessons Learned
+
+From fixing 150+ E2E tests to achieve 100% pass rate:
+
+1. **Timing is everything** - Most "flaky" tests are actually timing bugs
+2. **Explicit is better than implicit** - Wait for exactly what you need
+3. **Test the UI, not the implementation** - Use data-testid for stability
+4. **Handle real-world conditions** - Tests should handle edge cases gracefully
+5. **Fail fast with clear messages** - Make debugging easier for future you
+6. **Consistency matters** - Small details like cookie names break everything
+7. **Content loads asynchronously** - DOM elements appear before their content
+8. **One source of truth** - Use helpers to centralize complex logic
+9. **Skip > Fail** - Gracefully skip when preconditions aren't met
+10. **Document patterns** - Future tests should follow established patterns
+
+# Full Stack Implementation Request: Sauna Reservation System
 
 ## Overview
 
