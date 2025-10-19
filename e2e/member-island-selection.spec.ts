@@ -46,6 +46,9 @@ test.describe('Member Island Selection Flow', () => {
     await page.waitForURL(/\/islands\/[^/]+$/);
     await page.waitForLoadState('networkidle');
 
+    // Wait for header to load with island name
+    await page.locator('header').waitFor({ state: 'visible', timeout: 5000 });
+
     // Should see the first island's name in ClubHeader title
     await expect(page.locator('header')).toContainText(TEST_ISLANDS[0].name);
 
@@ -65,6 +68,9 @@ test.describe('Member Island Selection Flow', () => {
     await islandLinks.first().click();
     await page.waitForURL(/\/islands\/[^/]+$/);
     await page.waitForLoadState('networkidle');
+
+    // Wait for header to load
+    await page.locator('header').waitFor({ state: 'visible', timeout: 5000 });
 
     // Click back button in header (ArrowLeft icon button)
     const backButton = page.locator('header button').first();
