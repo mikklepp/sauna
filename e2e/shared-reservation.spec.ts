@@ -137,9 +137,14 @@ test.describe('Shared Reservation - User Joining', () => {
     await page.waitForLoadState('networkidle');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
+    await islandLink.waitFor({ state: 'visible', timeout: 5000 });
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
     await page.waitForLoadState('networkidle');
+
+    // Wait for sauna cards to load
+    const saunaCards = page.locator('[data-testid="sauna-card"]');
+    await saunaCards.first().waitFor({ state: 'visible', timeout: 5000 });
 
     // Should show shared sauna indicator (button)
     const joinButton = page.getByRole('button', { name: /join.*club.*sauna/i });
@@ -162,9 +167,14 @@ test.describe('Shared Reservation - User Joining', () => {
     await page.waitForLoadState('networkidle');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
+    await islandLink.waitFor({ state: 'visible', timeout: 5000 });
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
     await page.waitForLoadState('networkidle');
+
+    // Wait for sauna cards to load
+    const saunaCards = page.locator('[data-testid="sauna-card"]');
+    await saunaCards.first().waitFor({ state: 'visible', timeout: 5000 });
 
     // Look for "Join Club Sauna" button
     const joinButton = page.getByRole('button', {
