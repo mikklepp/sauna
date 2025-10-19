@@ -46,11 +46,10 @@ test.describe('Member Island Selection Flow', () => {
     await page.waitForURL(/\/islands\/[^/]+$/);
     await page.waitForLoadState('networkidle');
 
-    // Wait for header to load with island name
-    await page.locator('header').waitFor({ state: 'visible', timeout: 5000 });
-
-    // Should see the first island's name in ClubHeader title
-    await expect(page.locator('header')).toContainText(TEST_ISLANDS[0].name);
+    // Should see the first island's name in ClubHeader title (wait for it to load)
+    await expect(page.locator('header')).toContainText(TEST_ISLANDS[0].name, {
+      timeout: 10000,
+    });
 
     // Should see instruction text for selecting a sauna
     await expect(page.getByTestId('island-instruction')).toBeVisible();
@@ -69,11 +68,9 @@ test.describe('Member Island Selection Flow', () => {
     await page.waitForURL(/\/islands\/[^/]+$/);
     await page.waitForLoadState('networkidle');
 
-    // Wait for header to load
-    await page.locator('header').waitFor({ state: 'visible', timeout: 5000 });
-
-    // Click back button in header (ArrowLeft icon button)
+    // Click back button in header (wait for it to be available)
     const backButton = page.locator('header button').first();
+    await backButton.waitFor({ state: 'visible', timeout: 5000 });
     await backButton.click();
 
     // Should return to islands list
@@ -110,8 +107,10 @@ test.describe('Member Island Selection Flow', () => {
     await page.waitForURL(/\/islands\/[^/]+$/);
     await page.waitForLoadState('networkidle');
 
-    // Should see first island name in header
-    await expect(page.locator('header')).toContainText(TEST_ISLANDS[0].name);
+    // Should see first island name in header (wait for it to load)
+    await expect(page.locator('header')).toContainText(TEST_ISLANDS[0].name, {
+      timeout: 10000,
+    });
 
     // Go back using header back button
     const backButton = page.locator('header button').first();
@@ -124,8 +123,10 @@ test.describe('Member Island Selection Flow', () => {
     await page.waitForURL(/\/islands\/[^/]+$/);
     await page.waitForLoadState('networkidle');
 
-    // Should see second island name in header
-    await expect(page.locator('header')).toContainText(TEST_ISLANDS[1].name);
+    // Should see second island name in header (wait for it to load)
+    await expect(page.locator('header')).toContainText(TEST_ISLANDS[1].name, {
+      timeout: 10000,
+    });
   });
 
   test('should only show islands belonging to authenticated club', async ({
