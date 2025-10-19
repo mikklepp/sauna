@@ -18,7 +18,13 @@ test.describe('Member QR Code Authentication Flow', () => {
     // Give a moment for useEffect to run
     await page.waitForTimeout(1000);
 
-    // Page should auto-authenticate and redirect to islands
+    // Page should auto-authenticate and redirect to welcome page
+    await page.waitForURL(/\/welcome/, { timeout: 10000 });
+
+    // Click continue to proceed to islands
+    await page.getByTestId('continue-to-reservations').click();
+
+    // Should redirect to islands
     await page.waitForURL(/\/islands/, { timeout: 10000 });
 
     // Should see islands page header
@@ -59,6 +65,12 @@ test.describe('Member QR Code Authentication Flow', () => {
     // Fill in the secret manually
     await page.getByLabel(/club secret/i).fill(clubSecret);
     await page.getByRole('button', { name: /access islands/i }).click();
+
+    // Should redirect to welcome page first
+    await page.waitForURL(/\/welcome/, { timeout: 10000 });
+
+    // Click continue to proceed to islands
+    await page.getByTestId('continue-to-reservations').click();
 
     // Should redirect to islands
     await page.waitForURL(/\/islands/, { timeout: 10000 });

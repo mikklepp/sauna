@@ -182,7 +182,12 @@ export default function AdminRegisterPage() {
             </p>
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={loading}
+            data-testid="admin-register-submit"
+          >
             {loading ? 'Creating Account...' : 'Create Admin Account'}
           </Button>
 

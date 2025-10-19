@@ -1,5 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { getTestClubSecret, TEST_BOATS } from './helpers/test-fixtures';
+import { authenticateMember } from './helpers/auth-helper';
 
 test.describe('Member Individual Reservation - Happy Path', () => {
   let clubSecret: string;
@@ -13,8 +14,7 @@ test.describe('Member Individual Reservation - Happy Path', () => {
    * Uses known test data - we have 2 islands, first island has 2 saunas
    */
   async function navigateToReservePage(page: Page): Promise<boolean> {
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await authenticateMember(page, clubSecret);
     await page.waitForLoadState('networkidle');
 
     // Click first island (Test North Island - has 2 saunas)

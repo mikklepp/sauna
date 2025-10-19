@@ -1,5 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { getTestClubSecret } from './helpers/test-fixtures';
+import { authenticateMember } from './helpers/auth-helper';
 
 test.describe('Member Individual Reservation - Daily Limit Validation', () => {
   let clubSecret: string;
@@ -13,8 +14,7 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
    * Uses known test data - navigates to first island's first sauna
    */
   async function navigateToReservePage(page: Page): Promise<boolean> {
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await authenticateMember(page, clubSecret);
     await page.waitForLoadState('networkidle');
 
     // Click first island (Test North Island - has 2 saunas)
@@ -200,8 +200,7 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
     page,
   }) => {
     // Navigate to first island (Test North Island) and create reservation
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await authenticateMember(page, clubSecret);
     await page.waitForLoadState('networkidle');
 
     const islandLinks = page.locator('[data-testid="island-link"]');
@@ -221,8 +220,7 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
     expect(firstResult.success).toBe(true);
 
     // Navigate to second island (Test South Island)
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await authenticateMember(page, clubSecret);
     await page.waitForLoadState('networkidle');
 
     await islandLinks.nth(1).click(); // Second island

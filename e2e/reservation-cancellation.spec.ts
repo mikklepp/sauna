@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { authenticateMember } from './helpers/auth-helper';
 import {
   getTestClubSecret,
   createTestReservation,
@@ -41,8 +42,7 @@ test.describe('Reservation Cancellation', () => {
     });
 
     // Navigate to island
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await authenticateMember(page, clubSecret);
     await page.waitForLoadState('networkidle');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
@@ -90,8 +90,7 @@ test.describe('Reservation Cancellation', () => {
     });
 
     // Navigate to island
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await authenticateMember(page, clubSecret);
     await page.waitForLoadState('networkidle');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
@@ -129,8 +128,7 @@ test.describe('Reservation Cancellation', () => {
     });
 
     // Navigate to reservations list
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await authenticateMember(page, clubSecret);
     await page.waitForLoadState('networkidle');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
@@ -180,8 +178,7 @@ test.describe('Reservation Cancellation', () => {
     });
 
     // Navigate to island
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await authenticateMember(page, clubSecret);
     await page.waitForLoadState('networkidle');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
@@ -219,8 +216,7 @@ test.describe('Reservation Cancellation', () => {
     });
 
     // Navigate to island
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await authenticateMember(page, clubSecret);
     await page.waitForLoadState('networkidle');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
@@ -270,8 +266,7 @@ test.describe('Reservation Cancellation', () => {
     });
 
     // Navigate to island
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await authenticateMember(page, clubSecret);
     await page.waitForLoadState('networkidle');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
@@ -309,8 +304,7 @@ test.describe('Reservation Cancellation', () => {
     });
 
     // Navigate to island
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await authenticateMember(page, clubSecret);
     await page.waitForLoadState('networkidle');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
@@ -348,8 +342,7 @@ test.describe('Reservation Cancellation', () => {
     });
 
     // Navigate to island
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await authenticateMember(page, clubSecret);
     await page.waitForLoadState('networkidle');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
@@ -389,8 +382,7 @@ test.describe('Reservation Cancellation', () => {
     // that hasn't been used by other tests in this suite
 
     // Navigate to island
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await authenticateMember(page, clubSecret);
     await page.waitForLoadState('networkidle');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();

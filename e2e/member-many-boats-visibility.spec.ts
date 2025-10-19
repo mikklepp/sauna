@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { authenticateMember } from './helpers/auth-helper';
 import {
   resetTestClub,
   getTestClubSecret,
@@ -42,8 +43,7 @@ test.describe('Member - Many Boats Reservation Visibility', () => {
   }) => {
     // This test creates the 24th reservation (Test Omega) via UI
     // when there are already 23 reservations
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForLoadState('networkidle');
+    await authenticateMember(page, clubSecret);
 
     // Handle welcome page if shown
     if (page.url().includes('/welcome')) {
@@ -113,8 +113,7 @@ test.describe('Member - Many Boats Reservation Visibility', () => {
     page,
   }) => {
     // After first test, all 24 boats now have reservations
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForLoadState('networkidle');
+    await authenticateMember(page, clubSecret);
 
     // Handle welcome page if shown
     if (page.url().includes('/welcome')) {
@@ -131,15 +130,22 @@ test.describe('Member - Many Boats Reservation Visibility', () => {
     const saunaCards = page.locator('[data-testid="sauna-card"]');
     await saunaCards.first().waitFor({ state: 'visible', timeout: 5000 });
 
+    // Click "View All Reservations" to see the boat names
     const firstSauna = saunaCards.first();
-    const viewAllButton = firstSauna.getByRole('button', {
-      name: /view all reservations/i,
-    });
+    const viewAllButton = firstSauna.getByTestId(
+      'view-all-reservations-button'
+    );
+    await viewAllButton.click();
 
-    if (await viewAllButton.isVisible().catch(() => false)) {
-      await viewAllButton.click();
-      await page.waitForTimeout(1000);
-    }
+    // Wait for navigation to reservations page
+    await page.waitForURL(/\/saunas\/[^/]+\/reservations/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
+
+    // Wait for reservations to load (not just network idle)
+    await page
+      .locator('[data-testid="reservation-item"]')
+      .first()
+      .waitFor({ state: 'visible', timeout: 10000 });
 
     // Verify all 24 Greek letter boats can be distinguished
     const greekLetters = [
@@ -184,8 +190,7 @@ test.describe('Member - Many Boats Reservation Visibility', () => {
   });
 
   test('should handle scrolling to see all reservations', async ({ page }) => {
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForLoadState('networkidle');
+    await authenticateMember(page, clubSecret);
 
     // Handle welcome page if shown
     if (page.url().includes('/welcome')) {
@@ -202,15 +207,22 @@ test.describe('Member - Many Boats Reservation Visibility', () => {
     const saunaCards = page.locator('[data-testid="sauna-card"]');
     await saunaCards.first().waitFor({ state: 'visible', timeout: 5000 });
 
+    // Click "View All Reservations" to see the boat names
     const firstSauna = saunaCards.first();
-    const viewAllButton = firstSauna.getByRole('button', {
-      name: /view all reservations/i,
-    });
+    const viewAllButton = firstSauna.getByTestId(
+      'view-all-reservations-button'
+    );
+    await viewAllButton.click();
 
-    if (await viewAllButton.isVisible().catch(() => false)) {
-      await viewAllButton.click();
-      await page.waitForTimeout(1000);
-    }
+    // Wait for navigation to reservations page
+    await page.waitForURL(/\/saunas\/[^/]+\/reservations/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
+
+    // Wait for reservations to load (not just network idle)
+    await page
+      .locator('[data-testid="reservation-item"]')
+      .first()
+      .waitFor({ state: 'visible', timeout: 10000 });
 
     // Scroll down to ensure lazy-loaded content appears
     await page.evaluate(() => {

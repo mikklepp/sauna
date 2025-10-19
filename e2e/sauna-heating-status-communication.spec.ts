@@ -4,6 +4,7 @@ import {
   createTestReservation,
   resetTestClub,
 } from './helpers/test-fixtures';
+import { authenticateMember } from './helpers/auth-helper';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -34,8 +35,7 @@ test.describe('Sauna Heating Status Communication', () => {
    * Helper to navigate to island with saunas
    */
   async function navigateToIsland(page: Page): Promise<void> {
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await authenticateMember(page, clubSecret);
     await page.waitForLoadState('networkidle');
 
     // Click first island (Test North Island - has 2 saunas)

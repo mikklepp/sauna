@@ -132,7 +132,12 @@ export default function AdminLoginPage() {
             </div>
           )}
 
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={loading}
+            data-testid="admin-login-submit"
+          >
             {loading ? 'Signing in...' : 'Sign In'}
           </Button>
         </form>

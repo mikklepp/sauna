@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { getTestClubSecret, TEST_ISLANDS } from './helpers/test-fixtures';
+import { authenticateMember } from './helpers/auth-helper';
 
 test.describe('Individual Reservation Flow', () => {
   let clubSecret: string;
@@ -12,8 +13,7 @@ test.describe('Individual Reservation Flow', () => {
     page,
   }) => {
     // Authenticate and navigate to islands
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await authenticateMember(page, clubSecret);
 
     // Should show islands page
     await expect(
@@ -27,7 +27,7 @@ test.describe('Individual Reservation Flow', () => {
 
   test('should navigate to island view', async ({ page }) => {
     // Authenticate
-    await page.goto(`/auth?secret=${clubSecret}`);
+    await authenticateMember(page, clubSecret);
     await page.waitForURL(/\/islands/, { timeout: 10000 });
     await page.waitForLoadState('networkidle');
 
@@ -39,7 +39,7 @@ test.describe('Individual Reservation Flow', () => {
 
   test('should display saunas with availability', async ({ page }) => {
     // Authenticate
-    await page.goto(`/auth?secret=${clubSecret}`);
+    await authenticateMember(page, clubSecret);
     await page.waitForURL(/\/islands/, { timeout: 10000 });
     await page.waitForLoadState('networkidle');
 

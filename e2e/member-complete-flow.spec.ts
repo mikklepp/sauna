@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { getTestClubSecret } from './helpers/test-fixtures';
+import { authenticateMember } from './helpers/auth-helper';
 
 test.describe('Member Complete User Journey - End to End', () => {
   let clubSecret: string;
@@ -27,6 +28,12 @@ test.describe('Member Complete User Journey - End to End', () => {
     // ===== STEP 3: Authenticate with Manual Secret Entry =====
     await page.getByLabel(/club secret/i).fill(clubSecret);
     await page.getByRole('button', { name: /access islands/i }).click();
+
+    // Should redirect to welcome page first
+    await page.waitForURL(/\/welcome/, { timeout: 10000 });
+
+    // Click continue to proceed to islands
+    await page.getByTestId('continue-to-reservations').click();
 
     // ===== STEP 4: Should redirect to Islands page =====
     await page.waitForURL(/\/islands/, { timeout: 10000 });
@@ -159,8 +166,7 @@ test.describe('Member Complete User Journey - End to End', () => {
     page,
   }) => {
     // Authenticate
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await authenticateMember(page, clubSecret);
 
     // Verify we're authenticated
     await expect(
@@ -182,8 +188,7 @@ test.describe('Member Complete User Journey - End to End', () => {
     page,
   }) => {
     // Authenticate
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await authenticateMember(page, clubSecret);
 
     // Click first island
     const islandCards = page.locator('[data-testid="island-link"]');
@@ -226,7 +231,13 @@ test.describe('Member Complete User Journey - End to End', () => {
     // Manually enter secret (simulating QR code with secret parameter)
     await page.goto(`/auth?secret=${clubSecret}`);
 
-    // Should auto-authenticate and redirect
+    // Should auto-authenticate and redirect to welcome page
+    await page.waitForURL(/\/welcome/, { timeout: 10000 });
+
+    // Click continue to proceed to islands
+    await page.getByTestId('continue-to-reservations').click();
+
+    // Should redirect to islands
     await page.waitForURL(/\/islands/, { timeout: 10000 });
     await expect(
       page.getByRole('heading', { name: /choose your island/i })
@@ -257,8 +268,7 @@ test.describe('Member Complete User Journey - End to End', () => {
     page,
   }) => {
     // Authenticate
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await authenticateMember(page, clubSecret);
 
     // Check club header is present
     const clubHeader = page.locator('header');
@@ -298,6 +308,14 @@ test.describe('Member Complete User Journey - End to End', () => {
 
     await page.getByLabel(/club secret/i).fill(clubSecret);
     await page.getByRole('button', { name: /access islands/i }).click();
+
+    // Should redirect to welcome page first
+    await page.waitForURL(/\/welcome/, { timeout: 10000 });
+
+    // Click continue to proceed to islands
+    await page.getByTestId('continue-to-reservations').click();
+
+    // Should redirect to islands
     await page.waitForURL(/\/islands/, { timeout: 10000 });
 
     // Forward to island

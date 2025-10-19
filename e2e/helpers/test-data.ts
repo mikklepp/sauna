@@ -21,7 +21,7 @@ export async function loginAsAdmin(page: any) {
       response.request().method() === 'POST'
   );
 
-  await page.getByRole('button', { name: /sign in/i }).click();
+  await page.getByTestId('admin-login-submit').click();
 
   // Wait for the response
   const response = await responsePromise;

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { authenticateMember } from './helpers/auth-helper';
 import { loginAsAdmin } from './helpers/test-data';
 import {
   getTestClubSecret,
@@ -10,6 +11,7 @@ test.describe('Shared Reservation - Admin Creation', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
     await page.goto('/admin/shared-reservations');
+    await page.waitForLoadState('networkidle');
   });
 
   test('should display shared reservations list', async ({ page }) => {
@@ -131,8 +133,7 @@ test.describe('Shared Reservation - User Joining', () => {
     });
 
     // Navigate to island
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await authenticateMember(page, clubSecret);
     await page.waitForLoadState('networkidle');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
@@ -157,8 +158,7 @@ test.describe('Shared Reservation - User Joining', () => {
     });
 
     // Navigate to island
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await authenticateMember(page, clubSecret);
     await page.waitForLoadState('networkidle');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
@@ -200,8 +200,7 @@ test.describe('Shared Reservation - User Joining', () => {
     });
 
     // Navigate to island
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await authenticateMember(page, clubSecret);
     await page.waitForLoadState('networkidle');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
@@ -243,8 +242,7 @@ test.describe('Shared Reservation - User Joining', () => {
     });
 
     // Navigate to island
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await authenticateMember(page, clubSecret);
     await page.waitForLoadState('networkidle');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();

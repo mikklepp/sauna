@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { authenticateMember } from './helpers/auth-helper';
 import { getTestClubSecret, TEST_ISLANDS } from './helpers/test-fixtures';
 
 test.describe('Member Island Selection Flow', () => {
@@ -12,8 +13,7 @@ test.describe('Member Island Selection Flow', () => {
     page,
   }) => {
     // Authenticate
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await authenticateMember(page, clubSecret);
 
     // Wait for page to load
     await page.waitForLoadState('networkidle');
@@ -32,8 +32,7 @@ test.describe('Member Island Selection Flow', () => {
     page,
   }) => {
     // Authenticate
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await authenticateMember(page, clubSecret);
     await page.waitForLoadState('networkidle');
 
     // Get the first island
@@ -58,8 +57,7 @@ test.describe('Member Island Selection Flow', () => {
     page,
   }) => {
     // Authenticate
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await authenticateMember(page, clubSecret);
     await page.waitForLoadState('networkidle');
 
     // Click on first island
@@ -81,8 +79,7 @@ test.describe('Member Island Selection Flow', () => {
 
   test('should display island sauna count correctly', async ({ page }) => {
     // Authenticate
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await authenticateMember(page, clubSecret);
     await page.waitForLoadState('networkidle');
 
     // Check first island's sauna count matches test data
@@ -97,8 +94,7 @@ test.describe('Member Island Selection Flow', () => {
 
   test('should allow switching between multiple islands', async ({ page }) => {
     // Authenticate
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await authenticateMember(page, clubSecret);
     await page.waitForLoadState('networkidle');
 
     const islandLinks = page.locator('[data-testid="island-link"]');
@@ -131,8 +127,7 @@ test.describe('Member Island Selection Flow', () => {
   }) => {
     // This test verifies club-level data isolation
     // Authenticate
-    await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
+    await authenticateMember(page, clubSecret);
 
     // Wait for page to load
     await page.waitForLoadState('networkidle');

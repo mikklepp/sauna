@@ -12,13 +12,13 @@ test.describe('Admin Authentication', () => {
     ).toBeVisible();
     await expect(page.getByLabel(/username/i)).toBeVisible();
     await expect(page.getByLabel(/password/i)).toBeVisible();
-    await expect(page.getByRole('button', { name: /sign in/i })).toBeVisible();
+    await expect(page.getByTestId('admin-login-submit')).toBeVisible();
   });
 
   test('should show error with invalid credentials', async ({ page }) => {
     await page.getByLabel(/username/i).fill('wronguser');
     await page.getByLabel(/password/i).fill('wrongpass');
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await page.getByTestId('admin-login-submit').click();
 
     // Wait for error message
     await expect(page.getByText(/invalid credentials/i)).toBeVisible();
@@ -36,7 +36,7 @@ test.describe('Admin Authentication', () => {
         response.request().method() === 'POST'
     );
 
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await page.getByTestId('admin-login-submit').click();
 
     // Wait for response
     await responsePromise;
@@ -59,7 +59,7 @@ test.describe('Admin Authentication', () => {
         response.request().method() === 'POST'
     );
 
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await page.getByTestId('admin-login-submit').click();
     await responsePromise;
 
     // Wait for redirect
@@ -96,24 +96,30 @@ test.describe('Admin Authentication', () => {
         response.request().method() === 'POST'
     );
 
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await page.getByTestId('admin-login-submit').click();
     await responsePromise;
 
     // Wait for redirect
     await page.waitForURL(/\/admin/);
 
     // Find and click logout button
-    const logoutButton = page.getByRole('button', { name: /logout|sign out/i });
-    await logoutButton.click();
+    const logoutResponsePromise = page.waitForResponse(
+      (response) =>
+        response.url().includes('/api/auth/admin/logout') &&
+        response.request().method() === 'POST'
+    );
+
+    await page.getByTestId('admin-logout-button').click();
+    await logoutResponsePromise;
 
     // Should redirect to login page
-    await expect(page).toHaveURL(/\/admin\/login/);
+    await page.waitForURL(/\/admin\/login/);
 
-    // Try to access admin page again
+    // Try to access admin page again (should redirect back to login)
     await page.goto('/admin');
 
-    // Should still be on login page
-    await expect(page).toHaveURL(/\/admin\/login/);
+    // Should redirect to login page since we're logged out
+    await page.waitForURL(/\/admin\/login/);
   });
 
   test('should navigate to registration page', async ({ page }) => {
@@ -136,7 +142,7 @@ test.describe('Admin Authentication', () => {
     const password = 'TestPassword123!';
 
     await page.getByLabel(/username/i).fill(username);
-    await page.getByLabel(/^password$/i).fill(password);
+    await page.getByLabel(/^password\s*\*$/i).fill(password);
 
     // Check if there's a confirm password field
     const confirmPasswordField = page.getByLabel(/confirm password/i);
@@ -150,7 +156,7 @@ test.describe('Admin Authentication', () => {
         response.request().method() === 'POST'
     );
 
-    await page.getByRole('button', { name: /register|sign up/i }).click();
+    await page.getByTestId('admin-register-submit').click();
     await responsePromise;
 
     // Should redirect to login or dashboard

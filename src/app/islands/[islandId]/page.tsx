@@ -292,6 +292,7 @@ export default function IslandSaunasPage() {
                         `/islands/${islandId}/saunas/${sauna.id}/reservations`
                       )
                     }
+                    data-testid="view-all-reservations-button"
                   >
                     <Calendar className="mr-2 h-5 w-5" />
                     View All Reservations
