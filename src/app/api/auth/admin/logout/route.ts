@@ -5,7 +5,7 @@ export async function POST() {
   try {
     // Clear the admin session cookie
     const cookieStore = await cookies();
-    cookieStore.delete('admin-session');
+    cookieStore.delete('admin_session');
 
     return NextResponse.json({
       success: true,
