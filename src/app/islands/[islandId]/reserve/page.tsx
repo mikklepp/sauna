@@ -265,7 +265,10 @@ export default function ReservePage() {
               </div>
 
               {error && (
-                <div className="rounded-lg border-2 border-red-200 bg-red-50 p-4">
+                <div
+                  className="rounded-lg border-2 border-red-200 bg-red-50 p-4"
+                  data-testid="reservation-error"
+                >
                   <p className="text-sm font-medium text-red-600">{error}</p>
                 </div>
               )}
@@ -384,6 +387,7 @@ export default function ReservePage() {
                   onClick={() => setStep('confirm')}
                   disabled={adults < 1}
                   className="bg-club-primary hover:bg-club-primary/90 h-12 flex-1 font-semibold text-white"
+                  data-testid="continue-button"
                 >
                   Continue
                 </Button>
@@ -458,7 +462,10 @@ export default function ReservePage() {
               </div>
 
               {error && (
-                <div className="rounded-lg border-2 border-red-200 bg-red-50 p-4">
+                <div
+                  className="rounded-lg border-2 border-red-200 bg-red-50 p-4"
+                  data-testid="reservation-error"
+                >
                   <p className="text-sm font-medium text-red-600">{error}</p>
                 </div>
               )}
@@ -476,6 +483,7 @@ export default function ReservePage() {
                   onClick={handleConfirmReservation}
                   disabled={loading}
                   className="bg-club-primary hover:bg-club-primary/90 h-12 flex-1 font-semibold text-white shadow-lg"
+                  data-testid="confirm-reservation-button"
                 >
                   {loading ? 'Creating...' : 'Confirm Reservation'}
                 </Button>

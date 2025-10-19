@@ -8,7 +8,7 @@ import {
   getQueryParam,
 } from '@/lib/api-utils';
 import prisma from '@/lib/db';
-import { startOfDay, endOfDay } from 'date-fns';
+import { startOfDay } from 'date-fns';
 import type { DailyLimitCheck } from '@/types';
 
 /**
@@ -24,7 +24,6 @@ export async function GET(
     const resolvedParams = await params;
     const boatId = getPathParam(resolvedParams, 'id');
     const islandId = getQueryParam(request, 'islandId');
-    const dateStr = getQueryParam(request, 'date');
 
     if (!islandId) {
       return errorResponse('islandId query parameter is required', 400);
@@ -48,12 +47,18 @@ export async function GET(
       return errorResponse('Island not found', 404);
     }
 
-    // Parse date or use today
-    const date = dateStr ? new Date(dateStr) : new Date();
-    const dayStart = startOfDay(date);
-    const dayEnd = endOfDay(date);
+    // Calculate cutoff: if before 6 AM now, use yesterday's 6 AM; otherwise use today's 6 AM
+    const now = new Date();
+    const currentHour = now.getHours();
+    const cutoff6am = startOfDay(now);
 
-    // Check for individual reservations
+    if (currentHour < 6) {
+      // Before 6 AM - use yesterday's 6 AM
+      cutoff6am.setDate(cutoff6am.getDate() - 1);
+    }
+    cutoff6am.setHours(6, 0, 0, 0);
+
+    // Check for individual reservations starting from the most recent 6am onwards
     const individualReservation = await prisma.reservation.findFirst({
       where: {
         boatId,
@@ -62,8 +67,7 @@ export async function GET(
           islandId,
         },
         startTime: {
-          gte: dayStart,
-          lte: dayEnd,
+          gte: cutoff6am,
         },
       },
       include: {
@@ -71,7 +75,7 @@ export async function GET(
       },
     });
 
-    // Check for shared reservation participation
+    // Check for shared reservation participation starting from the most recent 6am onwards
     const sharedParticipation =
       await prisma.sharedReservationParticipant.findFirst({
         where: {
@@ -80,9 +84,8 @@ export async function GET(
             sauna: {
               islandId,
             },
-            date: {
-              gte: dayStart,
-              lte: dayEnd,
+            startTime: {
+              gte: cutoff6am,
             },
           },
         },

@@ -445,6 +445,12 @@ A dedicated sauna reservation system for island communities, providing streamlin
 - Individual reservations cannot overlap
 - Past time slots cannot be booked for individual reservations
 - **One reservation (individual OR shared) per boat per island per day** (enforced by membership number)
+  - **Day boundary** = 6:00 AM (the "current day" starts at the most recent 6 AM)
+  - If current time is Tuesday 2:00 AM, check for reservations from Monday 6:00 AM onwards (still in "Monday's day")
+  - If current time is Tuesday 7:00 AM, check for reservations from Tuesday 6:00 AM onwards (now in "Tuesday's day")
+  - Example: A boat can book at Monday 11:00 PM and again at Tuesday 5:00 AM (before crossing the 6 AM boundary)
+  - Example: A boat CANNOT book at Tuesday 7:00 AM and again at Tuesday 11:00 PM (both after the 6 AM boundary)
+  - Prevents multiple reservations on the same "day" while allowing late-night to early-morning transitions
 - Users can only book the next available time slot for individual reservations (no future date selection)
 - Shared reservations can be created for any future date
 - Shared reservations can overlap or coexist with individual reservations (different use cases)
@@ -457,6 +463,7 @@ A dedicated sauna reservation system for island communities, providing streamlin
 - Boats belong to clubs (not individual islands)
 - Captain name (optional) is displayed when present
 - A boat can have either ONE individual reservation OR ONE shared reservation participation per island per day (not both)
+  - Day is defined as starting at the most recent 6:00 AM (any reservation with startTime >= most recent 6 AM)
 
 ### 5.4 Cancellation Rules
 
@@ -1091,7 +1098,7 @@ User Access (Mobile/Web) → Backend API → Island Device (if online)
 2. ~~**No-show Handling**: What happens if a reserved sauna isn't used?~~ ✓ Resolved: No tracking or penalties
 3. ~~**Admin Interface**: How are boats and saunas configured?~~ ✓ Resolved: Web portal
 4. ~~**Reporting**: What analytics or usage reports are needed?~~ ✓ Resolved: Annual metrics specified
-5. ~~**Peak Hours**: Should there be limits on reservations per boat per day?~~ ✓ Resolved: One individual reservation per day per island
+5. ~~**Peak Hours**: Should there be limits on reservations per boat per day?~~ ✓ Resolved: One individual reservation per day per island (day starts at most recent 6 AM)
 6. ~~**Heating Time**: Should this be configurable per sauna?~~ ✓ Resolved: Yes, configurable
 7. ~~**Multi-day Reservations**: Are advance bookings allowed? How far ahead?~~ ✓ Resolved: Only next available for individual, any future date for shared
 8. ~~**Operating Hours**: Are there specific hours when saunas can be reserved?~~ ✓ Resolved: 24/7 operation

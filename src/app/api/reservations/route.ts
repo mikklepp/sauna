@@ -10,7 +10,7 @@ import {
 import { createReservationSchema } from '@/lib/validation';
 import { validateTimeSlot, isSlotAvailable } from '@/lib/availability';
 import prisma from '@/lib/db';
-import { startOfDay, endOfDay, addHours } from 'date-fns';
+import { startOfDay, addHours } from 'date-fns';
 
 /**
  * POST /api/reservations
@@ -50,10 +50,16 @@ export async function POST(request: NextRequest) {
       return errorResponse('Boat not found', 404);
     }
 
-    // Check if boat already has a reservation on this island today
-    const today = new Date(validated.startTime);
-    const dayStart = startOfDay(today);
-    const dayEnd = endOfDay(today);
+    // Check if boat already has a reservation on this island from most recent 6am onwards
+    const now = new Date();
+    const currentHour = now.getHours();
+    const cutoff6am = startOfDay(now);
+
+    if (currentHour < 6) {
+      // Before 6 AM - use yesterday's 6 AM
+      cutoff6am.setDate(cutoff6am.getDate() - 1);
+    }
+    cutoff6am.setHours(6, 0, 0, 0);
 
     // Check individual reservations
     const existingIndividualReservation = await prisma.reservation.findFirst({
@@ -64,8 +70,7 @@ export async function POST(request: NextRequest) {
           islandId: sauna.islandId,
         },
         startTime: {
-          gte: dayStart,
-          lte: dayEnd,
+          gte: cutoff6am,
         },
       },
     });
@@ -83,10 +88,11 @@ export async function POST(request: NextRequest) {
         where: {
           boatId: validated.boatId,
           sharedReservation: {
-            saunaId: validated.saunaId,
-            date: {
-              gte: dayStart,
-              lte: dayEnd,
+            sauna: {
+              islandId: sauna.islandId,
+            },
+            startTime: {
+              gte: cutoff6am,
             },
           },
         },
@@ -99,14 +105,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if time slot is available
+    // Check if time slot is available - get all active reservations for this sauna on the same day
+    const reservationDayStart = startOfDay(validated.startTime);
     const existingReservations = await prisma.reservation.findMany({
       where: {
         saunaId: validated.saunaId,
         status: 'ACTIVE',
         startTime: {
-          gte: dayStart,
-          lte: dayEnd,
+          gte: reservationDayStart,
         },
       },
     });
