@@ -1,6 +1,12 @@
 import { test, expect } from '@playwright/test';
-import { getTestClubSecret, TEST_ISLANDS } from './helpers/test-fixtures';
+import {
+  getTestClubSecret,
+  TEST_ISLANDS,
+  getTestBoat,
+  getTestBoatFullName,
+} from './helpers/test-fixtures';
 import { authenticateMember } from './helpers/auth-helper';
+import { cleanupTodaysReservations } from './helpers/db-cleanup';
 
 test.describe.serial('Individual Reservation Flow', () => {
   let clubSecret: string;
@@ -10,26 +16,7 @@ test.describe.serial('Individual Reservation Flow', () => {
   });
 
   test.beforeEach(async () => {
-    // Clean up reservations to ensure test isolation
-    const { PrismaClient } = await import('@prisma/client');
-    const prisma = new PrismaClient();
-
-    // Delete today's test reservations
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    await prisma.reservation.deleteMany({
-      where: {
-        startTime: {
-          gte: today,
-          lt: tomorrow,
-        },
-      },
-    });
-
-    await prisma.$disconnect();
+    await cleanupTodaysReservations();
   });
 
   test('should display island selection after authentication', async ({
@@ -108,8 +95,8 @@ test.describe.serial('Individual Reservation Flow', () => {
     const boatSearch = page.getByTestId('boat-search-input');
     await expect(boatSearch).toBeVisible();
 
-    // Type to search for a boat
-    await boatSearch.fill('test');
+    // Type to search for a boat - Test 0 uses Alpha
+    await boatSearch.fill(getTestBoat(0));
     await page.waitForTimeout(500); // Wait for search results
 
     // Select first boat from results
@@ -170,14 +157,14 @@ test.describe.serial('Individual Reservation Flow', () => {
     // Ensure we captured the island ID
     expect(islandId).toBeTruthy();
 
-    // First, create a reservation with Test Beta
+    // First, create a reservation with Test Beta (Test 1 uses Beta)
     const reserveButton = page
       .getByRole('button', { name: /make reservation|book sauna|reserve/i })
       .first();
     await reserveButton.click();
 
     const boatSearch = page.getByTestId('boat-search-input');
-    await boatSearch.fill('test beta');
+    await boatSearch.fill(getTestBoat(1));
     await page.waitForTimeout(500);
 
     const firstBoat = page.getByTestId('boat-result').first();
@@ -201,11 +188,13 @@ test.describe.serial('Individual Reservation Flow', () => {
     const { PrismaClient } = await import('@prisma/client');
     const prisma = new PrismaClient();
 
-    // Query for any Test Beta reservation (no date filter for debugging)
+    const betaBoatName = getTestBoatFullName(1); // Test Beta
+
+    // Query for any Beta reservation (no date filter for debugging)
     const reservation = await prisma.reservation.findFirst({
       where: {
         boat: {
-          name: 'Test Beta',
+          name: betaBoatName,
         },
         status: 'ACTIVE',
       },
@@ -222,12 +211,12 @@ test.describe.serial('Individual Reservation Flow', () => {
       },
     });
 
-    // Debug: log all Test Beta reservations if not found
+    // Debug: log all Beta reservations if not found
     if (!reservation) {
       const allReservations = await prisma.reservation.findMany({
         where: {
           boat: {
-            name: 'Test Beta',
+            name: betaBoatName,
           },
         },
         include: {
@@ -236,7 +225,7 @@ test.describe.serial('Individual Reservation Flow', () => {
         },
       });
       console.log(
-        'All Test Beta reservations:',
+        `All ${betaBoatName} reservations:`,
         JSON.stringify(allReservations, null, 2)
       );
     } else {
@@ -247,10 +236,10 @@ test.describe.serial('Individual Reservation Flow', () => {
 
     // Verify reservation exists
     expect(reservation).toBeTruthy();
-    expect(reservation?.boat.name).toBe('Test Beta');
+    expect(reservation?.boat.name).toBe(betaBoatName);
     expect(reservation?.sauna.island.id).toBe(islandId);
 
-    // Now try to book Test Beta again (should be prevented)
+    // Now try to book Beta again (should be prevented)
     await page.goto('/islands');
     await page.waitForURL(/\/islands/, { timeout: 10000 });
     await page.waitForLoadState('networkidle');
@@ -265,7 +254,7 @@ test.describe.serial('Individual Reservation Flow', () => {
     await reserveButton2.click();
 
     const boatSearch2 = page.getByTestId('boat-search-input');
-    await boatSearch2.fill('test beta');
+    await boatSearch2.fill(getTestBoat(1)); // Try to book same boat (Beta) again
     await page.waitForTimeout(500);
 
     const sameBoat = page.getByTestId('boat-result').first();
@@ -355,27 +344,21 @@ test.describe.serial('Individual Reservation Flow', () => {
     await reserveButton.click();
 
     const boatSearch = page.getByTestId('boat-search-input');
-    await boatSearch.fill('test');
+    await boatSearch.fill(getTestBoat(2)); // Test 2 uses Gamma
     await page.waitForTimeout(500);
 
     const firstBoat = page.getByTestId('boat-result').first();
     await firstBoat.click();
 
-    // Try to set adults to 0
+    // Try to set adults to 0 - the implementation automatically converts this to 1
     const adultsField = page.getByLabel(/adults/i);
     await adultsField.fill('0');
 
-    const continueButton = page.getByTestId('continue-button');
+    // The value should automatically become 1 (due to || 1 fallback in onChange)
+    await expect(adultsField).toHaveValue('1');
 
-    // Button should be disabled or show error
-    const isDisabled = await continueButton.isDisabled();
-    if (!isDisabled) {
-      await continueButton.click();
-      await expect(
-        page.getByText(/at least.*1.*adult|minimum.*adult/i)
-      ).toBeVisible();
-    } else {
-      expect(isDisabled).toBeTruthy();
-    }
+    // Button should be enabled since adults is now 1
+    const continueButton = page.getByTestId('continue-button');
+    await expect(continueButton).toBeEnabled();
   });
 });

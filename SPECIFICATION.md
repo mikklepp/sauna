@@ -1273,12 +1273,52 @@ const cancelButton = firstReservation.getByTestId('cancel-button');
 
 ### 11.4 Test Data Management
 
-**Use Specific, Unique Test Data**
+**Systematic Boat Allocation in Serial Test Suites**
 
-- ✅ `'Test Gamma'` - specific boat name
-- ❌ `'Test'` - matches multiple boats, gets filtered from search results
-- Prevents false positives from data contamination
-- Reduces flaky tests from overlapping test runs
+Use `getTestBoat(index)` helper to assign boats systematically by test order:
+
+```typescript
+import { getTestBoat, getTestBoatFullName } from './helpers/test-fixtures';
+
+test.describe.serial('Reservation Flow', () => {
+  test.beforeEach(async () => {
+    await cleanupTodaysReservations(); // Clean slate for each test
+  });
+
+  test('first test', async ({ page }) => {
+    await boatSearch.fill(getTestBoat(0)); // Uses 'alpha' (Test Alpha)
+    // ... test logic
+  });
+
+  test('second test', async ({ page }) => {
+    await boatSearch.fill(getTestBoat(1)); // Uses 'beta' (Test Beta)
+    // ... test logic
+  });
+
+  test('third test', async ({ page }) => {
+    await boatSearch.fill(getTestBoat(2)); // Uses 'gamma' (Test Gamma)
+    // ... test logic
+  });
+});
+```
+
+**Why This Matters:**
+
+- ✅ Prevents "boat already has a reservation today" conflicts
+- ✅ Tests remain isolated even in serial execution
+- ✅ Easy to track which boat each test uses
+- ❌ Using generic searches like `'test'` causes conflicts when multiple tests run
+
+**For Database Queries:**
+
+```typescript
+// Use getTestBoatFullName() for database queries and assertions
+const betaBoatName = getTestBoatFullName(1); // 'Test Beta'
+const reservation = await prisma.reservation.findFirst({
+  where: { boat: { name: betaBoatName } },
+});
+expect(reservation?.boat.name).toBe(betaBoatName);
+```
 
 **Handle Precondition Failures Gracefully**
 

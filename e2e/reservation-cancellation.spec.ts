@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
 import { authenticateMember } from './helpers/auth-helper';
+import { cleanupTodaysReservations } from './helpers/db-cleanup';
 import {
   getTestClubSecret,
   createTestReservation,
 } from './helpers/test-fixtures';
-import prisma from '../src/lib/db';
 
 test.describe('Reservation Cancellation', () => {
   let clubSecret: string;
@@ -13,21 +13,8 @@ test.describe('Reservation Cancellation', () => {
     clubSecret = getTestClubSecret();
   });
 
-  // Clean up reservations before each test to avoid interference
   test.beforeEach(async () => {
-    const club = await prisma.club.findUnique({
-      where: { secret: clubSecret },
-      include: { islands: { include: { saunas: true } } },
-    });
-
-    if (club) {
-      const saunaIds = club.islands.flatMap((i: { saunas: any[] }) =>
-        i.saunas.map((s) => s.id)
-      );
-      await prisma.reservation.deleteMany({
-        where: { saunaId: { in: saunaIds } },
-      });
-    }
+    await cleanupTodaysReservations();
   });
 
   test('should display reservations list for a sauna', async ({ page }) => {

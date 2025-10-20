@@ -1,14 +1,15 @@
 import { test, expect } from '@playwright/test';
 import { authenticateMember } from './helpers/auth-helper';
+import { cleanupTodaysReservations } from './helpers/db-cleanup';
 import { loginAsAdmin } from './helpers/test-data';
 import {
   getTestClubSecret,
   createTestSharedReservation,
 } from './helpers/test-fixtures';
-import prisma from '../src/lib/db';
 
 test.describe('Shared Reservation - Admin Creation', () => {
   test.beforeEach(async ({ page }) => {
+    await cleanupTodaysReservations();
     await loginAsAdmin(page);
     await page.goto('/admin/shared-reservations');
     await page.waitForLoadState('networkidle');
@@ -97,26 +98,8 @@ test.describe('Shared Reservation - User Joining', () => {
     clubSecret = getTestClubSecret();
   });
 
-  // Clean up reservations before each test
   test.beforeEach(async () => {
-    const club = await prisma.club.findUnique({
-      where: { secret: clubSecret },
-      include: { islands: { include: { saunas: true } } },
-    });
-
-    if (club) {
-      const saunaIds = club.islands.flatMap((i) => i.saunas.map((s) => s.id));
-
-      // Clean up shared reservations
-      await prisma.sharedReservation.deleteMany({
-        where: { saunaId: { in: saunaIds } },
-      });
-
-      // Clean up regular reservations
-      await prisma.reservation.deleteMany({
-        where: { saunaId: { in: saunaIds } },
-      });
-    }
+    await cleanupTodaysReservations();
   });
 
   test('should display shared reservation option on island view', async ({

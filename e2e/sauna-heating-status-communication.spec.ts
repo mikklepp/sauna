@@ -5,6 +5,7 @@ import {
   resetTestClub,
 } from './helpers/test-fixtures';
 import { authenticateMember } from './helpers/auth-helper';
+import { cleanupTodaysReservations } from './helpers/db-cleanup';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -25,6 +26,10 @@ test.describe('Sauna Heating Status Communication', () => {
     // Reset test data to ensure clean state
     await resetTestClub();
     clubSecret = getTestClubSecret();
+  });
+
+  test.beforeEach(async () => {
+    await cleanupTodaysReservations();
   });
 
   test.afterAll(async () => {

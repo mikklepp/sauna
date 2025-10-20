@@ -38,6 +38,10 @@ test.describe('Member - Many Boats Reservation Visibility', () => {
     }
   });
 
+  // NOTE: No beforeEach cleanup for this suite!
+  // The beforeAll creates 23 reservations, test 1 creates the 24th,
+  // and test 2 verifies all 24 are visible. Cleanup would break this flow.
+
   test('should allow creating reservation via UI when many exist', async ({
     page,
   }) => {

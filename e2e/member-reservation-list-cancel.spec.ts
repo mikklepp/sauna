@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
 import { authenticateMember } from './helpers/auth-helper';
+import { cleanupTodaysReservations } from './helpers/db-cleanup';
 import {
   getTestClubSecret,
   createTestReservation,
 } from './helpers/test-fixtures';
-import prisma from '../src/lib/db';
 
 test.describe('Member Reservation List View & Cancellation', () => {
   let clubSecret: string;
@@ -13,19 +13,8 @@ test.describe('Member Reservation List View & Cancellation', () => {
     clubSecret = getTestClubSecret();
   });
 
-  // Clean up reservations before each test to avoid interference
   test.beforeEach(async () => {
-    const club = await prisma.club.findUnique({
-      where: { secret: clubSecret },
-      include: { islands: { include: { saunas: true } } },
-    });
-
-    if (club) {
-      const saunaIds = club.islands.flatMap((i) => i.saunas.map((s) => s.id));
-      await prisma.reservation.deleteMany({
-        where: { saunaId: { in: saunaIds } },
-      });
-    }
+    await cleanupTodaysReservations();
   });
 
   test('should display reservations list page', async ({ page }) => {
@@ -160,13 +149,15 @@ test.describe('Member Reservation List View & Cancellation', () => {
     });
 
     // Wait for reservation items to appear
-    await page
+    const firstReservation = page
       .locator('[data-testid="reservation-item"]')
-      .first()
-      .waitFor({ state: 'visible', timeout: 5000 });
+      .first();
+    await firstReservation.waitFor({ state: 'visible', timeout: 5000 });
 
     // Should have reservation time displayed
-    await expect(page.getByTestId('reservation-time')).toBeVisible();
+    await expect(
+      firstReservation.getByTestId('reservation-time')
+    ).toBeVisible();
   });
 
   test('should display past reservations in "Earlier Today" section', async ({
@@ -258,15 +249,15 @@ test.describe('Member Reservation List View & Cancellation', () => {
     await page.waitForLoadState('networkidle');
 
     // Wait for reservations to load
-    await page
+    const firstReservation = page
       .locator('[data-testid="reservation-item"]')
-      .first()
-      .waitFor({ state: 'visible', timeout: 5000 });
+      .first();
+    await firstReservation.waitFor({ state: 'visible', timeout: 5000 });
 
     // Should show boat name
-    await expect(page.getByTestId('reservation-boat-name')).toContainText(
-      /test alpha/i
-    );
+    await expect(
+      firstReservation.getByTestId('reservation-boat-name')
+    ).toContainText(/test alpha/i);
 
     // Should show membership number
     await expect(page.getByText(/#E2E-001/)).toBeVisible();
@@ -307,13 +298,13 @@ test.describe('Member Reservation List View & Cancellation', () => {
     await page.waitForLoadState('networkidle');
 
     // Wait for reservations to load
-    await page
+    const firstReservation = page
       .locator('[data-testid="reservation-item"]')
-      .first()
-      .waitFor({ state: 'visible', timeout: 5000 });
+      .first();
+    await firstReservation.waitFor({ state: 'visible', timeout: 5000 });
 
     // Should show party size
-    const partySize = page.getByTestId('reservation-party-size');
+    const partySize = firstReservation.getByTestId('reservation-party-size');
     await expect(partySize).toContainText(/3 adults/i);
     await expect(partySize).toContainText(/2 kids/i);
   });
@@ -353,13 +344,13 @@ test.describe('Member Reservation List View & Cancellation', () => {
     await page.waitForLoadState('networkidle');
 
     // Wait for reservations to load
-    await page
+    const firstReservation = page
       .locator('[data-testid="reservation-item"]')
-      .first()
-      .waitFor({ state: 'visible', timeout: 5000 });
+      .first();
+    await firstReservation.waitFor({ state: 'visible', timeout: 5000 });
 
     // Should see cancel button
-    await expect(page.getByTestId('cancel-button')).toBeVisible({
+    await expect(firstReservation.getByTestId('cancel-button')).toBeVisible({
       timeout: 5000,
     });
   });
@@ -445,13 +436,13 @@ test.describe('Member Reservation List View & Cancellation', () => {
     await page.waitForLoadState('networkidle');
 
     // Wait for reservations to load
-    await page
+    const firstReservation = page
       .locator('[data-testid="reservation-item"]')
-      .first()
-      .waitFor({ state: 'visible', timeout: 5000 });
+      .first();
+    await firstReservation.waitFor({ state: 'visible', timeout: 5000 });
 
     // Click cancel button
-    const cancelButton = page.getByTestId('cancel-button');
+    const cancelButton = firstReservation.getByTestId('cancel-button');
     await cancelButton.click();
 
     // Should open confirmation dialog
@@ -500,13 +491,13 @@ test.describe('Member Reservation List View & Cancellation', () => {
     await page.waitForLoadState('networkidle');
 
     // Wait for reservations to load
-    await page
+    const firstReservation = page
       .locator('[data-testid="reservation-item"]')
-      .first()
-      .waitFor({ state: 'visible', timeout: 5000 });
+      .first();
+    await firstReservation.waitFor({ state: 'visible', timeout: 5000 });
 
     // Click cancel button
-    const cancelButton = page.getByTestId('cancel-button');
+    const cancelButton = firstReservation.getByTestId('cancel-button');
     await cancelButton.click();
 
     // Wait for dialog
@@ -562,13 +553,13 @@ test.describe('Member Reservation List View & Cancellation', () => {
     await page.waitForLoadState('networkidle');
 
     // Wait for reservations to load
-    await page
+    const firstReservation = page
       .locator('[data-testid="reservation-item"]')
-      .first()
-      .waitFor({ state: 'visible', timeout: 5000 });
+      .first();
+    await firstReservation.waitFor({ state: 'visible', timeout: 5000 });
 
     // Click cancel button
-    const cancelButton = page.getByTestId('cancel-button');
+    const cancelButton = firstReservation.getByTestId('cancel-button');
     await cancelButton.click();
 
     // Wait for dialog and confirm

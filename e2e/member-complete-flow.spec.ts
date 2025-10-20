@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { getTestClubSecret } from './helpers/test-fixtures';
+import { getTestClubSecret, getTestBoat } from './helpers/test-fixtures';
 import { authenticateMember } from './helpers/auth-helper';
 
 test.describe('Member Complete User Journey - End to End', () => {
@@ -68,30 +68,35 @@ test.describe('Member Complete User Journey - End to End', () => {
     const searchInput = page.getByTestId('boat-search-input');
     await expect(searchInput).toBeVisible();
 
-    // Search for a boat
-    await searchInput.fill('Test');
-    await page.waitForTimeout(500); // Wait for debounced search
-
-    const boatResults = page.locator('[data-testid="boat-result"]');
-    const boatCount = await boatResults.count();
-
-    if (boatCount === 0) {
-      test.skip(); // No boats available
-    }
-
-    // Try boats until we find one without a reservation
+    // Try multiple boats until we find one without a reservation
     let reservationCreated = false;
     const reserveUrl = page.url();
+    const boatSearchTerms = [
+      getTestBoat(12), // Nu
+      getTestBoat(13), // Xi
+      getTestBoat(14), // Omicron
+      getTestBoat(15), // Pi
+      getTestBoat(16), // Rho
+    ];
 
-    for (let attempt = 0; attempt < Math.min(boatCount, 5); attempt++) {
+    for (let attempt = 0; attempt < boatSearchTerms.length; attempt++) {
       if (attempt > 0) {
         await page.goto(reserveUrl);
         await page.waitForLoadState('networkidle');
-        await searchInput.fill('Test');
-        await page.waitForTimeout(500);
       }
 
-      const targetBoat = boatResults.nth(attempt);
+      // Search for specific boat
+      await searchInput.fill(boatSearchTerms[attempt]);
+      await page.waitForTimeout(500); // Wait for debounced search
+
+      const boatResults = page.locator('[data-testid="boat-result"]');
+      const boatCount = await boatResults.count();
+
+      if (boatCount === 0) {
+        continue; // Try next boat
+      }
+
+      const targetBoat = boatResults.first();
       await targetBoat.click();
 
       // Wait for either adults input (success) or error message

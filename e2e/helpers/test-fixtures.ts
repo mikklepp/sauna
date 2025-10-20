@@ -214,6 +214,82 @@ export const TEST_BOATS = [
 ] as const;
 
 /**
+ * Get a test boat search term by index for systematic allocation in test suites.
+ *
+ * This ensures each test in a serial suite uses a different boat to avoid
+ * "boat already has a reservation" conflicts.
+ *
+ * @param index Test index (0-based), typically matches test order in suite
+ * @returns Search term for the boat (e.g., 'alpha', 'beta', 'gamma')
+ *
+ * @example
+ * // In a test suite with serial tests:
+ * test('first test', async ({ page }) => {
+ *   const boat = getTestBoat(0); // Returns 'alpha'
+ *   await boatSearch.fill(boat);
+ * });
+ *
+ * test('second test', async ({ page }) => {
+ *   const boat = getTestBoat(1); // Returns 'beta'
+ *   await boatSearch.fill(boat);
+ * });
+ */
+export function getTestBoat(index: number): string {
+  const boatNames = [
+    'alpha',
+    'beta',
+    'gamma',
+    'delta',
+    'epsilon',
+    'zeta',
+    'eta',
+    'theta',
+    'iota',
+    'kappa',
+    'lambda',
+    'mu',
+    'nu',
+    'xi',
+    'omicron',
+    'pi',
+    'rho',
+    'sigma',
+    'tau',
+    'upsilon',
+    'phi',
+    'chi',
+    'psi',
+    'omega',
+  ];
+
+  if (index < 0 || index >= boatNames.length) {
+    throw new Error(
+      `Test boat index ${index} is out of range (0-${boatNames.length - 1})`
+    );
+  }
+
+  return boatNames[index];
+}
+
+/**
+ * Get the full boat name by index (e.g., 'Test Alpha', 'Test Beta').
+ *
+ * Use this when you need the exact boat name for database queries or assertions.
+ *
+ * @param index Test boat index (0-based)
+ * @returns Full boat name (e.g., 'Test Alpha', 'Test Beta')
+ */
+export function getTestBoatFullName(index: number): string {
+  if (index < 0 || index >= TEST_BOATS.length) {
+    throw new Error(
+      `Test boat index ${index} is out of range (0-${TEST_BOATS.length - 1})`
+    );
+  }
+
+  return TEST_BOATS[index].name;
+}
+
+/**
  * Reset and recreate the test club with all its data.
  * This ensures every test run starts with a known, clean state.
  */

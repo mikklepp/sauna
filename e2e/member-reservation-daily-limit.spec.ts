@@ -1,12 +1,17 @@
 import { test, expect, Page } from '@playwright/test';
-import { getTestClubSecret } from './helpers/test-fixtures';
+import { getTestClubSecret, getTestBoat } from './helpers/test-fixtures';
 import { authenticateMember } from './helpers/auth-helper';
+import { cleanupTodaysReservations } from './helpers/db-cleanup';
 
 test.describe('Member Individual Reservation - Daily Limit Validation', () => {
   let clubSecret: string;
 
   test.beforeAll(async () => {
     clubSecret = getTestClubSecret();
+  });
+
+  test.beforeEach(async () => {
+    await cleanupTodaysReservations();
   });
 
   /**
@@ -136,7 +141,7 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
     }
 
     // Create first reservation with specific boat name
-    const searchTerm = 'Test Gamma'; // Specific boat name
+    const searchTerm = getTestBoat(2); // Gamma
     const firstResult = await createReservationWithBoat(page, searchTerm);
 
     if (!firstResult.success) {
@@ -164,7 +169,8 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
     }
 
     // First, create a reservation with a known boat
-    const result = await createReservationWithBoat(page, 'Test Alpha');
+    const alphaBoat = getTestBoat(0); // Alpha
+    const result = await createReservationWithBoat(page, alphaBoat);
 
     // If boat already has reservation, the test scenario is already validated
     if (!result.success) {
@@ -176,7 +182,7 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
 
     // Search for the same boat
     const searchInput = page.getByTestId('boat-search-input');
-    await searchInput.fill('Test Alpha');
+    await searchInput.fill(alphaBoat);
     await page.waitForTimeout(500);
 
     const boatResults = page.locator('[data-testid="boat-result"]');
@@ -209,8 +215,9 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
     await reserveButton.click();
     await page.waitForURL(/\/islands\/[^/]+\/reserve/);
 
-    // Create reservation with Test Beta boat
-    const firstResult = await createReservationWithBoat(page, 'Test Beta');
+    // Create reservation with Beta boat
+    const betaBoat = getTestBoat(1); // Beta
+    const firstResult = await createReservationWithBoat(page, betaBoat);
 
     // If boat already has reservation, skip test
     if (!firstResult.success) {
@@ -233,7 +240,7 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
     await page.waitForURL(/\/islands\/[^/]+\/reserve/);
 
     // Try to create reservation with same boat on different island
-    const secondResult = await createReservationWithBoat(page, 'Test Beta');
+    const secondResult = await createReservationWithBoat(page, betaBoat);
 
     // Should succeed - daily limit is per island
     expect(secondResult.success).toBe(true);
@@ -249,7 +256,7 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
 
     // Search for boat
     const searchInput = page.getByTestId('boat-search-input');
-    await searchInput.fill('Test');
+    await searchInput.fill(getTestBoat(3)); // Delta
     await page.waitForTimeout(500);
 
     const boatResults = page.locator('[data-testid="boat-result"]');

@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { getTestClubSecret, TEST_BOATS } from './helpers/test-fixtures';
+import { getTestClubSecret, getTestBoat } from './helpers/test-fixtures';
 import { authenticateMember } from './helpers/auth-helper';
 
 test.describe('Member Individual Reservation - Happy Path', () => {
@@ -61,7 +61,7 @@ test.describe('Member Individual Reservation - Happy Path', () => {
 
     // Enter boat name in search (search for first test boat)
     const searchInput = page.getByTestId('boat-search-input');
-    await searchInput.fill(TEST_BOATS[0].name.substring(0, 10)); // "Test Alpha" -> "Test Alpha"
+    await searchInput.fill(getTestBoat(4)); // Epsilon - Test 4
     await page.waitForTimeout(500); // Wait for debounced search
 
     // Should have results
@@ -95,7 +95,7 @@ test.describe('Member Individual Reservation - Happy Path', () => {
 
     // First, search and select a boat to get to party size step
     const searchInput = page.getByTestId('boat-search-input');
-    await searchInput.fill('Test');
+    await searchInput.fill(getTestBoat(5)); // Zeta - Test 5
     await page.waitForTimeout(500); // Wait for debounced search
 
     const boatResults = page.locator('[data-testid="boat-result"]');
@@ -144,7 +144,7 @@ test.describe('Member Individual Reservation - Happy Path', () => {
 
     // Step 1: Search and select a boat
     const searchInput = page.getByTestId('boat-search-input');
-    await searchInput.fill('Test');
+    await searchInput.fill(getTestBoat(6)); // Eta - Test 6
     await page.waitForTimeout(500); // Wait for debounced search
 
     const boatResults = page.locator('[data-testid="boat-result"]');
@@ -215,9 +215,16 @@ test.describe('Member Individual Reservation - Happy Path', () => {
         await page.waitForLoadState('networkidle');
       }
 
-      // Search for boats
+      // Search for boats - use multiple boat options for retry logic
       const searchInput = page.getByTestId('boat-search-input');
-      await searchInput.fill('Test');
+      const boatSearchTerms = [
+        getTestBoat(7), // Theta
+        getTestBoat(8), // Iota
+        getTestBoat(9), // Kappa
+        getTestBoat(10), // Lambda
+        getTestBoat(11), // Mu
+      ];
+      await searchInput.fill(boatSearchTerms[attempt % boatSearchTerms.length]);
       await page.waitForTimeout(500);
 
       const boatResults = page.locator('[data-testid="boat-result"]');
