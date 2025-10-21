@@ -15,13 +15,13 @@ test.describe('Member Sauna Display & Status', () => {
    */
   async function navigateToIslandWithSaunas(page: Page): Promise<boolean> {
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Click first island (Test North Island - has 2 saunas)
     const islandLinks = page.locator('[data-testid="island-link"]');
     await islandLinks.first().click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for sauna cards to load
     const saunaCards = page.locator('[data-testid="sauna-card"]');

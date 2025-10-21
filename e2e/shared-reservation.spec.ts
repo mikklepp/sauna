@@ -11,8 +11,8 @@ test.describe('Shared Reservation - Admin Creation', () => {
   test.beforeEach(async ({ page }) => {
     await cleanupTodaysReservations();
     await loginAsAdmin(page);
-    await page.goto('/admin/shared-reservations');
-    await page.waitForLoadState('networkidle');
+    await page.goto('/admin/shared-reservations', { waitUntil: 'commit' });
+    await page.waitForLoadState('load');
   });
 
   test('should display shared reservations list', async ({ page }) => {
@@ -77,7 +77,7 @@ test.describe('Shared Reservation - Admin Creation', () => {
 
     // Refresh to see it
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Find the reservation with our test name
     const reservationCard = page
@@ -117,20 +117,28 @@ test.describe('Shared Reservation - User Joining', () => {
 
     // Navigate to island
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.waitFor({ state: 'visible', timeout: 5000 });
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
-    // Wait for sauna cards to load
-    const saunaCards = page.locator('[data-testid="sauna-card"]');
-    await saunaCards.first().waitFor({ state: 'visible', timeout: 5000 });
+    // Find the specific shared reservation element containing both the name and join button
+    // This handles cases where a sauna has multiple shared reservations
+    const weekendSocialReservation = page
+      .locator('*')
+      .filter({ hasText: 'Weekend Social' })
+      .filter({ has: page.getByRole('button', { name: /join.*club.*sauna/i }) })
+      .last();
+
+    await weekendSocialReservation.waitFor({ state: 'visible', timeout: 5000 });
 
     // Should show shared sauna indicator (button)
-    const joinButton = page.getByRole('button', { name: /join.*club.*sauna/i });
+    const joinButton = weekendSocialReservation.getByRole('button', {
+      name: /join.*club.*sauna/i,
+    });
     await expect(joinButton).toBeVisible({ timeout: 5000 });
   });
 
@@ -147,20 +155,25 @@ test.describe('Shared Reservation - User Joining', () => {
 
     // Navigate to island
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.waitFor({ state: 'visible', timeout: 5000 });
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
-    // Wait for sauna cards to load
-    const saunaCards = page.locator('[data-testid="sauna-card"]');
-    await saunaCards.first().waitFor({ state: 'visible', timeout: 5000 });
+    // Find the specific shared reservation element containing both the name and join button
+    const joinTestReservation = page
+      .locator('*')
+      .filter({ hasText: 'Join Test' })
+      .filter({ has: page.getByRole('button', { name: /join.*club.*sauna/i }) })
+      .last();
+
+    await joinTestReservation.waitFor({ state: 'visible', timeout: 5000 });
 
     // Look for "Join Club Sauna" button
-    const joinButton = page.getByRole('button', {
+    const joinButton = joinTestReservation.getByRole('button', {
       name: /join.*club.*sauna/i,
     });
 
@@ -169,7 +182,7 @@ test.describe('Shared Reservation - User Joining', () => {
 
     // Wait for navigation to shared reservation page
     await page.waitForURL(/\/shared\/[^/]+/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Should show gender schedule information (looking for time slots with gender labels)
     const bodyText = await page.textContent('body');
@@ -194,14 +207,23 @@ test.describe('Shared Reservation - User Joining', () => {
 
     // Navigate to island
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
-    const joinButton = page.getByRole('button', {
+    // Find the specific shared reservation element containing both the name and join button
+    const scheduleTestReservation = page
+      .locator('*')
+      .filter({ hasText: 'Schedule Test' })
+      .filter({ has: page.getByRole('button', { name: /join.*club.*sauna/i }) })
+      .last();
+
+    await scheduleTestReservation.waitFor({ state: 'visible', timeout: 5000 });
+
+    const joinButton = scheduleTestReservation.getByRole('button', {
       name: /join.*club.*sauna/i,
     });
 
@@ -236,14 +258,26 @@ test.describe('Shared Reservation - User Joining', () => {
 
     // Navigate to island
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
-    const joinButton = page.getByRole('button', {
+    // Find the specific shared reservation element containing both the name and join button
+    const participantsTestReservation = page
+      .locator('*')
+      .filter({ hasText: 'Participants Test' })
+      .filter({ has: page.getByRole('button', { name: /join.*club.*sauna/i }) })
+      .last();
+
+    await participantsTestReservation.waitFor({
+      state: 'visible',
+      timeout: 5000,
+    });
+
+    const joinButton = participantsTestReservation.getByRole('button', {
       name: /join.*club.*sauna/i,
     });
 
@@ -262,8 +296,8 @@ test.describe('Club Sauna Auto-creation', () => {
   });
 
   test('should verify Club Sauna settings exist', async ({ page }) => {
-    await page.goto('/admin/saunas');
-    await page.waitForLoadState('networkidle');
+    await page.goto('/admin/saunas', { waitUntil: 'commit' });
+    await page.waitForLoadState('load');
 
     // Should have sauna items from test fixtures
     const firstSauna = page.locator('[data-testid="sauna-item"]').first();
@@ -271,16 +305,19 @@ test.describe('Club Sauna Auto-creation', () => {
 
     // Click edit button
     await firstSauna.getByRole('button', { name: /edit/i }).click();
-    await page.waitForLoadState('networkidle');
 
-    // Should have auto Club Sauna option
+    // Wait for navigation to edit page
+    await page.waitForURL(/\/admin\/saunas\/.+\/edit/);
+    await page.waitForLoadState('load');
+
+    // Should have auto Club Sauna option - wait for it with longer timeout
     const autoClubCheckbox = page.getByLabel(/auto.*club.*sauna|enable.*club/i);
-    await expect(autoClubCheckbox).toBeVisible();
+    await expect(autoClubCheckbox).toBeVisible({ timeout: 10000 });
   });
 
   test('should toggle auto Club Sauna generation setting', async ({ page }) => {
-    await page.goto('/admin/saunas');
-    await page.waitForLoadState('networkidle');
+    await page.goto('/admin/saunas', { waitUntil: 'commit' });
+    await page.waitForLoadState('load');
 
     // Should have sauna items from test fixtures
     const firstSauna = page.locator('[data-testid="sauna-item"]').first();
@@ -288,11 +325,14 @@ test.describe('Club Sauna Auto-creation', () => {
 
     // Click edit button
     await firstSauna.getByRole('button', { name: /edit/i }).click();
-    await page.waitForLoadState('networkidle');
+
+    // Wait for navigation to edit page
+    await page.waitForURL(/\/admin\/saunas\/.+\/edit/);
+    await page.waitForLoadState('load');
 
     // Find the auto Club Sauna checkbox
     const autoClubCheckbox = page.getByLabel(/auto.*club.*sauna|enable.*club/i);
-    await expect(autoClubCheckbox).toBeVisible();
+    await expect(autoClubCheckbox).toBeVisible({ timeout: 10000 });
 
     // Get initial state
     const wasChecked = await autoClubCheckbox.isChecked();
@@ -311,7 +351,7 @@ test.describe('Club Sauna Auto-creation', () => {
     // Verify the change persisted by re-opening edit form
     await page.waitForTimeout(500);
     await firstSauna.getByRole('button', { name: /edit/i }).click();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const newCheckbox = page.getByLabel(/auto.*club.*sauna|enable.*club/i);
 

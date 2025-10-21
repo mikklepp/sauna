@@ -15,13 +15,13 @@ test.describe('Member Individual Reservation - Happy Path', () => {
    */
   async function navigateToReservePage(page: Page): Promise<boolean> {
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Click first island (Test North Island - has 2 saunas)
     const islandLinks = page.locator('[data-testid="island-link"]');
     await islandLinks.first().click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for sauna cards to load
     const saunaCards = page.locator('[data-testid="sauna-card"]');
@@ -212,7 +212,7 @@ test.describe('Member Individual Reservation - Happy Path', () => {
       // We need to do this every time because previous attempt might have left us on a different step
       if (attempt > 0) {
         await page.goto(reserveUrl);
-        await page.waitForLoadState('networkidle');
+        await page.waitForLoadState('load');
       }
 
       // Search for boats - use multiple boat options for retry logic
@@ -315,7 +315,7 @@ test.describe('Member Individual Reservation - Happy Path', () => {
 
     // Wait for reservations page to load
     await page.waitForURL(/\/reservations$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Should see "Upcoming" heading (indicates reservations are displayed)
     await expect(page.getByRole('heading', { name: /upcoming/i })).toBeVisible({

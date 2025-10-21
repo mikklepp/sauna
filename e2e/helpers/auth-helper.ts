@@ -12,6 +12,7 @@ export async function getValidClubSecret(): Promise<string> {
 /**
  * Authenticate as a member using the club secret
  * Handles the complete auth flow including welcome page
+ * Waits for islands page to fully load before returning
  * @param page - Playwright page object
  * @param secret - Optional club secret (uses test secret if not provided)
  */
@@ -21,31 +22,33 @@ export async function authenticateMember(
 ): Promise<void> {
   const clubSecret = secret || getTestClubSecret();
 
+  // Clear localStorage to ensure welcome page shows
+  await page.goto('/auth');
+  await page.evaluate(() => localStorage.clear());
+
   // Navigate to auth page with secret
   await page.goto(`/auth?secret=${clubSecret}`);
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState('load');
 
-  // Check if we're on welcome page or if it was skipped (localStorage check)
-  const currentUrl = page.url();
+  // Wait for redirect to either welcome or islands
+  await Promise.race([
+    page.waitForURL(/\/welcome/, { timeout: 10000 }),
+    page.waitForURL(/\/islands/, { timeout: 10000 }),
+  ]);
 
-  if (currentUrl.includes('/welcome')) {
-    // Welcome page is shown - click continue
-    await page.getByTestId('continue-to-reservations').click();
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
-  } else if (currentUrl.includes('/islands')) {
-    // Already at islands page - welcome was skipped
-    return;
-  } else {
-    // Wait for one of the two possible redirects
-    await Promise.race([
-      page.waitForURL(/\/welcome/, { timeout: 10000 }),
-      page.waitForURL(/\/islands/, { timeout: 10000 }),
-    ]);
-
-    // If we landed on welcome, click continue
-    if (page.url().includes('/welcome')) {
-      await page.getByTestId('continue-to-reservations').click();
+  // If we're on welcome page, click continue
+  if (page.url().includes('/welcome')) {
+    // Check if button still exists (page might auto-redirect)
+    const continueButton = page.getByTestId('continue-to-reservations');
+    if (await continueButton.isVisible().catch(() => false)) {
+      await continueButton.click();
+      await page.waitForURL(/\/islands/, { timeout: 10000 });
+    } else {
+      // Button disappeared, wait for auto-redirect
       await page.waitForURL(/\/islands/, { timeout: 10000 });
     }
   }
+
+  // Ensure islands page is fully loaded before returning
+  await page.waitForLoadState('load');
 }

@@ -1,10 +1,15 @@
 import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from './helpers/test-data';
+import { cleanupAdminTestData } from './helpers/db-cleanup';
 
 test.describe('Admin Island Management', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
-    await page.goto('/admin/islands');
+    await page.goto('/admin/islands', { waitUntil: 'commit' });
+  });
+
+  test.afterEach(async () => {
+    await cleanupAdminTestData();
   });
 
   test('should display islands list', async ({ page }) => {
@@ -106,7 +111,11 @@ test.describe('Admin Island Management', () => {
 test.describe('Admin Sauna Management', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
-    await page.goto('/admin/saunas');
+    await page.goto('/admin/saunas', { waitUntil: 'commit' });
+  });
+
+  test.afterEach(async () => {
+    await cleanupAdminTestData();
   });
 
   test('should display saunas list', async ({ page }) => {
@@ -157,7 +166,7 @@ test.describe('Admin Sauna Management', () => {
     await page.waitForURL(/\/admin\/saunas\/.+\/edit/);
 
     // Wait for the page to finish loading
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Find auto Club Sauna checkbox
     const autoClubCheckbox = page.getByLabel(
@@ -170,12 +179,16 @@ test.describe('Admin Sauna Management', () => {
 
     // Verify change - navigate back and check
     await page.waitForURL(/\/admin\/saunas$/);
+    await page.waitForLoadState('load'); // Ensure save API call completes
+
     await page
       .locator('[data-testid="sauna-item"]')
       .first()
       .locator('[data-testid="edit-sauna-button"]')
       .click();
     await page.waitForURL(/\/admin\/saunas\/.+\/edit/);
+    await page.waitForLoadState('load'); // Ensure form loads with persisted data
+
     await expect(
       page.getByLabel(/auto club sauna|enable club sauna/i)
     ).toBeChecked({ checked: !wasChecked });
@@ -185,7 +198,7 @@ test.describe('Admin Sauna Management', () => {
 test.describe('Admin Boat Management', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
-    await page.goto('/admin/boats');
+    await page.goto('/admin/boats', { waitUntil: 'commit' });
   });
 
   test('should display boats list', async ({ page }) => {
@@ -294,7 +307,7 @@ Test CSV Boat,CSV${Date.now()},CSV Captain,555-9999`;
     await page.waitForURL(/\/admin\/boats\/.+\/edit/);
 
     // Wait for the page to finish loading
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const captainField = page.getByLabel(/captain name/i);
     const newCaptainName = `Updated Captain ${Date.now()}`;
@@ -345,7 +358,7 @@ Test CSV Boat,CSV${Date.now()},CSV Captain,555-9999`;
 test.describe('Admin Club Management', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
-    await page.goto('/admin/clubs');
+    await page.goto('/admin/clubs', { waitUntil: 'commit' });
   });
 
   test('should display clubs list', async ({ page }) => {
@@ -354,8 +367,8 @@ test.describe('Admin Club Management', () => {
 
   test('should view club QR code', async ({ page }) => {
     // Navigate to clubs page
-    await page.goto('/admin/clubs');
-    await page.waitForLoadState('networkidle');
+    await page.goto('/admin/clubs', { waitUntil: 'commit' });
+    await page.waitForLoadState('load');
 
     const clubCount = await page.locator('[data-testid="club-item"]').count();
 
@@ -380,8 +393,8 @@ test.describe('Admin Club Management', () => {
 
   test('should access theme editor', async ({ page }) => {
     // Navigate to clubs page
-    await page.goto('/admin/clubs');
-    await page.waitForLoadState('networkidle');
+    await page.goto('/admin/clubs', { waitUntil: 'commit' });
+    await page.waitForLoadState('load');
 
     const clubCount = await page.locator('[data-testid="club-item"]').count();
 

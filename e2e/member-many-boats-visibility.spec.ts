@@ -60,7 +60,7 @@ test.describe('Member - Many Boats Reservation Visibility', () => {
     const islandLinks = page.locator('[data-testid="island-link"]');
     await islandLinks.first().click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for sauna cards to load
     const saunaCards = page.locator('[data-testid="sauna-card"]');
@@ -129,7 +129,7 @@ test.describe('Member - Many Boats Reservation Visibility', () => {
     const islandLinks = page.locator('[data-testid="island-link"]');
     await islandLinks.first().click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const saunaCards = page.locator('[data-testid="sauna-card"]');
     await saunaCards.first().waitFor({ state: 'visible', timeout: 5000 });
@@ -143,7 +143,7 @@ test.describe('Member - Many Boats Reservation Visibility', () => {
 
     // Wait for navigation to reservations page
     await page.waitForURL(/\/saunas\/[^/]+\/reservations/, { timeout: 10000 });
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for reservations to load (not just network idle)
     await page
@@ -206,7 +206,7 @@ test.describe('Member - Many Boats Reservation Visibility', () => {
     const islandLinks = page.locator('[data-testid="island-link"]');
     await islandLinks.first().click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const saunaCards = page.locator('[data-testid="sauna-card"]');
     await saunaCards.first().waitFor({ state: 'visible', timeout: 5000 });
@@ -220,7 +220,7 @@ test.describe('Member - Many Boats Reservation Visibility', () => {
 
     // Wait for navigation to reservations page
     await page.waitForURL(/\/saunas\/[^/]+\/reservations/, { timeout: 10000 });
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for reservations to load (not just network idle)
     await page

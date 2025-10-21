@@ -4,9 +4,11 @@ import {
   TEST_ISLANDS,
   getTestBoat,
   getTestBoatFullName,
+  createTestReservation,
 } from './helpers/test-fixtures';
 import { authenticateMember } from './helpers/auth-helper';
 import { cleanupTodaysReservations } from './helpers/db-cleanup';
+import prisma from '../src/lib/db';
 
 test.describe.serial('Individual Reservation Flow', () => {
   let clubSecret: string;
@@ -22,7 +24,7 @@ test.describe.serial('Individual Reservation Flow', () => {
   test('should display island selection after authentication', async ({
     page,
   }) => {
-    // Authenticate and navigate to islands
+    // Authenticate and navigate to islands (waits for page to fully load)
     await authenticateMember(page, clubSecret);
 
     // Should show islands page
@@ -38,8 +40,6 @@ test.describe.serial('Individual Reservation Flow', () => {
   test('should navigate to island view', async ({ page }) => {
     // Authenticate
     await authenticateMember(page, clubSecret);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
-    await page.waitForLoadState('networkidle');
 
     // Click first island
     const islandLink = page.locator('[data-testid="island-link"]').first();
@@ -50,14 +50,12 @@ test.describe.serial('Individual Reservation Flow', () => {
   test('should display saunas with availability', async ({ page }) => {
     // Authenticate
     await authenticateMember(page, clubSecret);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
-    await page.waitForLoadState('networkidle');
 
     // Click first island (Test North Island - has 2 saunas)
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Should show saunas
     const saunaCard = page.locator('[data-testid="sauna-card"]').first();
@@ -77,8 +75,6 @@ test.describe.serial('Individual Reservation Flow', () => {
   test('should complete individual reservation workflow', async ({ page }) => {
     // Authenticate
     await authenticateMember(page, clubSecret);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
-    await page.waitForLoadState('networkidle');
 
     // Navigate to island
     const islandLink = page.locator('[data-testid="island-link"]').first();
@@ -144,8 +140,6 @@ test.describe.serial('Individual Reservation Flow', () => {
   }) => {
     // Authenticate
     await authenticateMember(page, clubSecret);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
-    await page.waitForLoadState('networkidle');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.click();
@@ -185,9 +179,6 @@ test.describe.serial('Individual Reservation Flow', () => {
     await page.waitForTimeout(1000);
 
     // Verify the reservation was created by checking the database
-    const { PrismaClient } = await import('@prisma/client');
-    const prisma = new PrismaClient();
-
     const betaBoatName = getTestBoatFullName(1); // Test Beta
 
     // Query for any Beta reservation (no date filter for debugging)
@@ -232,8 +223,6 @@ test.describe.serial('Individual Reservation Flow', () => {
       console.log('Found reservation - startTime:', reservation.startTime);
     }
 
-    await prisma.$disconnect();
-
     // Verify reservation exists
     expect(reservation).toBeTruthy();
     expect(reservation?.boat.name).toBe(betaBoatName);
@@ -242,7 +231,7 @@ test.describe.serial('Individual Reservation Flow', () => {
     // Now try to book Beta again (should be prevented)
     await page.goto('/islands');
     await page.waitForURL(/\/islands/, { timeout: 10000 });
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const islandLink2 = page.locator('[data-testid="island-link"]').first();
     await islandLink2.click();
@@ -266,36 +255,52 @@ test.describe.serial('Individual Reservation Flow', () => {
     });
   });
 
-  test('should display next available time correctly when sauna is in use', async ({
+  test('should display next available time correctly when sauna is reserved', async ({
     page,
   }) => {
-    // Authenticate
+    // Create an active reservation to put sauna in "Reserved" state
+    // Using helper function that handles proper time calculations
+    const reservation = await createTestReservation({
+      saunaIndex: 0, // First sauna (North Main Sauna)
+      boatIndex: 0, // First boat (Test Alpha)
+      startTimeOffset: -0.5, // Started 30 minutes ago
+      durationHours: 1,
+      adults: 2,
+      kids: 0,
+      status: 'ACTIVE',
+    });
+
+    expect(reservation).toBeTruthy();
+
+    // Authenticate and navigate to island
     await authenticateMember(page, clubSecret);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
-    await page.waitForLoadState('networkidle');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+/);
+    await page.waitForLoadState('load');
 
-    // Check for "In Use" status
-    const inUseText = page.getByText(/in use/i);
+    // Find the sauna card with "Reserved" status
+    const reservedSaunaCard = page
+      .locator('[data-testid="sauna-card"]')
+      .filter({ hasText: /reserved/i })
+      .first();
 
-    if (await inUseText.isVisible()) {
-      // Should show next available time
-      await expect(
-        page.getByText(/next available|available at/i)
-      ).toBeVisible();
+    // Should show "Reserved" status
+    await expect(reservedSaunaCard).toBeVisible();
 
-      // Time should be in the future and at top of hour
-      const timeText = await page
-        .locator('[data-testid="next-available-time"]')
-        .first()
-        .textContent();
+    // Should show next available time within the reserved sauna card
+    await expect(
+      reservedSaunaCard.getByText(/next available|available at/i)
+    ).toBeVisible();
 
-      // Basic validation: should contain a time format (HH:MM or similar)
-      expect(timeText).toMatch(/\d{1,2}:\d{2}|noon|midnight/i);
-    }
+    // Time should be in the future and at top of hour
+    const timeText = await reservedSaunaCard
+      .locator('[data-testid="next-available-time"]')
+      .textContent();
+
+    // Basic validation: should contain a time format (HH:MM or similar)
+    expect(timeText).toMatch(/\d{1,2}:\d{2}|noon|midnight/i);
   });
 
   test('should show heating time when sauna is not in use', async ({
@@ -303,36 +308,32 @@ test.describe.serial('Individual Reservation Flow', () => {
   }) => {
     // Authenticate
     await authenticateMember(page, clubSecret);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
-    await page.waitForLoadState('networkidle');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+/);
+    await page.waitForLoadState('load');
 
-    // Check for "Available" status
+    // Should show "Available" status
     const availableText = page.getByText(/^available$/i);
+    await expect(availableText.first()).toBeVisible();
 
-    if (await availableText.isVisible()) {
-      // Should show next available time accounting for heating
-      const nextAvailableTime = page
-        .locator('[data-testid="next-available-time"]')
-        .first();
+    // Should show next available time accounting for heating
+    const nextAvailableTime = page
+      .locator('[data-testid="next-available-time"]')
+      .first();
 
-      if (await nextAvailableTime.isVisible()) {
-        const timeText = await nextAvailableTime.textContent();
+    await expect(nextAvailableTime).toBeVisible();
+    const timeText = await nextAvailableTime.textContent();
 
-        // Should be a future time
-        expect(timeText).toBeTruthy();
-      }
-    }
+    // Should be a future time
+    expect(timeText).toBeTruthy();
+    expect(timeText).toMatch(/\d{1,2}:\d{2}|noon|midnight/i);
   });
 
   test('should validate party size minimum', async ({ page }) => {
     // Authenticate
     await authenticateMember(page, clubSecret);
-    await page.waitForURL(/\/islands/, { timeout: 10000 });
-    await page.waitForLoadState('networkidle');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.click();

@@ -20,13 +20,13 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
    */
   async function navigateToReservePage(page: Page): Promise<boolean> {
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Click first island (Test North Island - has 2 saunas)
     const islandLinks = page.locator('[data-testid="island-link"]');
     await islandLinks.first().click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for sauna cards to load
     const saunaCards = page.locator('[data-testid="sauna-card"]');
@@ -201,12 +201,12 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
   }) => {
     // Navigate to first island (Test North Island) and create reservation
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const islandLinks = page.locator('[data-testid="island-link"]');
     await islandLinks.first().click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const saunaCards = page.locator('[data-testid="sauna-card"]');
     const reserveButton = saunaCards
@@ -226,11 +226,11 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
 
     // Navigate to second island (Test South Island)
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await islandLinks.nth(1).click(); // Second island
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const saunaCards2 = page.locator('[data-testid="sauna-card"]');
     const reserveButton2 = saunaCards2

@@ -48,7 +48,7 @@ test.describe('Member Complete User Journey - End to End', () => {
     // ===== STEP 5: Select first island =====
     await islandCards.first().click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // ===== STEP 6: Verify sauna display =====
     const saunaCards = page.locator('[data-testid="sauna-card"]');
@@ -82,7 +82,7 @@ test.describe('Member Complete User Journey - End to End', () => {
     for (let attempt = 0; attempt < boatSearchTerms.length; attempt++) {
       if (attempt > 0) {
         await page.goto(reserveUrl);
-        await page.waitForLoadState('networkidle');
+        await page.waitForLoadState('load');
       }
 
       // Search for specific boat
@@ -180,7 +180,7 @@ test.describe('Member Complete User Journey - End to End', () => {
 
     // Refresh the page
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Should still be authenticated and on islands page
     await expect(page).toHaveURL(/\/islands/);
@@ -254,7 +254,7 @@ test.describe('Member Complete User Journey - End to End', () => {
   }) => {
     // Try to access islands page without authentication
     await page.goto('/islands');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Should redirect to auth page (or show "no islands" if session check happens client-side)
     // The current implementation might stay on /islands but show no content or redirect

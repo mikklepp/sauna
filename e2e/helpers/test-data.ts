@@ -8,7 +8,7 @@ export const TEST_ADMIN = {
 };
 
 export async function loginAsAdmin(page: any) {
-  await page.goto('/admin/login');
+  await page.goto('/admin/login', { waitUntil: 'commit' });
 
   // Fill in credentials
   await page.getByLabel(/username/i).fill(TEST_ADMIN.username);

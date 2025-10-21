@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Admin Authentication', () => {
   test.beforeEach(async ({ page }) => {
     // Start from admin login page
-    await page.goto('/admin/login');
+    await page.goto('/admin/login', { waitUntil: 'commit' });
   });
 
   test('should display login form', async ({ page }) => {
@@ -79,7 +79,7 @@ test.describe('Admin Authentication', () => {
     page,
   }) => {
     // Try to access admin dashboard without logging in
-    await page.goto('/admin');
+    await page.goto('/admin', { waitUntil: 'commit' });
 
     // Should redirect to login
     await expect(page).toHaveURL(/\/admin\/login/);
@@ -116,7 +116,7 @@ test.describe('Admin Authentication', () => {
     await page.waitForURL(/\/admin\/login/);
 
     // Try to access admin page again (should redirect back to login)
-    await page.goto('/admin');
+    await page.goto('/admin', { waitUntil: 'commit' });
 
     // Should redirect to login page since we're logged out
     await page.waitForURL(/\/admin\/login/);
@@ -135,7 +135,7 @@ test.describe('Admin Authentication', () => {
   });
 
   test('should register new admin account', async ({ page }) => {
-    await page.goto('/admin/register');
+    await page.goto('/admin/register', { waitUntil: 'commit' });
 
     const timestamp = Date.now();
     const username = `testadmin${timestamp}`;

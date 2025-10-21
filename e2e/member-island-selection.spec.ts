@@ -16,7 +16,7 @@ test.describe('Member Island Selection Flow', () => {
     await authenticateMember(page, clubSecret);
 
     // Wait for page to load
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Should see main heading (not in ClubHeader)
     await expect(
@@ -38,7 +38,7 @@ test.describe('Member Island Selection Flow', () => {
   }) => {
     // Authenticate
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Get the first island
     const islandLinks = page.locator('[data-testid="island-link"]');
@@ -49,7 +49,7 @@ test.describe('Member Island Selection Flow', () => {
 
     // Should navigate to island detail page
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Should see the first island's name in ClubHeader title (wait for it to load)
     await expect(page.locator('header')).toContainText(TEST_ISLANDS[0].name, {
@@ -65,13 +65,13 @@ test.describe('Member Island Selection Flow', () => {
   }) => {
     // Authenticate
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Click on first island
     const islandLinks = page.locator('[data-testid="island-link"]');
     await islandLinks.first().click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Click back button in header (wait for it to be available)
     const backButton = page.locator('header button').first();
@@ -88,7 +88,7 @@ test.describe('Member Island Selection Flow', () => {
   test('should display island sauna count correctly', async ({ page }) => {
     // Authenticate
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Check first island's sauna count matches test data
     const islandLinks = page.locator('[data-testid="island-link"]');
@@ -103,14 +103,14 @@ test.describe('Member Island Selection Flow', () => {
   test('should allow switching between multiple islands', async ({ page }) => {
     // Authenticate
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const islandLinks = page.locator('[data-testid="island-link"]');
 
     // Click first island
     await islandLinks.nth(0).click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Should see first island name in header (wait for it to load)
     await expect(page.locator('header')).toContainText(TEST_ISLANDS[0].name, {
@@ -121,12 +121,12 @@ test.describe('Member Island Selection Flow', () => {
     const backButton = page.locator('header button').first();
     await backButton.click();
     await page.waitForURL(/\/islands$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Click second island
     await islandLinks.nth(1).click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Should see second island name in header (wait for it to load)
     await expect(page.locator('header')).toContainText(TEST_ISLANDS[1].name, {
@@ -142,7 +142,7 @@ test.describe('Member Island Selection Flow', () => {
     await authenticateMember(page, clubSecret);
 
     // Wait for page to load
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Should see exactly the test club's islands (no more, no less)
     const islandLinks = page.locator('[data-testid="island-link"]');

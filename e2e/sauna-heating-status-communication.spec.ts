@@ -41,14 +41,14 @@ test.describe('Sauna Heating Status Communication', () => {
    */
   async function navigateToIsland(page: Page): Promise<void> {
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for island links to be visible before clicking
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.waitFor({ state: 'visible', timeout: 5000 });
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for sauna cards to load
     const saunaCards = page.locator('[data-testid="sauna-card"]');

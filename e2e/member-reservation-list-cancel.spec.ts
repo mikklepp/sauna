@@ -30,13 +30,13 @@ test.describe('Member Reservation List View & Cancellation', () => {
 
     // Navigate to reservations page
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.waitFor({ state: 'visible', timeout: 5000 });
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for sauna cards to load (data fetched async after page load)
     const saunaCards = page.locator('[data-testid="sauna-card"]');
@@ -47,7 +47,7 @@ test.describe('Member Reservation List View & Cancellation', () => {
       .getByTestId('view-all-reservations-button');
     await viewButton.click();
     await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for reservations to load (data fetched async after page load)
     await expect(page.getByTestId('upcoming-reservations')).toBeVisible({
@@ -77,13 +77,13 @@ test.describe('Member Reservation List View & Cancellation', () => {
 
     // Navigate to reservations page
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.waitFor({ state: 'visible', timeout: 5000 });
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for sauna cards to load (data fetched async after page load)
     const saunaCards = page.locator('[data-testid="sauna-card"]');
@@ -101,7 +101,7 @@ test.describe('Member Reservation List View & Cancellation', () => {
 
     await page.goto(islandUrl);
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Should see sauna cards
     await expect(
@@ -124,13 +124,13 @@ test.describe('Member Reservation List View & Cancellation', () => {
 
     // Navigate to reservations page
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.waitFor({ state: 'visible', timeout: 5000 });
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for sauna cards to load (data fetched async after page load)
     const saunaCards = page.locator('[data-testid="sauna-card"]');
@@ -141,7 +141,7 @@ test.describe('Member Reservation List View & Cancellation', () => {
       .getByTestId('view-all-reservations-button');
     await viewButton.click();
     await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for reservations section to load (data fetched async after page load)
     await expect(page.getByRole('heading', { name: /upcoming/i })).toBeVisible({
@@ -175,13 +175,13 @@ test.describe('Member Reservation List View & Cancellation', () => {
 
     // Navigate to reservations page
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.waitFor({ state: 'visible', timeout: 5000 });
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for sauna cards to load (data fetched async after page load)
     const saunaCards = page.locator('[data-testid="sauna-card"]');
@@ -192,7 +192,7 @@ test.describe('Member Reservation List View & Cancellation', () => {
       .getByTestId('view-all-reservations-button');
     await viewButton.click();
     await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for reservations to load
     await page
@@ -229,13 +229,13 @@ test.describe('Member Reservation List View & Cancellation', () => {
 
     // Navigate to reservations page
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.waitFor({ state: 'visible', timeout: 5000 });
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for sauna cards to load (data fetched async after page load)
     const saunaCards = page.locator('[data-testid="sauna-card"]');
@@ -246,7 +246,7 @@ test.describe('Member Reservation List View & Cancellation', () => {
       .getByTestId('view-all-reservations-button');
     await viewButton.click();
     await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for reservations to load
     const firstReservation = page
@@ -278,13 +278,13 @@ test.describe('Member Reservation List View & Cancellation', () => {
 
     // Navigate to reservations page
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.waitFor({ state: 'visible', timeout: 5000 });
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for sauna cards to load (data fetched async after page load)
     const saunaCards = page.locator('[data-testid="sauna-card"]');
@@ -295,7 +295,7 @@ test.describe('Member Reservation List View & Cancellation', () => {
       .getByTestId('view-all-reservations-button');
     await viewButton.click();
     await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for reservations to load
     const firstReservation = page
@@ -324,13 +324,13 @@ test.describe('Member Reservation List View & Cancellation', () => {
 
     // Navigate to reservations page
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.waitFor({ state: 'visible', timeout: 5000 });
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for sauna cards to load (data fetched async after page load)
     const saunaCards = page.locator('[data-testid="sauna-card"]');
@@ -341,7 +341,7 @@ test.describe('Member Reservation List View & Cancellation', () => {
       .getByTestId('view-all-reservations-button');
     await viewButton.click();
     await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for reservations to load
     const firstReservation = page
@@ -370,13 +370,13 @@ test.describe('Member Reservation List View & Cancellation', () => {
 
     // Navigate to reservations page
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.waitFor({ state: 'visible', timeout: 5000 });
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for sauna cards to load (data fetched async after page load)
     const saunaCards = page.locator('[data-testid="sauna-card"]');
@@ -387,7 +387,7 @@ test.describe('Member Reservation List View & Cancellation', () => {
       .getByTestId('view-all-reservations-button');
     await viewButton.click();
     await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for reservations to load
     await page
@@ -416,13 +416,13 @@ test.describe('Member Reservation List View & Cancellation', () => {
 
     // Navigate to reservations page
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.waitFor({ state: 'visible', timeout: 5000 });
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for sauna cards to load (data fetched async after page load)
     const saunaCards = page.locator('[data-testid="sauna-card"]');
@@ -433,7 +433,7 @@ test.describe('Member Reservation List View & Cancellation', () => {
       .getByTestId('view-all-reservations-button');
     await viewButton.click();
     await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for reservations to load
     const firstReservation = page
@@ -471,13 +471,13 @@ test.describe('Member Reservation List View & Cancellation', () => {
 
     // Navigate to reservations page
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.waitFor({ state: 'visible', timeout: 5000 });
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for sauna cards to load (data fetched async after page load)
     const saunaCards = page.locator('[data-testid="sauna-card"]');
@@ -488,7 +488,7 @@ test.describe('Member Reservation List View & Cancellation', () => {
       .getByTestId('view-all-reservations-button');
     await viewButton.click();
     await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for reservations to load
     const firstReservation = page
@@ -533,13 +533,13 @@ test.describe('Member Reservation List View & Cancellation', () => {
 
     // Navigate to reservations page
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.waitFor({ state: 'visible', timeout: 5000 });
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for sauna cards to load (data fetched async after page load)
     const saunaCards = page.locator('[data-testid="sauna-card"]');
@@ -550,7 +550,7 @@ test.describe('Member Reservation List View & Cancellation', () => {
       .getByTestId('view-all-reservations-button');
     await viewButton.click();
     await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for reservations to load
     const firstReservation = page
@@ -570,7 +570,17 @@ test.describe('Member Reservation List View & Cancellation', () => {
     const confirmButton = page.getByRole('button', { name: /confirm cancel/i });
     await confirmButton.click();
 
-    // Should show no reservations or empty state
+    // Wait for dialog to close
+    await expect(
+      page.getByRole('heading', { name: /cancel reservation/i })
+    ).not.toBeVisible({ timeout: 5000 });
+
+    // Wait for reservation to disappear
+    await expect(page.getByTestId('reservation-item')).not.toBeVisible({
+      timeout: 5000,
+    });
+
+    // Should show empty state
     await expect(page.getByTestId('empty-state')).toBeVisible({
       timeout: 5000,
     });

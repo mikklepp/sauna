@@ -13,7 +13,7 @@ test.describe('Member QR Code Authentication Flow', () => {
   }) => {
     // Simulate scanning QR code - navigate to auth page with secret parameter
     await page.goto(`/auth?secret=${clubSecret}`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Give a moment for useEffect to run
     await page.waitForTimeout(1000);
@@ -42,7 +42,7 @@ test.describe('Member QR Code Authentication Flow', () => {
     await page.goto('/auth?secret=INVALID123');
 
     // Should stay on auth page
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Should show error message
     await expect(page.getByText(/invalid club secret/i)).toBeVisible({

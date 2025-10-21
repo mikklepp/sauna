@@ -30,12 +30,12 @@ test.describe('Reservation Cancellation', () => {
 
     // Navigate to island
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Click "View All Reservations" button on first sauna
     const saunaCards = page.locator('[data-testid="sauna-card"]');
@@ -47,7 +47,7 @@ test.describe('Reservation Cancellation', () => {
 
     await viewReservationsButton.click();
     await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for reservations to load
     await page
@@ -81,12 +81,12 @@ test.describe('Reservation Cancellation', () => {
 
     // Navigate to island
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Click "View All Reservations" on first sauna
     const saunaCards = page.locator('[data-testid="sauna-card"]');
@@ -98,7 +98,7 @@ test.describe('Reservation Cancellation', () => {
 
     await viewReservationsButton.click();
     await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for reservations to load
     await page
@@ -127,12 +127,12 @@ test.describe('Reservation Cancellation', () => {
 
     // Navigate to reservations list
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const saunaCards = page.locator('[data-testid="sauna-card"]');
     const viewReservationsButton = saunaCards
@@ -141,7 +141,7 @@ test.describe('Reservation Cancellation', () => {
 
     await viewReservationsButton.click();
     await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for reservations to load
     await page
@@ -185,12 +185,12 @@ test.describe('Reservation Cancellation', () => {
 
     // Navigate to island
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const saunaCards = page.locator('[data-testid="sauna-card"]');
     const viewReservationsButton = saunaCards
@@ -199,7 +199,7 @@ test.describe('Reservation Cancellation', () => {
 
     await viewReservationsButton.click();
     await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for reservations to load
     await page
@@ -228,12 +228,12 @@ test.describe('Reservation Cancellation', () => {
 
     // Navigate to island
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const saunaCards = page.locator('[data-testid="sauna-card"]');
     const viewReservationsButton = saunaCards
@@ -242,7 +242,7 @@ test.describe('Reservation Cancellation', () => {
 
     await viewReservationsButton.click();
     await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for reservations to load
     await page
@@ -283,12 +283,12 @@ test.describe('Reservation Cancellation', () => {
 
     // Navigate to island
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const saunaCards = page.locator('[data-testid="sauna-card"]');
     const viewReservationsButton = saunaCards
@@ -297,7 +297,7 @@ test.describe('Reservation Cancellation', () => {
 
     await viewReservationsButton.click();
     await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for reservations to load
     await page
@@ -326,12 +326,12 @@ test.describe('Reservation Cancellation', () => {
 
     // Navigate to island
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const saunaCards = page.locator('[data-testid="sauna-card"]');
     const viewReservationsButton = saunaCards
@@ -340,7 +340,7 @@ test.describe('Reservation Cancellation', () => {
 
     await viewReservationsButton.click();
     await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for reservations to load
     await page
@@ -369,12 +369,12 @@ test.describe('Reservation Cancellation', () => {
 
     // Navigate to island
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const saunaCards = page.locator('[data-testid="sauna-card"]');
     const viewReservationsButton = saunaCards
@@ -383,7 +383,7 @@ test.describe('Reservation Cancellation', () => {
 
     await viewReservationsButton.click();
     await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for reservations to load
     await page
@@ -414,12 +414,12 @@ test.describe('Reservation Cancellation', () => {
 
     // Navigate to island
     await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const islandLink = page.locator('[data-testid="island-link"]').first();
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Click on the second sauna card (North Small Sauna)
     const saunaCards = page.locator('[data-testid="sauna-card"]');
@@ -431,7 +431,7 @@ test.describe('Reservation Cancellation', () => {
 
     await viewReservationsButton.click();
     await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Should show empty state
     await expect(page.getByTestId('empty-state')).toBeVisible({
