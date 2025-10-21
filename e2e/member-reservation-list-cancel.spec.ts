@@ -13,19 +13,22 @@ test.describe('Member Reservation List View & Cancellation', () => {
     clubSecret = getTestClubSecret();
 
     // Create shared test reservations for different test scenarios
-    // Each test uses a different boat to avoid conflicts
+    // IMPORTANT: Reservations display in chronological order (earliest first)
+    // Tests must explicitly select boats by name, not assume .first() position
 
-    // Boat 0: Upcoming reservation (2 hours from now) - for most tests
+    // Boat 0 (Alpha, #E2E-001): Standard cancellable - 3 hours from now
+    // Purpose: boat info test, baseline tests
     await createTestReservation({
       saunaIndex: 0,
       boatIndex: 0,
-      startTimeOffset: 2,
+      startTimeOffset: 3,
       durationHours: 1,
       adults: 2,
       kids: 1,
     });
 
-    // Boat 1: Past reservation (1 hour ago) - for "Earlier Today" tests
+    // Boat 1 (Beta, #E2E-002): Past reservation - 1 hour ago
+    // Purpose: "Earlier Today" section test
     await createTestReservation({
       saunaIndex: 0,
       boatIndex: 1,
@@ -35,7 +38,8 @@ test.describe('Member Reservation List View & Cancellation', () => {
       kids: 0,
     });
 
-    // Boat 2: Near-future reservation (10 minutes) - for "too late to cancel" test
+    // Boat 2 (Gamma, #E2E-003): Too late to cancel - 10 minutes from now
+    // Purpose: "Too late to cancel" message test, party size test (3 adults, 2 kids)
     await createTestReservation({
       saunaIndex: 0,
       boatIndex: 2,
@@ -45,11 +49,12 @@ test.describe('Member Reservation List View & Cancellation', () => {
       kids: 2,
     });
 
-    // Boat 3: Cancellable reservation (3 hours) - for cancel flow tests
+    // Boat 3 (Delta, #E2E-004): Cancellable - 5 hours from now
+    // Purpose: cancel flow tests (dialog open/close/confirm)
     await createTestReservation({
       saunaIndex: 0,
       boatIndex: 3,
-      startTimeOffset: 3,
+      startTimeOffset: 5,
       durationHours: 1,
       adults: 4,
       kids: 1,
@@ -83,6 +88,16 @@ test.describe('Member Reservation List View & Cancellation', () => {
     await viewButton.click();
     await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
     await page.waitForLoadState('load');
+  }
+
+  /**
+   * Helper to find a specific reservation by boat name
+   * Reservations are sorted chronologically, so use this to find specific boats
+   */
+  async function findReservationByBoat(page: any, boatName: string) {
+    return page
+      .locator('[data-testid="reservation-item"]')
+      .filter({ hasText: boatName });
   }
 
   test('should display reservations list page', async ({ page }) => {
@@ -174,38 +189,32 @@ test.describe('Member Reservation List View & Cancellation', () => {
   test('should show boat information in reservation cards', async ({
     page,
   }) => {
-    // Use pre-created reservations from beforeAll
+    // Find Alpha reservation explicitly (not relying on chronological position)
     await navigateToReservationsList(page);
 
-    // Wait for reservations to load
-    const firstReservation = page
-      .locator('[data-testid="reservation-item"]')
-      .first();
-    await firstReservation.waitFor({ state: 'visible', timeout: 5000 });
+    const alphaReservation = await findReservationByBoat(page, 'Test Alpha');
+    await alphaReservation.waitFor({ state: 'visible', timeout: 5000 });
 
     // Should show boat name
     await expect(
-      firstReservation.getByTestId('reservation-boat-name')
+      alphaReservation.getByTestId('reservation-boat-name')
     ).toContainText(/test alpha/i);
 
     // Should show membership number
-    await expect(page.getByText(/#E2E-001/)).toBeVisible();
+    await expect(alphaReservation.getByText(/#E2E-001/)).toBeVisible();
   });
 
   test('should show party size (adults and kids) in reservation cards', async ({
     page,
   }) => {
-    // Use Boat 2 reservation (3 adults, 2 kids) from beforeAll
+    // Find Gamma reservation explicitly (has 3 adults, 2 kids)
     await navigateToReservationsList(page);
 
-    // Wait for reservations to load
-    const firstReservation = page
-      .locator('[data-testid="reservation-item"]')
-      .first();
-    await firstReservation.waitFor({ state: 'visible', timeout: 5000 });
+    const gammaReservation = await findReservationByBoat(page, 'Test Gamma');
+    await gammaReservation.waitFor({ state: 'visible', timeout: 5000 });
 
     // Should show party size
-    const partySize = firstReservation.getByTestId('reservation-party-size');
+    const partySize = gammaReservation.getByTestId('reservation-party-size');
     await expect(partySize).toContainText(/3 adults/i);
     await expect(partySize).toContainText(/2 kids/i);
   });
@@ -213,17 +222,14 @@ test.describe('Member Reservation List View & Cancellation', () => {
   test('should show cancel button for upcoming reservations (>15 min before start)', async ({
     page,
   }) => {
-    // Use Boat 0 reservation (2 hours away) from beforeAll
+    // Find Alpha reservation (3 hours away, cancellable)
     await navigateToReservationsList(page);
 
-    // Wait for reservations to load
-    const firstReservation = page
-      .locator('[data-testid="reservation-item"]')
-      .first();
-    await firstReservation.waitFor({ state: 'visible', timeout: 5000 });
+    const alphaReservation = await findReservationByBoat(page, 'Test Alpha');
+    await alphaReservation.waitFor({ state: 'visible', timeout: 5000 });
 
     // Should see cancel button
-    await expect(firstReservation.getByTestId('cancel-button')).toBeVisible({
+    await expect(alphaReservation.getByTestId('cancel-button')).toBeVisible({
       timeout: 5000,
     });
   });
@@ -231,17 +237,14 @@ test.describe('Member Reservation List View & Cancellation', () => {
   test('should show "Too late to cancel" for reservations starting in <15 minutes', async ({
     page,
   }) => {
-    // Use Boat 2 reservation (10 minutes away) from beforeAll
+    // Find Gamma reservation (10 minutes away, too late to cancel)
     await navigateToReservationsList(page);
 
-    // Wait for reservations to load
-    await page
-      .locator('[data-testid="reservation-item"]')
-      .first()
-      .waitFor({ state: 'visible', timeout: 5000 });
+    const gammaReservation = await findReservationByBoat(page, 'Test Gamma');
+    await gammaReservation.waitFor({ state: 'visible', timeout: 5000 });
 
     // Should see "Too late to cancel" message
-    await expect(page.getByTestId('too-late-message')).toBeVisible({
+    await expect(gammaReservation.getByTestId('too-late-message')).toBeVisible({
       timeout: 5000,
     });
   });
@@ -249,17 +252,14 @@ test.describe('Member Reservation List View & Cancellation', () => {
   test('should open cancel confirmation dialog when clicking cancel button', async ({
     page,
   }) => {
-    // Use Boat 3 reservation (3 hours away, cancellable) from beforeAll
+    // Find Delta reservation (5 hours away, cancellable)
     await navigateToReservationsList(page);
 
-    // Wait for reservations to load
-    const firstReservation = page
-      .locator('[data-testid="reservation-item"]')
-      .first();
-    await firstReservation.waitFor({ state: 'visible', timeout: 5000 });
+    const deltaReservation = await findReservationByBoat(page, 'Test Delta');
+    await deltaReservation.waitFor({ state: 'visible', timeout: 5000 });
 
     // Click cancel button
-    const cancelButton = firstReservation.getByTestId('cancel-button');
+    const cancelButton = deltaReservation.getByTestId('cancel-button');
     await cancelButton.click();
 
     // Should open confirmation dialog
@@ -276,17 +276,14 @@ test.describe('Member Reservation List View & Cancellation', () => {
   test('should close cancel dialog when clicking "Keep Reservation"', async ({
     page,
   }) => {
-    // Use Boat 3 reservation (3 hours away, cancellable) from beforeAll
+    // Find Delta reservation (5 hours away, cancellable)
     await navigateToReservationsList(page);
 
-    // Wait for reservations to load
-    const firstReservation = page
-      .locator('[data-testid="reservation-item"]')
-      .first();
-    await firstReservation.waitFor({ state: 'visible', timeout: 5000 });
+    const deltaReservation = await findReservationByBoat(page, 'Test Delta');
+    await deltaReservation.waitFor({ state: 'visible', timeout: 5000 });
 
     // Click cancel button
-    const cancelButton = firstReservation.getByTestId('cancel-button');
+    const cancelButton = deltaReservation.getByTestId('cancel-button');
     await cancelButton.click();
 
     // Wait for dialog
@@ -310,18 +307,15 @@ test.describe('Member Reservation List View & Cancellation', () => {
   test('should successfully cancel reservation when confirming', async ({
     page,
   }) => {
-    // Use Boat 3 reservation (3 hours away, cancellable) from beforeAll
+    // Find Delta reservation (5 hours away, cancellable)
     // This test will mutate the data by cancelling, but that's okay since it's cleaned up in afterAll
     await navigateToReservationsList(page);
 
-    // Wait for reservations to load
-    const firstReservation = page
-      .locator('[data-testid="reservation-item"]')
-      .first();
-    await firstReservation.waitFor({ state: 'visible', timeout: 5000 });
+    const deltaReservation = await findReservationByBoat(page, 'Test Delta');
+    await deltaReservation.waitFor({ state: 'visible', timeout: 5000 });
 
     // Click cancel button
-    const cancelButton = firstReservation.getByTestId('cancel-button');
+    const cancelButton = deltaReservation.getByTestId('cancel-button');
     await cancelButton.click();
 
     // Wait for dialog and confirm
@@ -337,14 +331,12 @@ test.describe('Member Reservation List View & Cancellation', () => {
       page.getByRole('heading', { name: /cancel reservation/i })
     ).not.toBeVisible({ timeout: 5000 });
 
-    // Wait for reservation to disappear
-    await expect(page.getByTestId('reservation-item')).not.toBeVisible({
+    // Wait for Delta's reservation to disappear from the list
+    await expect(deltaReservation).not.toBeVisible({
       timeout: 5000,
     });
 
-    // Should show empty state
-    await expect(page.getByTestId('empty-state')).toBeVisible({
-      timeout: 5000,
-    });
+    // Other reservations (Alpha, Beta, Gamma) should still be visible
+    await expect(page.getByTestId('reservation-item')).toBeVisible();
   });
 });
