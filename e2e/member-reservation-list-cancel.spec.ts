@@ -11,14 +11,11 @@ test.describe('Member Reservation List View & Cancellation', () => {
 
   test.beforeAll(async () => {
     clubSecret = getTestClubSecret();
-  });
 
-  test.beforeEach(async () => {
-    await cleanupTodaysReservations();
-  });
+    // Create shared test reservations for different test scenarios
+    // Each test uses a different boat to avoid conflicts
 
-  test('should display reservations list page', async ({ page }) => {
-    // Create a test reservation
+    // Boat 0: Upcoming reservation (2 hours from now) - for most tests
     await createTestReservation({
       saunaIndex: 0,
       boatIndex: 0,
@@ -28,7 +25,46 @@ test.describe('Member Reservation List View & Cancellation', () => {
       kids: 1,
     });
 
-    // Navigate to reservations page
+    // Boat 1: Past reservation (1 hour ago) - for "Earlier Today" tests
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 1,
+      startTimeOffset: -1,
+      durationHours: 1,
+      adults: 2,
+      kids: 0,
+    });
+
+    // Boat 2: Near-future reservation (10 minutes) - for "too late to cancel" test
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 2,
+      startTimeOffset: 10 / 60, // 10 minutes from now
+      durationHours: 1,
+      adults: 3,
+      kids: 2,
+    });
+
+    // Boat 3: Cancellable reservation (3 hours) - for cancel flow tests
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 3,
+      startTimeOffset: 3,
+      durationHours: 1,
+      adults: 4,
+      kids: 1,
+    });
+  });
+
+  test.afterAll(async () => {
+    // Cleanup after entire suite completes
+    await cleanupTodaysReservations();
+  });
+
+  /**
+   * Helper to navigate to the reservations list page
+   */
+  async function navigateToReservationsList(page: any) {
     await authenticateMember(page, clubSecret);
     await page.waitForLoadState('load');
 
@@ -38,7 +74,6 @@ test.describe('Member Reservation List View & Cancellation', () => {
     await page.waitForURL(/\/islands\/[^/]+$/);
     await page.waitForLoadState('load');
 
-    // Wait for sauna cards to load (data fetched async after page load)
     const saunaCards = page.locator('[data-testid="sauna-card"]');
     await saunaCards.first().waitFor({ state: 'visible', timeout: 10000 });
 
@@ -48,6 +83,11 @@ test.describe('Member Reservation List View & Cancellation', () => {
     await viewButton.click();
     await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
     await page.waitForLoadState('load');
+  }
+
+  test('should display reservations list page', async ({ page }) => {
+    // Use pre-created reservations from beforeAll
+    await navigateToReservationsList(page);
 
     // Wait for reservations to load (data fetched async after page load)
     await expect(page.getByTestId('upcoming-reservations')).toBeVisible({
@@ -65,35 +105,8 @@ test.describe('Member Reservation List View & Cancellation', () => {
   });
 
   test('should navigate back from reservations list', async ({ page }) => {
-    // Create a test reservation
-    await createTestReservation({
-      saunaIndex: 0,
-      boatIndex: 0,
-      startTimeOffset: 2,
-      durationHours: 1,
-      adults: 2,
-      kids: 0,
-    });
-
-    // Navigate to reservations page
-    await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('load');
-
-    const islandLink = page.locator('[data-testid="island-link"]').first();
-    await islandLink.waitFor({ state: 'visible', timeout: 5000 });
-    await islandLink.click();
-    await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('load');
-
-    // Wait for sauna cards to load (data fetched async after page load)
-    const saunaCards = page.locator('[data-testid="sauna-card"]');
-    await saunaCards.first().waitFor({ state: 'visible', timeout: 10000 });
-
-    const viewButton = saunaCards
-      .first()
-      .getByTestId('view-all-reservations-button');
-    await viewButton.click();
-    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
+    // Use pre-created reservations from beforeAll
+    await navigateToReservationsList(page);
 
     // Navigate back
     const currentUrl = page.url();
@@ -112,36 +125,8 @@ test.describe('Member Reservation List View & Cancellation', () => {
   test('should display upcoming reservations section when reservations exist', async ({
     page,
   }) => {
-    // Create a test reservation
-    await createTestReservation({
-      saunaIndex: 0,
-      boatIndex: 0,
-      startTimeOffset: 2,
-      durationHours: 1,
-      adults: 2,
-      kids: 1,
-    });
-
-    // Navigate to reservations page
-    await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('load');
-
-    const islandLink = page.locator('[data-testid="island-link"]').first();
-    await islandLink.waitFor({ state: 'visible', timeout: 5000 });
-    await islandLink.click();
-    await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('load');
-
-    // Wait for sauna cards to load (data fetched async after page load)
-    const saunaCards = page.locator('[data-testid="sauna-card"]');
-    await saunaCards.first().waitFor({ state: 'visible', timeout: 10000 });
-
-    const viewButton = saunaCards
-      .first()
-      .getByTestId('view-all-reservations-button');
-    await viewButton.click();
-    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
-    await page.waitForLoadState('load');
+    // Use pre-created reservations from beforeAll
+    await navigateToReservationsList(page);
 
     // Wait for reservations section to load (data fetched async after page load)
     await expect(page.getByRole('heading', { name: /upcoming/i })).toBeVisible({
@@ -163,36 +148,8 @@ test.describe('Member Reservation List View & Cancellation', () => {
   test('should display past reservations in "Earlier Today" section', async ({
     page,
   }) => {
-    // Create a past reservation
-    await createTestReservation({
-      saunaIndex: 0,
-      boatIndex: 1,
-      startTimeOffset: -1, // 1 hour ago
-      durationHours: 1,
-      adults: 2,
-      kids: 0,
-    });
-
-    // Navigate to reservations page
-    await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('load');
-
-    const islandLink = page.locator('[data-testid="island-link"]').first();
-    await islandLink.waitFor({ state: 'visible', timeout: 5000 });
-    await islandLink.click();
-    await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('load');
-
-    // Wait for sauna cards to load (data fetched async after page load)
-    const saunaCards = page.locator('[data-testid="sauna-card"]');
-    await saunaCards.first().waitFor({ state: 'visible', timeout: 10000 });
-
-    const viewButton = saunaCards
-      .first()
-      .getByTestId('view-all-reservations-button');
-    await viewButton.click();
-    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
-    await page.waitForLoadState('load');
+    // Use pre-created past reservation from beforeAll (Boat 1)
+    await navigateToReservationsList(page);
 
     // Wait for reservations to load
     await page
@@ -217,36 +174,8 @@ test.describe('Member Reservation List View & Cancellation', () => {
   test('should show boat information in reservation cards', async ({
     page,
   }) => {
-    // Create a test reservation
-    await createTestReservation({
-      saunaIndex: 0,
-      boatIndex: 0, // Test Alpha
-      startTimeOffset: 2,
-      durationHours: 1,
-      adults: 2,
-      kids: 0,
-    });
-
-    // Navigate to reservations page
-    await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('load');
-
-    const islandLink = page.locator('[data-testid="island-link"]').first();
-    await islandLink.waitFor({ state: 'visible', timeout: 5000 });
-    await islandLink.click();
-    await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('load');
-
-    // Wait for sauna cards to load (data fetched async after page load)
-    const saunaCards = page.locator('[data-testid="sauna-card"]');
-    await saunaCards.first().waitFor({ state: 'visible', timeout: 10000 });
-
-    const viewButton = saunaCards
-      .first()
-      .getByTestId('view-all-reservations-button');
-    await viewButton.click();
-    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
-    await page.waitForLoadState('load');
+    // Use pre-created reservations from beforeAll
+    await navigateToReservationsList(page);
 
     // Wait for reservations to load
     const firstReservation = page
@@ -266,36 +195,8 @@ test.describe('Member Reservation List View & Cancellation', () => {
   test('should show party size (adults and kids) in reservation cards', async ({
     page,
   }) => {
-    // Create a test reservation with adults and kids
-    await createTestReservation({
-      saunaIndex: 0,
-      boatIndex: 0,
-      startTimeOffset: 2,
-      durationHours: 1,
-      adults: 3,
-      kids: 2,
-    });
-
-    // Navigate to reservations page
-    await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('load');
-
-    const islandLink = page.locator('[data-testid="island-link"]').first();
-    await islandLink.waitFor({ state: 'visible', timeout: 5000 });
-    await islandLink.click();
-    await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('load');
-
-    // Wait for sauna cards to load (data fetched async after page load)
-    const saunaCards = page.locator('[data-testid="sauna-card"]');
-    await saunaCards.first().waitFor({ state: 'visible', timeout: 10000 });
-
-    const viewButton = saunaCards
-      .first()
-      .getByTestId('view-all-reservations-button');
-    await viewButton.click();
-    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
-    await page.waitForLoadState('load');
+    // Use Boat 2 reservation (3 adults, 2 kids) from beforeAll
+    await navigateToReservationsList(page);
 
     // Wait for reservations to load
     const firstReservation = page
@@ -312,36 +213,8 @@ test.describe('Member Reservation List View & Cancellation', () => {
   test('should show cancel button for upcoming reservations (>15 min before start)', async ({
     page,
   }) => {
-    // Create a test reservation 2 hours from now (cancellable)
-    await createTestReservation({
-      saunaIndex: 0,
-      boatIndex: 0,
-      startTimeOffset: 2,
-      durationHours: 1,
-      adults: 2,
-      kids: 0,
-    });
-
-    // Navigate to reservations page
-    await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('load');
-
-    const islandLink = page.locator('[data-testid="island-link"]').first();
-    await islandLink.waitFor({ state: 'visible', timeout: 5000 });
-    await islandLink.click();
-    await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('load');
-
-    // Wait for sauna cards to load (data fetched async after page load)
-    const saunaCards = page.locator('[data-testid="sauna-card"]');
-    await saunaCards.first().waitFor({ state: 'visible', timeout: 10000 });
-
-    const viewButton = saunaCards
-      .first()
-      .getByTestId('view-all-reservations-button');
-    await viewButton.click();
-    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
-    await page.waitForLoadState('load');
+    // Use Boat 0 reservation (2 hours away) from beforeAll
+    await navigateToReservationsList(page);
 
     // Wait for reservations to load
     const firstReservation = page
@@ -358,36 +231,8 @@ test.describe('Member Reservation List View & Cancellation', () => {
   test('should show "Too late to cancel" for reservations starting in <15 minutes', async ({
     page,
   }) => {
-    // Create a test reservation starting in 10 minutes
-    await createTestReservation({
-      saunaIndex: 0,
-      boatIndex: 0,
-      startTimeOffset: 10 / 60, // 10 minutes
-      durationHours: 1,
-      adults: 2,
-      kids: 0,
-    });
-
-    // Navigate to reservations page
-    await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('load');
-
-    const islandLink = page.locator('[data-testid="island-link"]').first();
-    await islandLink.waitFor({ state: 'visible', timeout: 5000 });
-    await islandLink.click();
-    await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('load');
-
-    // Wait for sauna cards to load (data fetched async after page load)
-    const saunaCards = page.locator('[data-testid="sauna-card"]');
-    await saunaCards.first().waitFor({ state: 'visible', timeout: 10000 });
-
-    const viewButton = saunaCards
-      .first()
-      .getByTestId('view-all-reservations-button');
-    await viewButton.click();
-    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
-    await page.waitForLoadState('load');
+    // Use Boat 2 reservation (10 minutes away) from beforeAll
+    await navigateToReservationsList(page);
 
     // Wait for reservations to load
     await page
@@ -404,36 +249,8 @@ test.describe('Member Reservation List View & Cancellation', () => {
   test('should open cancel confirmation dialog when clicking cancel button', async ({
     page,
   }) => {
-    // Create a test reservation
-    await createTestReservation({
-      saunaIndex: 0,
-      boatIndex: 0,
-      startTimeOffset: 2,
-      durationHours: 1,
-      adults: 2,
-      kids: 0,
-    });
-
-    // Navigate to reservations page
-    await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('load');
-
-    const islandLink = page.locator('[data-testid="island-link"]').first();
-    await islandLink.waitFor({ state: 'visible', timeout: 5000 });
-    await islandLink.click();
-    await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('load');
-
-    // Wait for sauna cards to load (data fetched async after page load)
-    const saunaCards = page.locator('[data-testid="sauna-card"]');
-    await saunaCards.first().waitFor({ state: 'visible', timeout: 10000 });
-
-    const viewButton = saunaCards
-      .first()
-      .getByTestId('view-all-reservations-button');
-    await viewButton.click();
-    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
-    await page.waitForLoadState('load');
+    // Use Boat 3 reservation (3 hours away, cancellable) from beforeAll
+    await navigateToReservationsList(page);
 
     // Wait for reservations to load
     const firstReservation = page
@@ -459,36 +276,8 @@ test.describe('Member Reservation List View & Cancellation', () => {
   test('should close cancel dialog when clicking "Keep Reservation"', async ({
     page,
   }) => {
-    // Create a test reservation
-    await createTestReservation({
-      saunaIndex: 0,
-      boatIndex: 0,
-      startTimeOffset: 2,
-      durationHours: 1,
-      adults: 2,
-      kids: 0,
-    });
-
-    // Navigate to reservations page
-    await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('load');
-
-    const islandLink = page.locator('[data-testid="island-link"]').first();
-    await islandLink.waitFor({ state: 'visible', timeout: 5000 });
-    await islandLink.click();
-    await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('load');
-
-    // Wait for sauna cards to load (data fetched async after page load)
-    const saunaCards = page.locator('[data-testid="sauna-card"]');
-    await saunaCards.first().waitFor({ state: 'visible', timeout: 10000 });
-
-    const viewButton = saunaCards
-      .first()
-      .getByTestId('view-all-reservations-button');
-    await viewButton.click();
-    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
-    await page.waitForLoadState('load');
+    // Use Boat 3 reservation (3 hours away, cancellable) from beforeAll
+    await navigateToReservationsList(page);
 
     // Wait for reservations to load
     const firstReservation = page
@@ -521,36 +310,9 @@ test.describe('Member Reservation List View & Cancellation', () => {
   test('should successfully cancel reservation when confirming', async ({
     page,
   }) => {
-    // Create a test reservation
-    await createTestReservation({
-      saunaIndex: 0,
-      boatIndex: 0,
-      startTimeOffset: 2,
-      durationHours: 1,
-      adults: 2,
-      kids: 0,
-    });
-
-    // Navigate to reservations page
-    await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('load');
-
-    const islandLink = page.locator('[data-testid="island-link"]').first();
-    await islandLink.waitFor({ state: 'visible', timeout: 5000 });
-    await islandLink.click();
-    await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('load');
-
-    // Wait for sauna cards to load (data fetched async after page load)
-    const saunaCards = page.locator('[data-testid="sauna-card"]');
-    await saunaCards.first().waitFor({ state: 'visible', timeout: 10000 });
-
-    const viewButton = saunaCards
-      .first()
-      .getByTestId('view-all-reservations-button');
-    await viewButton.click();
-    await page.waitForURL(/\/saunas\/[^/]+\/reservations$/);
-    await page.waitForLoadState('load');
+    // Use Boat 3 reservation (3 hours away, cancellable) from beforeAll
+    // This test will mutate the data by cancelling, but that's okay since it's cleaned up in afterAll
+    await navigateToReservationsList(page);
 
     // Wait for reservations to load
     const firstReservation = page

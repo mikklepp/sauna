@@ -64,11 +64,14 @@ export async function cleanupAdminTestData(): Promise<void> {
 
 /**
  * Clean up all reservations for today to ensure test isolation
- * This should be called in beforeEach hooks for tests that create reservations
+ * This should be called in afterAll hooks at the test suite level
  * Cleans up both individual reservations and shared reservations
  * ONLY deletes reservations belonging to the test club
  *
  * Uses shared Prisma instance to avoid exhausting database connections
+ *
+ * NOTE: Use afterAll instead of afterEach to avoid interfering with other tests
+ * Individual tests within a suite may depend on data created by previous tests
  */
 export async function cleanupTodaysReservations(): Promise<void> {
   // Find the test club

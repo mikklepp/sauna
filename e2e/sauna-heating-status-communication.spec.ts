@@ -2,7 +2,6 @@ import { test, expect, Page } from '@playwright/test';
 import {
   getTestClubSecret,
   createTestReservation,
-  resetTestClub,
 } from './helpers/test-fixtures';
 import { authenticateMember } from './helpers/auth-helper';
 import { cleanupTodaysReservations } from './helpers/db-cleanup';
@@ -23,16 +22,13 @@ test.describe('Sauna Heating Status Communication', () => {
   let clubSecret: string;
 
   test.beforeAll(async () => {
-    // Reset test data to ensure clean state
-    await resetTestClub();
+    // Note: Test club data is already reset in global-setup.ts
     clubSecret = getTestClubSecret();
   });
 
-  test.beforeEach(async () => {
-    await cleanupTodaysReservations();
-  });
-
   test.afterAll(async () => {
+    // Cleanup after entire suite completes
+    await cleanupTodaysReservations();
     await prisma.$disconnect();
   });
 
@@ -308,16 +304,6 @@ test.describe('Sauna Heating Status Communication', () => {
       // We can't check exact time, but we verify the message is present
       const timeText = await firstSauna.textContent();
       expect(timeText).toMatch(/\d{1,2}:\d{2}/);
-    });
-  });
-
-  test.describe('Transition Between States', () => {
-    test.skip('should show heated status immediately after creating reservation', async ({
-      page,
-    }) => {
-      // This test is complex and covered by other integration tests
-      // Skipping to avoid test isolation issues
-      await navigateToIsland(page);
     });
   });
 

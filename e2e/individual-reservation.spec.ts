@@ -17,7 +17,8 @@ test.describe.serial('Individual Reservation Flow', () => {
     clubSecret = getTestClubSecret();
   });
 
-  test.beforeEach(async () => {
+  test.afterAll(async () => {
+    // Cleanup after entire suite completes
     await cleanupTodaysReservations();
   });
 

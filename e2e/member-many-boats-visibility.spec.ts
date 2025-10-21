@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { authenticateMember } from './helpers/auth-helper';
 import {
-  resetTestClub,
   getTestClubSecret,
   createTestReservation,
   TEST_BOATS,
@@ -13,8 +12,7 @@ test.describe('Member - Many Boats Reservation Visibility', () => {
   let clubSecret: string;
 
   test.beforeAll(async () => {
-    // Reset test club ONCE to get fresh data with all 24 Greek alphabet boats
-    await resetTestClub();
+    // Note: Test club data is already reset in global-setup.ts
     clubSecret = getTestClubSecret();
 
     // Create 23 reservations (all boats except Omega)

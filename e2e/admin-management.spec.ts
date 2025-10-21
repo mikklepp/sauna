@@ -175,11 +175,24 @@ test.describe('Admin Sauna Management', () => {
     const wasChecked = await autoClubCheckbox.isChecked();
     await autoClubCheckbox.click();
 
+    // Wait for save API call to complete
+    const saveResponsePromise = page.waitForResponse(
+      (response) =>
+        response.url().includes('/api/saunas') &&
+        (response.request().method() === 'PUT' ||
+          response.request().method() === 'PATCH'),
+      { timeout: 10000 }
+    );
+
     await page.getByRole('button', { name: /save|update/i }).click();
+
+    // Ensure save completes successfully
+    const saveResponse = await saveResponsePromise;
+    expect(saveResponse.ok()).toBeTruthy();
 
     // Verify change - navigate back and check
     await page.waitForURL(/\/admin\/saunas$/);
-    await page.waitForLoadState('load'); // Ensure save API call completes
+    await page.waitForLoadState('load');
 
     await page
       .locator('[data-testid="sauna-item"]')
@@ -370,13 +383,9 @@ test.describe('Admin Club Management', () => {
     await page.goto('/admin/clubs', { waitUntil: 'commit' });
     await page.waitForLoadState('load');
 
-    const clubCount = await page.locator('[data-testid="club-item"]').count();
-
-    if (clubCount === 0) {
-      test.skip();
-    }
-
+    // Test club should always exist from global-setup
     const firstClub = page.locator('[data-testid="club-item"]').first();
+    await expect(firstClub).toBeVisible();
     const qrButton = firstClub.getByRole('button', {
       name: /qr code|show qr/i,
     });
@@ -396,13 +405,9 @@ test.describe('Admin Club Management', () => {
     await page.goto('/admin/clubs', { waitUntil: 'commit' });
     await page.waitForLoadState('load');
 
-    const clubCount = await page.locator('[data-testid="club-item"]').count();
-
-    if (clubCount === 0) {
-      test.skip();
-    }
-
+    // Test club should always exist from global-setup
     const firstClub = page.locator('[data-testid="club-item"]').first();
+    await expect(firstClub).toBeVisible();
     const themeButton = firstClub.getByRole('button', {
       name: /theme|edit theme/i,
     });

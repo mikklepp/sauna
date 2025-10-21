@@ -9,10 +9,14 @@ import {
 
 test.describe('Shared Reservation - Admin Creation', () => {
   test.beforeEach(async ({ page }) => {
-    await cleanupTodaysReservations();
     await loginAsAdmin(page);
     await page.goto('/admin/shared-reservations', { waitUntil: 'commit' });
     await page.waitForLoadState('load');
+  });
+
+  test.afterAll(async () => {
+    // Cleanup after entire suite completes
+    await cleanupTodaysReservations();
   });
 
   test('should display shared reservations list', async ({ page }) => {
@@ -98,7 +102,8 @@ test.describe('Shared Reservation - User Joining', () => {
     clubSecret = getTestClubSecret();
   });
 
-  test.beforeEach(async () => {
+  test.afterAll(async () => {
+    // Cleanup after entire suite completes
     await cleanupTodaysReservations();
   });
 
