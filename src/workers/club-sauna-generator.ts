@@ -156,26 +156,22 @@ export async function generateClubSaunas(): Promise<{
           data: clubSauna as unknown as Record<string, unknown>,
         });
 
-        // eslint-disable-next-line no-console
-        console.log(`[Club Sauna Generator] Created for sauna ${sauna.name}`);
+        console.warn(`[Club Sauna Generator] Created for sauna ${sauna.name}`);
         result.created++;
       } catch (err) {
         const error = `Failed to create Club Sauna for ${sauna.name}: ${err instanceof Error ? err.message : 'Unknown error'}`;
-        // eslint-disable-next-line no-console
         console.error(error);
         result.errors.push(error);
       }
     }
 
-    // eslint-disable-next-line no-console
-    console.log(
+    console.warn(
       `[Club Sauna Generator] Complete: ${result.created} created, ${result.skipped} skipped`
     );
 
     return result;
   } catch (err) {
     const error = `Club Sauna generation failed: ${err instanceof Error ? err.message : 'Unknown error'}`;
-    // eslint-disable-next-line no-console
     console.error(error);
     result.errors.push(error);
     return result;

@@ -159,7 +159,6 @@ export async function evaluateClubSaunas(): Promise<EvaluationResult> {
               const error = `Failed to convert participant ${participant.id}: ${
                 err instanceof Error ? err.message : 'Unknown error'
               }`;
-              // eslint-disable-next-line no-console
               console.error(error);
               result.errors.push(error);
             }
@@ -171,8 +170,7 @@ export async function evaluateClubSaunas(): Promise<EvaluationResult> {
             syncStatus: 'pending',
           });
         } else {
-          // eslint-disable-next-line no-console
-          console.log(
+          console.warn(
             `[Club Sauna Evaluator] Proceeding (${participantCount} >= ${MINIMUM_PARTICIPANTS})`
           );
           result.proceeded++;
@@ -181,14 +179,12 @@ export async function evaluateClubSaunas(): Promise<EvaluationResult> {
         const error = `Failed to evaluate Club Sauna ${clubSauna.id}: ${
           err instanceof Error ? err.message : 'Unknown error'
         }`;
-        // eslint-disable-next-line no-console
         console.error(error);
         result.errors.push(error);
       }
     }
 
-    // eslint-disable-next-line no-console
-    console.log(
+    console.warn(
       `[Club Sauna Evaluator] Complete: ${result.evaluated} evaluated, ${result.cancelled} cancelled, ${result.converted} converted, ${result.proceeded} proceeded`
     );
 
@@ -197,7 +193,6 @@ export async function evaluateClubSaunas(): Promise<EvaluationResult> {
     const error = `Club Sauna evaluation failed: ${
       err instanceof Error ? err.message : 'Unknown error'
     }`;
-    // eslint-disable-next-line no-console
     console.error(error);
     result.errors.push(error);
     return result;

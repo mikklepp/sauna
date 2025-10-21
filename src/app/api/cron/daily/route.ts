@@ -37,21 +37,41 @@ export async function POST(request: NextRequest) {
     const results = {
       timestamp: new Date().toISOString(),
       clubSaunaEvaluation: {
-        evaluated: [] as any[],
+        evaluated: [] as Array<{
+          sharedReservationId: string;
+          saunaName: string;
+          islandName: string;
+          clubName: string;
+          participantCount: number;
+          action: string;
+          conversions?: number;
+        }>,
       },
       clubSaunaGeneration: {
-        generated: [] as any[],
+        generated: [] as Array<{
+          sharedReservationId: string;
+          saunaId: string;
+          saunaName: string;
+          islandName: string;
+          clubName: string;
+          date: string;
+        }>,
         season: null as string | null | undefined,
       },
       secretRenewal: {
-        renewed: [] as any[],
+        renewed: [] as Array<{
+          clubId: string;
+          clubName: string;
+          newExpiry: string;
+          wasExpired: boolean;
+        }>,
       },
     };
 
     // ========================================================================
     // STEP 1: Evaluate Today's Club Sauna Reservations
     // ========================================================================
-    console.log("📋 Step 1: Evaluating today's Club Sauna reservations...");
+    console.warn("📋 Step 1: Evaluating today's Club Sauna reservations...");
 
     const today = new Date();
     const todayStart = startOfDay(today);
@@ -131,7 +151,7 @@ export async function POST(request: NextRequest) {
           conversions: evaluation.conversions.length,
         });
 
-        console.log(
+        console.warn(
           `❌ Club Sauna ${clubSauna.id} cancelled (${evaluation.participantCount} participants < 3), ` +
             `converted ${evaluation.conversions.length} to individual reservations`
         );
@@ -145,20 +165,20 @@ export async function POST(request: NextRequest) {
           action: 'proceeding',
         });
 
-        console.log(
+        console.warn(
           `✅ Club Sauna ${clubSauna.id} proceeding (${evaluation.participantCount} participants >= 3)`
         );
       }
     }
 
-    console.log(
+    console.warn(
       `✅ Step 1 Complete: Evaluated ${clubSaunas.length} Club Sauna reservations`
     );
 
     // ========================================================================
     // STEP 2: Generate Tomorrow's Club Sauna Reservations
     // ========================================================================
-    console.log("📋 Step 2: Generating tomorrow's Club Sauna reservations...");
+    console.warn("📋 Step 2: Generating tomorrow's Club Sauna reservations...");
 
     // Get tomorrow's date
     const tomorrow = addDays(startOfDay(new Date()), 1);
@@ -194,7 +214,7 @@ export async function POST(request: NextRequest) {
         });
 
         if (existing) {
-          console.log(
+          console.warn(
             `ℹ️  Club Sauna already exists for sauna ${sauna.name} on ${tomorrow.toISOString()}`
           );
           continue;
@@ -231,16 +251,16 @@ export async function POST(request: NextRequest) {
           date: tomorrow.toISOString(),
         });
 
-        console.log(
+        console.warn(
           `✅ Generated Club Sauna for ${sauna.name} on ${tomorrow.toISOString()}`
         );
       }
 
-      console.log(
+      console.warn(
         `✅ Step 2 Complete: Generated ${results.clubSaunaGeneration.generated.length} Club Sauna reservations`
       );
     } else {
-      console.log(
+      console.warn(
         `ℹ️  Step 2 Skipped: Tomorrow (${tomorrow.toISOString()}) is not eligible for Club Sauna`
       );
     }
@@ -248,7 +268,7 @@ export async function POST(request: NextRequest) {
     // ========================================================================
     // STEP 3: Check and Renew Club Secrets
     // ========================================================================
-    console.log('📋 Step 3: Checking club secrets for renewal...');
+    console.warn('📋 Step 3: Checking club secrets for renewal...');
 
     const renewalResults = await renewClubSecrets();
     results.secretRenewal.renewed = renewalResults.map((result) => ({
@@ -259,56 +279,56 @@ export async function POST(request: NextRequest) {
     }));
 
     if (renewalResults.length > 0) {
-      console.log(
+      console.warn(
         `✅ Step 3 Complete: Renewed ${renewalResults.length} club secret(s)`
       );
       renewalResults.forEach((result) => {
-        console.log(
+        console.warn(
           `🔐 Renewed secret for club "${result.clubName}" (expiry: ${result.newExpiry})`
         );
       });
     } else {
-      console.log('✅ Step 3 Complete: No club secrets need renewal');
+      console.warn('✅ Step 3 Complete: No club secrets need renewal');
     }
 
     // ========================================================================
     // Summary
     // ========================================================================
-    console.log('');
-    console.log(
+    console.warn('');
+    console.warn(
       '================================================================================'
     );
-    console.log('📊 DAILY CRON JOB SUMMARY');
-    console.log(
+    console.warn('📊 DAILY CRON JOB SUMMARY');
+    console.warn(
       '================================================================================'
     );
-    console.log(`Timestamp: ${results.timestamp}`);
-    console.log('');
-    console.log('Club Sauna Evaluation (Today):');
-    console.log(
+    console.warn(`Timestamp: ${results.timestamp}`);
+    console.warn('');
+    console.warn('Club Sauna Evaluation (Today):');
+    console.warn(
       `  - Evaluated: ${results.clubSaunaEvaluation.evaluated.length}`
     );
-    console.log(
+    console.warn(
       `  - Cancelled: ${results.clubSaunaEvaluation.evaluated.filter((e) => e.action === 'cancelled_and_converted').length}`
     );
-    console.log(
+    console.warn(
       `  - Proceeding: ${results.clubSaunaEvaluation.evaluated.filter((e) => e.action === 'proceeding').length}`
     );
-    console.log('');
-    console.log('Club Sauna Generation (Tomorrow):');
-    console.log(
+    console.warn('');
+    console.warn('Club Sauna Generation (Tomorrow):');
+    console.warn(
       `  - Season: ${results.clubSaunaGeneration.season || 'Not eligible'}`
     );
-    console.log(
+    console.warn(
       `  - Generated: ${results.clubSaunaGeneration.generated.length}`
     );
-    console.log('');
-    console.log('Club Secret Renewal:');
-    console.log(`  - Renewed: ${results.secretRenewal.renewed.length}`);
-    console.log(
+    console.warn('');
+    console.warn('Club Secret Renewal:');
+    console.warn(`  - Renewed: ${results.secretRenewal.renewed.length}`);
+    console.warn(
       '================================================================================'
     );
-    console.log('');
+    console.warn('');
 
     return successResponse({
       message: 'Daily cron job completed successfully',
