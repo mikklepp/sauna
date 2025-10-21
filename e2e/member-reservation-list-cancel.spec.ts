@@ -336,7 +336,7 @@ test.describe('Member Reservation List View & Cancellation', () => {
       timeout: 5000,
     });
 
-    // Other reservations (Alpha, Beta, Gamma) should still be visible
-    await expect(page.getByTestId('reservation-item')).toBeVisible();
+    // Should have exactly 3 reservations remaining (Gamma, Alpha, Beta)
+    await expect(page.getByTestId('reservation-item')).toHaveCount(3);
   });
 });
