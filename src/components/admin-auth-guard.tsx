@@ -16,11 +16,15 @@ export function AdminAuthGuard({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      const response = await fetch('/api/auth/admin/me');
+      const response = await fetch('/api/auth/admin/me', {
+        credentials: 'same-origin',
+      });
 
       if (!response.ok) {
         // Check if setup is needed
-        const setupResponse = await fetch('/api/auth/admin/setup-status');
+        const setupResponse = await fetch('/api/auth/admin/setup-status', {
+          credentials: 'same-origin',
+        });
         if (setupResponse.ok) {
           const setupData = await setupResponse.json();
           if (setupData.needsSetup) {

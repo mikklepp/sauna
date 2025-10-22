@@ -24,6 +24,8 @@ test.describe('Sauna Heating Status Communication', () => {
   test.beforeAll(async () => {
     // Note: Test club data is already reset in global-setup.ts
     clubSecret = getTestClubSecret();
+    // Cleanup before suite to ensure clean state
+    await cleanupTodaysReservations();
   });
 
   test.afterAll(async () => {

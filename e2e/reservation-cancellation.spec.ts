@@ -11,6 +11,99 @@ test.describe('Reservation Cancellation', () => {
 
   test.beforeAll(async () => {
     clubSecret = getTestClubSecret();
+    // Cleanup before suite to ensure clean state
+    await cleanupTodaysReservations();
+
+    // Create all test reservations upfront for different scenarios
+    // Boat 0 (Alpha): Display list test - 2 hours from now
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 0,
+      startTimeOffset: 2,
+      durationHours: 1,
+      adults: 2,
+      kids: 0,
+    });
+
+    // Boat 1 (Beta): Cancel button visibility - 3 hours from now
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 1,
+      startTimeOffset: 3,
+      durationHours: 1,
+      adults: 2,
+      kids: 1,
+    });
+
+    // Boat 2 (Gamma): Cancel flow test - 2 hours from now
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 2,
+      startTimeOffset: 2,
+      durationHours: 1,
+      adults: 3,
+      kids: 0,
+    });
+
+    // Boat 3 (Delta): Too late to cancel - 10 minutes from now
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 3,
+      startTimeOffset: 10 / 60,
+      durationHours: 1,
+      adults: 2,
+      kids: 0,
+    });
+
+    // Boat 4 (Epsilon): Past reservation - 2 hours ago
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 4,
+      startTimeOffset: -2,
+      durationHours: 1,
+      adults: 2,
+      kids: 1,
+    });
+
+    // Boat 5 (Zeta): Past/future separation - 1 hour ago
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 5,
+      startTimeOffset: -1,
+      durationHours: 1,
+      adults: 2,
+      kids: 0,
+    });
+
+    // Boat 6 (Eta): Past/future separation - 2 hours from now
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 6,
+      startTimeOffset: 2,
+      durationHours: 1,
+      adults: 3,
+      kids: 1,
+    });
+
+    // Boat 7 (Theta): Auto-scroll test - 2 hours from now
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 7,
+      startTimeOffset: 2,
+      durationHours: 1,
+      adults: 2,
+      kids: 0,
+    });
+
+    // Boat 8 (Iota): Details display - 3 hours from now, 4 adults, 2 kids
+    await createTestReservation({
+      saunaIndex: 0,
+      boatIndex: 8,
+      startTimeOffset: 3,
+      durationHours: 2,
+      adults: 4,
+      kids: 2,
+    });
   });
 
   test.afterAll(async () => {
@@ -19,16 +112,7 @@ test.describe('Reservation Cancellation', () => {
   });
 
   test('should display reservations list for a sauna', async ({ page }) => {
-    // Create a test reservation for today
-    await createTestReservation({
-      saunaIndex: 0, // First sauna (North Main Sauna)
-      boatIndex: 0, // Test Alpha
-      startTimeOffset: 2, // 2 hours from now
-      durationHours: 1,
-      adults: 2,
-      kids: 0,
-    });
-
+    // Use pre-created Alpha reservation from beforeAll
     // Navigate to island
     await authenticateMember(page, clubSecret);
     await page.waitForLoadState('load');
@@ -70,16 +154,7 @@ test.describe('Reservation Cancellation', () => {
   test('should show cancel button for future reservations', async ({
     page,
   }) => {
-    // Create a test reservation for the future (can be cancelled)
-    await createTestReservation({
-      saunaIndex: 0,
-      boatIndex: 1, // Test Beta
-      startTimeOffset: 3, // 3 hours from now (cancellable)
-      durationHours: 1,
-      adults: 2,
-      kids: 1,
-    });
-
+    // Use pre-created Beta reservation from beforeAll
     // Navigate to island
     await authenticateMember(page, clubSecret);
     await page.waitForLoadState('load');
@@ -107,25 +182,20 @@ test.describe('Reservation Cancellation', () => {
       .first()
       .waitFor({ state: 'visible', timeout: 5000 });
 
-    // Should see cancel button on the first reservation
-    const firstReservation = page
-      .locator('[data-testid="reservation-item"]')
-      .first();
-    const cancelButton = firstReservation.getByTestId('cancel-button');
+    // Find Beta reservation specifically (not .first() - reservations are sorted chronologically)
+    const betaReservation = page
+      .getByTestId('reservation-boat-name')
+      .filter({ hasText: /test beta/i })
+      .locator('..')
+      .locator('..')
+      .locator('..');
+
+    const cancelButton = betaReservation.getByTestId('cancel-button');
     await expect(cancelButton).toBeVisible({ timeout: 5000 });
   });
 
   test('should cancel a reservation successfully', async ({ page }) => {
-    // Create a test reservation
-    await createTestReservation({
-      saunaIndex: 0,
-      boatIndex: 2, // Test Gamma
-      startTimeOffset: 2, // 2 hours from now (keeps it today)
-      durationHours: 1,
-      adults: 3,
-      kids: 0,
-    });
-
+    // Use pre-created Gamma reservation from beforeAll
     // Navigate to reservations list
     await authenticateMember(page, clubSecret);
     await page.waitForLoadState('load');
@@ -150,11 +220,20 @@ test.describe('Reservation Cancellation', () => {
       .first()
       .waitFor({ state: 'visible', timeout: 5000 });
 
-    // Click cancel button on first reservation
-    const firstReservation = page
+    // Count initial reservations
+    const initialCount = await page
       .locator('[data-testid="reservation-item"]')
-      .first();
-    const cancelButton = firstReservation.getByTestId('cancel-button');
+      .count();
+
+    // Find and cancel the Gamma reservation specifically
+    const gammaReservation = page
+      .getByTestId('reservation-boat-name')
+      .filter({ hasText: /test gamma/i })
+      .locator('..')
+      .locator('..')
+      .locator('..');
+
+    const cancelButton = gammaReservation.getByTestId('cancel-button');
     await cancelButton.click();
 
     // Should show confirmation dialog
@@ -165,25 +244,26 @@ test.describe('Reservation Cancellation', () => {
     // Confirm cancellation
     await page.getByRole('button', { name: /confirm cancel/i }).click();
 
-    // Wait for success - should show no reservations message
-    await expect(
-      page.getByRole('heading', { name: /no reservations yet/i })
-    ).toBeVisible({ timeout: 5000 });
+    // Wait for the reservation to be removed
+    await page.waitForTimeout(1000);
+
+    // Verify Gamma reservation is gone
+    const gammaAfterCancel = page
+      .getByTestId('reservation-boat-name')
+      .filter({ hasText: /test gamma/i });
+    await expect(gammaAfterCancel).toHaveCount(0);
+
+    // Or verify count decreased by 1 (if page didn't reload)
+    const finalCount = await page
+      .locator('[data-testid="reservation-item"]')
+      .count();
+    expect(finalCount).toBe(initialCount - 1);
   });
 
   test('should show "too late to cancel" for reservations within 15 minutes', async ({
     page,
   }) => {
-    // Create a test reservation starting in 10 minutes (within 15-minute cutoff)
-    await createTestReservation({
-      saunaIndex: 0,
-      boatIndex: 3, // Test Delta
-      startTimeOffset: 10 / 60, // 10 minutes from now
-      durationHours: 1,
-      adults: 2,
-      kids: 0,
-    });
-
+    // Use pre-created Delta reservation from beforeAll (10 minutes from now)
     // Navigate to island
     await authenticateMember(page, clubSecret);
     await page.waitForLoadState('load');
@@ -208,8 +288,15 @@ test.describe('Reservation Cancellation', () => {
       .first()
       .waitFor({ state: 'visible', timeout: 5000 });
 
-    // Should see "Too late to cancel" message
-    await expect(page.getByTestId('too-late-message')).toBeVisible({
+    // Find Delta reservation specifically and verify "Too late to cancel" message
+    const deltaReservation = page
+      .getByTestId('reservation-boat-name')
+      .filter({ hasText: /test delta/i })
+      .locator('..')
+      .locator('..')
+      .locator('..');
+
+    await expect(deltaReservation.getByTestId('too-late-message')).toBeVisible({
       timeout: 5000,
     });
   });
@@ -217,16 +304,7 @@ test.describe('Reservation Cancellation', () => {
   test('should not show cancel button for past reservations', async ({
     page,
   }) => {
-    // Create a test reservation in the past (2 hours ago)
-    await createTestReservation({
-      saunaIndex: 0,
-      boatIndex: 4, // Test Epsilon
-      startTimeOffset: -2, // 2 hours ago
-      durationHours: 1,
-      adults: 2,
-      kids: 1,
-    });
-
+    // Use pre-created Epsilon reservation from beforeAll (2 hours ago)
     // Navigate to island
     await authenticateMember(page, clubSecret);
     await page.waitForLoadState('load');
@@ -255,33 +333,25 @@ test.describe('Reservation Cancellation', () => {
     const pastSection = page.getByTestId('past-reservations');
     await expect(pastSection).toBeVisible({ timeout: 5000 });
 
-    // Past reservations should not have cancel buttons
-    const cancelButtons = pastSection.getByTestId('cancel-button');
-    await expect(cancelButtons).toHaveCount(0);
+    // Find Epsilon reservation specifically and verify no cancel button
+    const epsilonReservation = page
+      .getByTestId('reservation-boat-name')
+      .filter({ hasText: /test epsilon/i })
+      .locator('..')
+      .locator('..')
+      .locator('..');
+
+    await expect(epsilonReservation).toBeVisible({ timeout: 5000 });
+
+    // Epsilon should not have a cancel button
+    const cancelButton = epsilonReservation.getByTestId('cancel-button');
+    await expect(cancelButton).toHaveCount(0);
   });
 
   test('should separate past and future reservations visually', async ({
     page,
   }) => {
-    // Create both past and future reservations
-    await createTestReservation({
-      saunaIndex: 0,
-      boatIndex: 5, // Test Zeta
-      startTimeOffset: -1, // 1 hour ago
-      durationHours: 1,
-      adults: 2,
-      kids: 0,
-    });
-
-    await createTestReservation({
-      saunaIndex: 0,
-      boatIndex: 6, // Test Eta
-      startTimeOffset: 2, // 2 hours from now
-      durationHours: 1,
-      adults: 3,
-      kids: 1,
-    });
-
+    // Use pre-created Zeta (past) and Eta (future) reservations from beforeAll
     // Navigate to island
     await authenticateMember(page, clubSecret);
     await page.waitForLoadState('load');
@@ -315,16 +385,7 @@ test.describe('Reservation Cancellation', () => {
   });
 
   test('should auto-scroll to future reservations', async ({ page }) => {
-    // Create a future reservation
-    await createTestReservation({
-      saunaIndex: 0,
-      boatIndex: 7, // Test Theta
-      startTimeOffset: 2, // 2 hours from now (keeps it today)
-      durationHours: 1,
-      adults: 2,
-      kids: 0,
-    });
-
+    // Use pre-created Theta reservation from beforeAll
     // Navigate to island
     await authenticateMember(page, clubSecret);
     await page.waitForLoadState('load');
@@ -358,16 +419,7 @@ test.describe('Reservation Cancellation', () => {
   });
 
   test('should display reservation details in list', async ({ page }) => {
-    // Create a test reservation with specific details
-    await createTestReservation({
-      saunaIndex: 0,
-      boatIndex: 0, // Test Alpha
-      startTimeOffset: 3, // 3 hours from now
-      durationHours: 2,
-      adults: 4,
-      kids: 2,
-    });
-
+    // Use pre-created Iota reservation from beforeAll (4 adults, 2 kids)
     // Navigate to island
     await authenticateMember(page, clubSecret);
     await page.waitForLoadState('load');
@@ -396,10 +448,10 @@ test.describe('Reservation Cancellation', () => {
     const reservationItems = page.getByTestId('reservation-item');
     await expect(reservationItems.first()).toBeVisible({ timeout: 5000 });
 
-    // Find the specific reservation we created (Test Alpha with 4 adults, 2 kids)
+    // Find the specific reservation we created (Test Iota with 4 adults, 2 kids)
     const ourReservation = page
       .getByTestId('reservation-boat-name')
-      .filter({ hasText: /test alpha/i });
+      .filter({ hasText: /test iota/i });
     await expect(ourReservation).toBeVisible();
 
     // Check it has the right party size

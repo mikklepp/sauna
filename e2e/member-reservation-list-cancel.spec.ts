@@ -11,6 +11,8 @@ test.describe('Member Reservation List View & Cancellation', () => {
 
   test.beforeAll(async () => {
     clubSecret = getTestClubSecret();
+    // Cleanup before suite to ensure clean state
+    await cleanupTodaysReservations();
 
     // Create shared test reservations for different test scenarios
     // IMPORTANT: Reservations display in chronological order (earliest first)

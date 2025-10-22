@@ -15,6 +15,8 @@ test.describe.serial('Individual Reservation Flow', () => {
 
   test.beforeAll(async () => {
     clubSecret = getTestClubSecret();
+    // Cleanup before suite to ensure clean state
+    await cleanupTodaysReservations();
   });
 
   test.afterAll(async () => {
@@ -182,7 +184,6 @@ test.describe.serial('Individual Reservation Flow', () => {
     // Verify the reservation was created by checking the database
     const betaBoatName = getTestBoatFullName(1); // Test Beta
 
-    // Query for any Beta reservation (no date filter for debugging)
     const reservation = await prisma.reservation.findFirst({
       where: {
         boat: {
@@ -202,27 +203,6 @@ test.describe.serial('Individual Reservation Flow', () => {
         startTime: 'desc',
       },
     });
-
-    // Debug: log all Beta reservations if not found
-    if (!reservation) {
-      const allReservations = await prisma.reservation.findMany({
-        where: {
-          boat: {
-            name: betaBoatName,
-          },
-        },
-        include: {
-          boat: true,
-          sauna: true,
-        },
-      });
-      console.log(
-        `All ${betaBoatName} reservations:`,
-        JSON.stringify(allReservations, null, 2)
-      );
-    } else {
-      console.log('Found reservation - startTime:', reservation.startTime);
-    }
 
     // Verify reservation exists
     expect(reservation).toBeTruthy();

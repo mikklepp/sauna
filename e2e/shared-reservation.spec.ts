@@ -8,6 +8,11 @@ import {
 } from './helpers/test-fixtures';
 
 test.describe('Shared Reservation - Admin Creation', () => {
+  test.beforeAll(async () => {
+    // Cleanup before suite to ensure clean state
+    await cleanupTodaysReservations();
+  });
+
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
     await page.goto('/admin/shared-reservations', { waitUntil: 'commit' });
@@ -100,6 +105,8 @@ test.describe('Shared Reservation - User Joining', () => {
 
   test.beforeAll(async () => {
     clubSecret = getTestClubSecret();
+    // Cleanup before suite to ensure clean state
+    await cleanupTodaysReservations();
   });
 
   test.afterAll(async () => {

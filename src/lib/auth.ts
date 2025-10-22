@@ -101,7 +101,7 @@ export async function setClubSessionCookie(clubId: string): Promise<void> {
 
   cookieStore.set('club_session', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: process.env.COOKIE_SECURE !== 'false',
     sameSite: 'lax',
     maxAge,
     path: '/',
@@ -214,7 +214,7 @@ export async function setAdminSessionCookie(username: string): Promise<void> {
 
   cookieStore.set('admin_session', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: process.env.COOKIE_SECURE !== 'false',
     sameSite: 'lax',
     maxAge: 24 * 60 * 60, // 24 hours
     path: '/',

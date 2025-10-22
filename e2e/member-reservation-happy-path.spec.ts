@@ -1,12 +1,20 @@
 import { test, expect, Page } from '@playwright/test';
 import { getTestClubSecret, getTestBoat } from './helpers/test-fixtures';
 import { authenticateMember } from './helpers/auth-helper';
+import { cleanupTodaysReservations } from './helpers/db-cleanup';
 
 test.describe('Member Individual Reservation - Happy Path', () => {
   let clubSecret: string;
 
   test.beforeAll(async () => {
     clubSecret = getTestClubSecret();
+    // Cleanup before suite to ensure clean state
+    await cleanupTodaysReservations();
+  });
+
+  test.afterAll(async () => {
+    // Cleanup after entire suite completes
+    await cleanupTodaysReservations();
   });
 
   /**

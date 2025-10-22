@@ -8,6 +8,8 @@ test.describe('Member Individual Reservation - Daily Limit Validation', () => {
 
   test.beforeAll(async () => {
     clubSecret = getTestClubSecret();
+    // Cleanup before suite to ensure clean state
+    await cleanupTodaysReservations();
   });
 
   test.afterAll(async () => {

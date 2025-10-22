@@ -1,12 +1,20 @@
 import { test, expect } from '@playwright/test';
 import { getTestClubSecret, getTestBoat } from './helpers/test-fixtures';
 import { authenticateMember } from './helpers/auth-helper';
+import { cleanupTodaysReservations } from './helpers/db-cleanup';
 
 test.describe('Member Complete User Journey - End to End', () => {
   let clubSecret: string;
 
   test.beforeAll(async () => {
     clubSecret = getTestClubSecret();
+    // Cleanup before suite to ensure clean state
+    await cleanupTodaysReservations();
+  });
+
+  test.afterAll(async () => {
+    // Cleanup after entire suite completes
+    await cleanupTodaysReservations();
   });
 
   test('Complete member flow: Homepage → Auth → Islands → Reserve → View', async ({

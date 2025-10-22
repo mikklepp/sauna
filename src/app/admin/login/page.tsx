@@ -24,7 +24,9 @@ export default function AdminLoginPage() {
 
   async function checkSetupStatus() {
     try {
-      const response = await fetch('/api/auth/admin/setup-status');
+      const response = await fetch('/api/auth/admin/setup-status', {
+        credentials: 'same-origin',
+      });
       if (response.ok) {
         const data = await response.json();
         setNeedsSetup(data.needsSetup);
@@ -43,14 +45,14 @@ export default function AdminLoginPage() {
       const response = await fetch('/api/auth/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
-
-      if (response.ok && data.success) {
+      if (response.ok) {
         router.push('/admin');
       } else {
+        const data = await response.json();
         setError(data.error || 'Invalid credentials');
       }
     } catch (err) {

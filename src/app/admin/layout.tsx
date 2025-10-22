@@ -22,6 +22,7 @@ export default function AdminLayout({
     try {
       const response = await fetch('/api/auth/admin/logout', {
         method: 'POST',
+        credentials: 'same-origin',
       });
 
       if (response.ok) {
