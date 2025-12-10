@@ -156,6 +156,8 @@ export async function processSyncQueue(
         operation: change.operation,
         data: change.data as Record<string, unknown>,
         timestamp: change.timestamp,
+        syncStatus: change.syncStatus,
+        errorMessage: change.errorMessage,
       })),
     };
 

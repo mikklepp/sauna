@@ -368,7 +368,7 @@ import type { SyncChange } from '@/types';
  * Add a change to the sync queue
  */
 export async function addToSyncQueue(
-  change: Omit<SyncChange, 'id'>
+  change: Omit<SyncChange, 'id' | 'syncStatus' | 'errorMessage'>
 ): Promise<void> {
   await db.syncQueue.add({
     ...change,

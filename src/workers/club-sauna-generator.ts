@@ -154,6 +154,8 @@ export async function generateClubSaunas(): Promise<{
           entityId: clubSauna.id!,
           operation: 'create',
           data: clubSauna as unknown as Record<string, unknown>,
+          syncStatus: 'pending',
+          errorMessage: null,
         });
 
         console.warn(`[Club Sauna Generator] Created for sauna ${sauna.name}`);

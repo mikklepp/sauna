@@ -92,6 +92,8 @@ export async function evaluateClubSaunas(): Promise<EvaluationResult> {
             entityId: clubSauna.id,
             operation: 'update',
             data: { autoCancelledAt: new Date().toISOString() },
+            syncStatus: 'pending',
+            errorMessage: null,
           });
 
           result.cancelled++;
@@ -145,6 +147,8 @@ export async function evaluateClubSaunas(): Promise<EvaluationResult> {
                 entityId: reservation.id!,
                 operation: 'create',
                 data: reservation as unknown as Record<string, unknown>,
+                syncStatus: 'pending',
+                errorMessage: null,
               });
 
               // Remove from shared participants
