@@ -12,12 +12,6 @@ const withSerwist = withSerwistInit({
 const nextConfig = {
   reactStrictMode: true,
 
-  // ESLint configuration
-  eslint: {
-    // Only treat actual errors as errors, not warnings
-    ignoreDuringBuilds: false,
-  },
-
   // TypeScript configuration
   typescript: {
     ignoreBuildErrors: false,

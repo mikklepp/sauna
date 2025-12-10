@@ -43,7 +43,7 @@ export function handleApiError(error: unknown): NextResponse<ApiResponse> {
   // Zod validation errors
   if (error instanceof ZodError) {
     return errorResponse(
-      `Validation error: ${error.errors.map((e) => e.message).join(', ')}`,
+      `Validation error: ${error.issues.map((e) => e.message).join(', ')}`,
       400
     );
   }
