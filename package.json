@@ -73,7 +73,7 @@
     "@playwright/test": "^1.56.0",
     "@tanstack/react-query-devtools": "^5.59.0",
     "@types/bcryptjs": "^2.4.6",
-    "@types/node": "^22.0.0",
+    "@types/node": "^24.9.2",
     "@types/papaparse": "^5.3.14",
     "@types/qrcode": "^1.5.5",
     "@types/react": "^19.0.0",
