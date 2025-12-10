@@ -200,7 +200,10 @@ export default function IslandSaunasPage() {
                         Next Available
                       </span>
                     </div>
-                    <span className="text-club-primary text-2xl font-bold">
+                    <span
+                      className="text-club-primary text-2xl font-bold"
+                      data-testid="next-available-time"
+                    >
                       {formatTime(sauna.nextAvailable.startTime)}
                     </span>
                   </div>

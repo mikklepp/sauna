@@ -126,6 +126,8 @@ export interface SyncChange {
   operation: SyncOperation;
   data: Record<string, unknown>;
   timestamp: Date;
+  syncStatus: 'pending' | 'synced' | 'failed';
+  errorMessage: string | null;
 }
 
 export interface SyncRequest {

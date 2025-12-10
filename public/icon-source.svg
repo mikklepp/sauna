@@ -1,0 +1,54 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with gradient -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0070f3;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0052cc;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Rounded square background -->
+  <rect width="512" height="512" rx="115" fill="url(#grad1)"/>
+
+  <!-- Sauna icon - steam waves and hot stones -->
+  <!-- Hot stones base -->
+  <g transform="translate(256, 280)">
+    <!-- Main stone pile -->
+    <ellipse cx="0" cy="40" rx="90" ry="30" fill="#4a5568" opacity="0.9"/>
+    <ellipse cx="-20" cy="20" rx="60" ry="40" fill="#5a6778" filter="url(#shadow)"/>
+    <ellipse cx="25" cy="15" rx="50" ry="35" fill="#6b7789" filter="url(#shadow)"/>
+    <ellipse cx="0" cy="0" rx="55" ry="38" fill="#7a8799" filter="url(#shadow)"/>
+
+    <!-- Highlight on stones -->
+    <ellipse cx="-5" cy="-5" rx="20" ry="15" fill="#ffffff" opacity="0.2"/>
+  </g>
+
+  <!-- Steam waves rising -->
+  <g transform="translate(256, 160)" opacity="0.85">
+    <!-- Wave 1 (left) -->
+    <path d="M -50,80 Q -60,60 -50,40 T -50,0"
+          stroke="#ffffff" stroke-width="8" fill="none"
+          stroke-linecap="round" opacity="0.6"/>
+
+    <!-- Wave 2 (center) -->
+    <path d="M 0,90 Q -10,70 0,50 T 0,10"
+          stroke="#ffffff" stroke-width="10" fill="none"
+          stroke-linecap="round" opacity="0.8"/>
+
+    <!-- Wave 3 (right) -->
+    <path d="M 50,80 Q 60,60 50,40 T 50,0"
+          stroke="#ffffff" stroke-width="8" fill="none"
+          stroke-linecap="round" opacity="0.6"/>
+  </g>
+
+  <!-- Additional decorative steam dots -->
+  <g opacity="0.5">
+    <circle cx="200" cy="140" r="6" fill="#ffffff"/>
+    <circle cx="220" cy="120" r="4" fill="#ffffff"/>
+    <circle cx="292" cy="120" r="4" fill="#ffffff"/>
+    <circle cx="312" cy="140" r="6" fill="#ffffff"/>
+  </g>
+</svg>

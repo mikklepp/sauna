@@ -1845,3 +1845,447 @@ Take your time, think deeply, and build something great. This is a real-world ap
 - Lighthouse score improvements
 
 Good luck! I'm excited to see what you build. 🚀
+
+---
+
+# Island Device Offline Mode & Sync - Implementation Plan
+
+## Overview
+
+The Island Device is a dedicated offline-first Progressive Web App (PWA) that allows boat club members to make sauna reservations even when internet connectivity is limited or unavailable - a common scenario in remote island locations.
+
+## Core Principles
+
+1. **Island Device is the Source of Truth**
+   - All operations work offline first using IndexedDB
+   - Changes are queued locally and synced when online
+   - In case of conflicts, Island Device data always wins
+
+2. **Offline-First Architecture**
+   - All reads happen from local IndexedDB (instant, always available)
+   - All writes go to IndexedDB first, then queued for sync
+   - Service Worker enables offline page loads
+
+3. **Bidirectional Sync**
+   - **Push**: Island Device sends pending changes to backend
+   - **Pull**: Island Device receives backend changes (from other devices/admin)
+   - Automatic periodic sync when online (default: 60 minutes)
+   - Immediate sync when device comes online
+
+4. **Conflict Resolution**
+   - Island Device changes take precedence over backend changes
+   - Backend changes are only applied if no local pending changes exist
+   - This prevents users from losing their work during network issues
+
+## Architecture
+
+### Components
+
+#### 1. IndexedDB (Dexie.js)
+
+- Local database stores: boats, saunas, reservations, shared reservations, participants, sync queue
+- Each entity tracks `syncStatus`: `'pending' | 'synced' | 'failed'`
+- Sync queue maintains ordered list of changes to push to backend
+
+#### 2. Sync Service (`src/lib/sync-service.ts`)
+
+- **`syncNow()`**: Main sync function - push then pull
+- **`processSyncQueue()`**: Batches pending changes and pushes to backend
+- **`pullBackendChanges()`**: Fetches server changes since last sync
+- **`applyBackendChange()`**: Applies server changes to local DB (respects conflicts)
+
+#### 3. Sync Manager (`src/lib/sync-manager.ts`)
+
+- Manages periodic sync with configurable interval (min 5 minutes)
+- Listens for online/offline events
+- Triggers immediate sync when device comes online
+- Provides status monitoring
+
+#### 4. Backend Sync API
+
+- **POST `/api/sync/push`**: Accepts batched changes from Island Device
+- **GET `/api/sync/pull/:islandId`**: Returns changes since timestamp
+- Validates changes and returns applied/rejected lists
+
+### Data Flow
+
+```
+User Action (e.g., create reservation)
+    ↓
+Write to IndexedDB (syncStatus: 'pending')
+    ↓
+Add to Sync Queue
+    ↓
+[When Online] Periodic Sync / Manual Sync
+    ↓
+Push Phase: Process Sync Queue → POST /api/sync/push
+    ↓
+Mark Applied Changes (syncStatus: 'synced')
+    ↓
+Pull Phase: Fetch Backend Changes → GET /api/sync/pull
+    ↓
+Apply Backend Changes (if no conflict)
+    ↓
+Update Last Sync Timestamp
+```
+
+## Implementation Phases
+
+### Phase 1: Core Sync Engine ✅ (COMPLETED)
+
+**Objective**: Implement the foundation for offline-first operation and bidirectional sync
+
+**Tasks Completed:**
+
+- [x] Create sync service with processSyncQueue, pullBackendChanges, and retry logic
+- [x] Create periodic sync worker for background sync
+- [x] Integrate pull changes handler for backend changes
+- [x] Update /api/sync/device endpoint for full bidirectional sync
+
+**Files Created:**
+
+- `src/lib/sync-service.ts` - Main sync orchestration (544 lines)
+  - `syncNow()` - Main sync function
+  - `processSyncQueue()` - Push pending changes
+  - `pullBackendChanges()` - Fetch and apply server changes
+  - Entity-specific handlers for applying backend changes
+  - Utility functions for managing sync queue
+- `src/lib/sync-manager.ts` - Periodic sync manager (291 lines)
+  - SyncManager class for automatic periodic sync
+  - Online/offline event listeners
+  - Configurable sync intervals
+  - Status monitoring
+- Updated `src/app/api/sync/device/route.ts` - Bidirectional sync endpoint
+- Updated `src/types/index.ts` - Sync types with status tracking
+- Updated `src/db/queries.ts` - Sync queue initialization
+
+**Key Features:**
+
+- Batch processing (50 changes per sync)
+- Conflict resolution (Island Device wins)
+- Exponential backoff constants reserved for future retry logic
+- Automatic sync when device comes online
+- Last sync timestamp tracking
+
+### Phase 2: Island Device UI (PENDING)
+
+**Objective**: Build user-facing interface for Island Device operation
+
+**Tasks:**
+
+- [ ] Build Island Device main view with offline availability calculation
+  - Display all saunas for the island
+  - Show current status (Available/In Use) using local data
+  - Calculate next available time based on local reservations
+  - Show shared reservation options for today
+  - Offline-first: All data from IndexedDB
+
+- [ ] Create reservation creation flow (boat search, party size, confirmation)
+  - Boat search with autocomplete from local IndexedDB
+  - Validate boat hasn't reserved today (check local DB)
+  - Party size entry (adults/kids)
+  - Confirmation screen
+  - Save to IndexedDB + sync queue
+
+- [ ] Build reservation list view for Island Device
+  - Show today's reservations from IndexedDB
+  - Display individual and shared reservations
+  - Allow cancellation (15-min cutoff)
+  - Show past reservations (grayed out)
+  - Auto-scroll to future reservations
+
+- [ ] Add sync status component with visual indicators
+  - Display last sync time
+  - Show pending changes count
+  - Visual indicator: Online/Offline
+  - Manual sync button
+  - Sync in progress indicator
+  - Error messages for failed syncs
+
+**UI Components to Create:**
+
+- `src/app/islands/[islandId]/offline/page.tsx` - Main Island Device view
+- `src/components/island-device/sauna-availability.tsx` - Offline availability display
+- `src/components/island-device/reservation-form.tsx` - Offline reservation creation
+- `src/components/island-device/boat-search-offline.tsx` - Search from IndexedDB
+- `src/components/island-device/sync-status.tsx` - Sync status widget
+- `src/components/island-device/reservation-list-offline.tsx` - List from IndexedDB
+
+### Phase 3: Device Management (PENDING)
+
+**Objective**: Enable device configuration and island assignment
+
+**Tasks:**
+
+- [ ] Implement device configuration API and setup wizard
+  - POST `/api/island-device/setup` - Initial device configuration
+  - Assign device ID and island
+  - Download initial data (boats, saunas, etc.)
+  - Store device credentials in IndexedDB
+
+- [ ] Create device setup wizard UI
+  - Device registration flow
+  - Island selection/assignment
+  - Initial data download
+  - Offline mode activation
+  - Success confirmation
+
+- [ ] Add admin UI for managing Island Devices
+  - List all registered devices
+  - View device status (last sync, pending changes)
+  - Reassign device to different island
+  - Deactivate/reset device
+
+- [ ] Implement device authentication
+  - Store device credentials securely
+  - Include device ID in all sync requests
+  - Validate device permissions on backend
+
+**Files to Create:**
+
+- `src/app/island-device/setup/page.tsx` - Device setup wizard
+- `src/app/admin/devices/page.tsx` - Device management UI
+- `src/app/api/island-device/setup/route.ts` - Setup endpoint
+- `src/lib/device-config.ts` - Device configuration management
+
+### Phase 4: Testing & Polish (PENDING)
+
+**Objective**: Ensure reliability and handle edge cases
+
+**Tasks:**
+
+- [ ] Add E2E tests for offline sync flow
+  - Test offline reservation creation
+  - Test sync when coming back online
+  - Test conflict resolution scenarios
+  - Test periodic sync
+
+- [ ] Add retry logic for failed syncs
+  - Implement exponential backoff
+  - Max retry attempts: 5
+  - Base delay: 1 second
+  - Max delay: 5 minutes
+  - Display retry status to user
+
+- [ ] Test edge cases
+  - Device offline for extended period
+  - Simultaneous changes on device and backend
+  - Network interruptions during sync
+  - Large sync queues (100+ changes)
+  - Corrupted local data recovery
+
+- [ ] Performance optimization
+  - Optimize IndexedDB queries
+  - Add indexes for common lookups
+  - Batch UI updates during sync
+  - Minimize re-renders
+
+**Test Files to Create:**
+
+- `e2e/island-device-offline.spec.ts` - Offline operation tests
+- `e2e/island-device-sync.spec.ts` - Sync flow tests
+- `e2e/island-device-conflicts.spec.ts` - Conflict resolution tests
+- `src/lib/__tests__/sync-service.test.ts` - Unit tests for sync logic
+
+## Technical Details
+
+### Sync Queue
+
+Each change in the queue contains:
+
+```typescript
+{
+  id: string; // Unique change ID
+  entityType: SyncEntityType; // 'reservation' | 'shared_reservation' | etc.
+  entityId: string; // ID of the entity being changed
+  operation: SyncOperation; // 'create' | 'update' | 'delete'
+  data: Record<string, unknown>; // Full entity data
+  timestamp: Date; // When change was made
+  syncStatus: 'pending' | 'synced' | 'failed';
+  errorMessage: string | null; // Error if sync failed
+}
+```
+
+### Conflict Resolution Logic
+
+When pulling backend changes:
+
+```typescript
+const existing = await db.reservations.get(entityId);
+if (existing && existing.syncStatus === 'pending') {
+  // Skip backend change - local change takes precedence
+  console.log('[Sync] Skipping backend change - local pending');
+  return;
+}
+// Otherwise, apply backend change
+await db.reservations.put({ ...backendData, syncStatus: 'synced' });
+```
+
+### Sync Batching
+
+- Default batch size: 50 changes per sync cycle
+- Prevents overwhelming the API with thousands of changes
+- Remaining changes will sync in next cycle
+- Large queues handled gracefully
+
+### Retry Logic (Reserved for Phase 4)
+
+Constants defined in sync-service.ts:
+
+```typescript
+const MAX_RETRY_ATTEMPTS = 5;
+const BASE_RETRY_DELAY_MS = 1000; // 1 second
+const MAX_RETRY_DELAY_MS = 300000; // 5 minutes
+```
+
+Implementation pending in Phase 4.
+
+## Use Cases
+
+### 1. Offline Reservation Creation
+
+1. User arrives at island with no internet
+2. Opens Island Device PWA (loads from Service Worker cache)
+3. Searches for their boat (from local IndexedDB)
+4. Creates reservation (writes to IndexedDB, syncStatus: 'pending')
+5. Sees confirmation immediately
+6. When internet returns, sync automatically pushes reservation to backend
+
+### 2. Multi-Device Sync
+
+1. Reservation created on Island Device A
+2. Syncs to backend when online
+3. Island Device B pulls changes during periodic sync
+4. Both devices now have consistent data
+
+### 3. Admin Changes
+
+1. Admin updates sauna heating time from web interface
+2. Change saved to backend PostgreSQL
+3. Island Devices pull change during next sync
+4. Local sauna data updated automatically
+
+### 4. Conflict Scenario
+
+1. Island Device creates reservation offline (syncStatus: 'pending')
+2. Admin tries to modify same reservation from backend
+3. During sync, Island Device pushes its change first
+4. Backend change is pulled but skipped (pending change exists)
+5. Island Device version wins
+
+## Configuration
+
+### Sync Interval
+
+```typescript
+// Default: 60 minutes
+startAutoSync(60);
+
+// Custom interval (minimum 5 minutes)
+setSyncInterval(30); // 30 minutes
+```
+
+### Manual Sync
+
+```typescript
+// Trigger sync manually (e.g., user button)
+const result = await manualSync();
+console.log(`Pushed: ${result.pushedChanges}, Pulled: ${result.pulledChanges}`);
+```
+
+### Sync Status Monitoring
+
+```typescript
+const status = getSyncStatus();
+// Returns:
+// {
+//   isRunning: boolean,
+//   isSyncing: boolean,
+//   lastSyncAt: Date | null,
+//   lastSyncResult: SyncResult | null,
+//   nextSyncAt: Date | null,
+//   syncInterval: number
+// }
+```
+
+## Security Considerations
+
+1. **Device Registration**: Each Island Device must be registered and assigned to an island
+2. **Scope Limitation**: Devices only sync data for their assigned island
+3. **Offline Access**: Device credentials stored in IndexedDB (encrypted)
+4. **Sync Validation**: Backend validates all changes match device's island
+5. **Authentication**: Device ID and secret included in all sync requests
+
+## Performance
+
+- **Offline Reads**: Instant (IndexedDB)
+- **Offline Writes**: ~10ms (IndexedDB + queue)
+- **Sync Duration**: ~500ms for 50 changes (network dependent)
+- **Storage**: ~1-5MB per island (estimated)
+- **IndexedDB Size**: Unlimited in modern browsers (quota management)
+
+## Future Enhancements
+
+1. **Delta Sync**: Only sync changed fields, not full entities
+2. **Compression**: Compress sync payloads for slow connections
+3. **Conflict UI**: Show user when conflicts are detected
+4. **Sync Analytics**: Track sync success rates, common failures
+5. **Multi-Island Support**: Allow one device to operate multiple islands
+6. **Offline Updates**: Use Service Worker to update app code offline
+7. **Background Sync API**: Use browser Background Sync API when available
+8. **Intelligent Batching**: Prioritize recent changes in sync queue
+
+## Testing Strategy
+
+1. **Unit Tests**: Test sync service functions in isolation
+   - Sync queue processing
+   - Conflict resolution logic
+   - Backend change application
+   - Utility functions
+
+2. **Integration Tests**: Test IndexedDB → Sync → API flow
+   - Full sync cycle
+   - Offline to online transition
+   - Multiple entity types
+   - Error handling
+
+3. **E2E Tests**: Test complete offline → online → sync scenarios
+   - User creates reservation offline
+   - Sync pushes to backend
+   - Another device pulls changes
+   - Conflict resolution flows
+
+4. **Network Tests**: Test with simulated slow/failing connections
+   - Network throttling
+   - Intermittent connectivity
+   - Request timeouts
+   - Retry behavior
+
+5. **Conflict Tests**: Test various conflict scenarios
+   - Simultaneous changes
+   - Multiple pending changes
+   - Backend vs local priority
+   - Entity deletion conflicts
+
+## Migration Path
+
+For existing deployments without offline capability:
+
+1. **Add IndexedDB Schema**: Deploy db/schema.ts to all devices
+2. **Initial Sync**: Trigger full sync to populate IndexedDB
+3. **Enable Offline Mode**: Activate Service Worker and sync manager
+4. **Monitor**: Watch sync metrics for issues
+5. **Gradual Rollout**: Start with one island, expand gradually
+
+## Glossary
+
+- **Island Device**: Dedicated PWA for offline sauna reservations at an island location
+- **Sync Queue**: Local queue of pending changes waiting to sync
+- **Source of Truth**: The authoritative data store (Island Device for its data)
+- **Bidirectional Sync**: Two-way sync where both client and server can initiate changes
+- **Conflict Resolution**: Logic to handle simultaneous changes to same data
+- **IndexedDB**: Browser database for offline data storage
+- **Service Worker**: Background script enabling offline PWA functionality
+- **Sync Status**: Current state of synchronization (pending, synced, failed)
+- **Push Phase**: Island Device sending changes to backend
+- **Pull Phase**: Island Device receiving changes from backend

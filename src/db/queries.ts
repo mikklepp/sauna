@@ -373,6 +373,8 @@ export async function addToSyncQueue(
   await db.syncQueue.add({
     ...change,
     id: crypto.randomUUID(),
+    syncStatus: 'pending',
+    errorMessage: null,
   });
 }
 
