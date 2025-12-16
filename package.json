@@ -115,5 +115,8 @@
     "*.{json,css,md}": [
       "prettier --write"
     ]
+  },
+  "overrides": {
+    "tree-sitter": "0.22.4"
   }
 }
