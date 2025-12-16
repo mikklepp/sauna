@@ -120,9 +120,16 @@ test.describe('Shared Reservation - Member Features', () => {
     await page.waitForLoadState('load');
 
     // Verify the shared reservation details page shows gender schedule information
-    const bodyText = await page.textContent('body');
-    expect(bodyText).toMatch(/men|women|male|female/i);
-    expect(page.url()).toMatch(/\/shared\//);
+    await expect(page.getByTestId('gender-schedule')).toBeVisible();
+    await expect(page.getByTestId('schedule-text')).toContainText(
+      /\d{2}:\d{2}/
+    );
+
+    // Allow joining - click the "Join This Shared Sauna" button
+    await page.getByRole('button', { name: /join this shared sauna/i }).click();
+
+    // Should navigate to boat selection step
+    await expect(page.getByTestId('boat-selection-card')).toBeVisible();
   });
 });
 

@@ -334,7 +334,10 @@ export default function JoinSharedPage() {
       <main className="container mx-auto max-w-2xl px-4 py-8">
         {/* Step 0: Shared Reservation Details */}
         {step === 'details' && (
-          <Card className="border-club-primary/20 overflow-hidden border-2 shadow-lg">
+          <Card
+            data-testid="shared-details-card"
+            className="border-club-primary/20 overflow-hidden border-2 shadow-lg"
+          >
             <CardHeader className="bg-gradient-to-r from-white to-gray-50/50 pb-4">
               <CardTitle className="flex items-center gap-3 text-2xl">
                 <div className="from-club-primary to-club-secondary flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br shadow-sm">
@@ -352,14 +355,20 @@ export default function JoinSharedPage() {
             </CardHeader>
             <CardContent className="space-y-6 pt-6">
               {/* Schedule */}
-              <div className="border-club-primary/20 from-club-primary/5 to-club-secondary/10 rounded-xl border-2 bg-gradient-to-br p-5 shadow-sm">
+              <div
+                data-testid="gender-schedule"
+                className="border-club-primary/20 from-club-primary/5 to-club-secondary/10 rounded-xl border-2 bg-gradient-to-br p-5 shadow-sm"
+              >
                 <div className="mb-3 flex items-center gap-2">
                   <Clock className="text-club-primary h-5 w-5" />
                   <span className="text-lg font-semibold text-gray-900">
                     Schedule
                   </span>
                 </div>
-                <div className="whitespace-pre-line text-base leading-relaxed text-gray-800">
+                <div
+                  data-testid="schedule-text"
+                  className="whitespace-pre-line text-base leading-relaxed text-gray-800"
+                >
                   {getGenderSchedule()}
                 </div>
               </div>
@@ -432,7 +441,10 @@ export default function JoinSharedPage() {
 
         {/* Step 1: Boat Selection */}
         {step === 'boat' && (
-          <Card className="border-club-primary/20 overflow-hidden border-2 shadow-lg">
+          <Card
+            data-testid="boat-selection-card"
+            className="border-club-primary/20 overflow-hidden border-2 shadow-lg"
+          >
             <CardHeader className="bg-gradient-to-r from-white to-gray-50/50">
               <CardTitle className="flex items-center gap-2 text-2xl">
                 <Ship className="text-club-primary h-6 w-6" />
