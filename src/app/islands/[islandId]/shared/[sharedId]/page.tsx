@@ -703,12 +703,18 @@ export default function JoinSharedPage() {
 
         {/* Step 4: Success */}
         {step === 'success' && selectedBoat && (
-          <Card className="border-club-primary/20 overflow-hidden border-2 shadow-lg">
+          <Card
+            data-testid="success-card"
+            className="border-club-primary/20 overflow-hidden border-2 shadow-lg"
+          >
             <CardContent className="py-16 text-center">
               <div className="from-club-primary to-club-secondary mx-auto mb-6 flex h-20 w-20 animate-pulse items-center justify-center rounded-full bg-gradient-to-br shadow-lg">
                 <Check className="h-10 w-10 text-white" />
               </div>
-              <h2 className="mb-3 text-3xl font-bold text-gray-900">
+              <h2
+                data-testid="success-title"
+                className="mb-3 text-3xl font-bold text-gray-900"
+              >
                 Joined Successfully!
               </h2>
               <p className="mb-8 text-lg text-gray-600">
