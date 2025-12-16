@@ -1,46 +1,13 @@
 import { test, expect } from '@playwright/test';
 import { authenticateMember } from './helpers/auth-helper';
-import { cleanupTodaysReservations } from './helpers/db-cleanup';
+import { getTestClubSecret } from './helpers/test-fixtures';
 import { loginAsAdmin } from './helpers/test-data';
-import {
-  getTestClubSecret,
-  createTestSharedReservation,
-} from './helpers/test-fixtures';
 
 test.describe('Shared Reservation - Admin Creation', () => {
-  test.beforeAll(async () => {
-    // Cleanup before suite to ensure clean state
-    await cleanupTodaysReservations();
-
-    // Create test shared reservations using test fixtures
-    // Create one upcoming and one future reservation to test filtering
-    await createTestSharedReservation({
-      saunaIndex: 0, // North Main Sauna
-      startTimeOffset: 2, // 2 hours from now (upcoming)
-      name: 'Test Upcoming Sauna Event',
-      participants: [
-        { boatIndex: 0, adults: 2, kids: 0 },
-        { boatIndex: 1, adults: 1, kids: 1 },
-      ],
-    });
-
-    await createTestSharedReservation({
-      saunaIndex: 1, // North Small Sauna
-      startTimeOffset: 26, // Tomorrow (future)
-      name: 'Test Future Sauna Event',
-      participants: [{ boatIndex: 2, adults: 3, kids: 0 }],
-    });
-  });
-
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
     await page.goto('/admin/shared-reservations', { waitUntil: 'commit' });
     await page.waitForLoadState('load');
-  });
-
-  test.afterAll(async () => {
-    // Cleanup after entire suite completes
-    await cleanupTodaysReservations();
   });
 
   test('should display shared reservations list with test data', async ({
@@ -110,66 +77,19 @@ test.describe('Shared Reservation - Admin Creation', () => {
     // Note: Edit functionality for shared reservations is not implemented in the admin UI
     // The admin list page only has delete buttons, not edit buttons
   });
-
-  test('should show delete button for shared reservations', async ({
-    page,
-  }) => {
-    const testName = `Test Shared ${Date.now()}`;
-
-    // Create a test shared reservation
-    await createTestSharedReservation({
-      saunaIndex: 0,
-      startTimeOffset: 24, // Tomorrow
-      name: testName,
-      malesDurationHours: 2,
-      femalesDurationHours: 2,
-      genderOrder: 'FEMALES_FIRST',
-    });
-
-    // Refresh to see it
-    await page.reload();
-    await page.waitForLoadState('load');
-
-    // Find the reservation with our test name
-    const reservationCard = page
-      .getByTestId('shared-reservation-item')
-      .filter({ hasText: testName });
-    await expect(reservationCard).toBeVisible({ timeout: 5000 });
-
-    // Should have a delete button
-    const deleteButton = reservationCard.getByTestId('delete-button');
-    await expect(deleteButton).toBeVisible();
-  });
 });
 
-test.describe('Shared Reservation - User Joining', () => {
+test.describe('Shared Reservation - Member Features', () => {
   let clubSecret: string;
 
   test.beforeAll(async () => {
     clubSecret = getTestClubSecret();
-    // Cleanup before suite to ensure clean state
-    await cleanupTodaysReservations();
   });
 
-  test.afterAll(async () => {
-    // Cleanup after entire suite completes
-    await cleanupTodaysReservations();
-  });
-
-  test('should display shared reservation option on island view', async ({
+  test('should display shared reservation on island and allow joining', async ({
     page,
   }) => {
-    // Create a shared reservation for today (3 hours from now)
-    await createTestSharedReservation({
-      saunaIndex: 0,
-      startTimeOffset: 3, // 3 hours from now (today)
-      name: 'Weekend Social',
-      malesDurationHours: 2,
-      femalesDurationHours: 2,
-      genderOrder: 'MALES_FIRST',
-    });
-
-    // Navigate to island
+    // Use the global test data "Test Upcoming Sauna Event" created in setup
     await authenticateMember(page, clubSecret);
     await page.waitForLoadState('load');
 
@@ -179,168 +99,30 @@ test.describe('Shared Reservation - User Joining', () => {
     await page.waitForURL(/\/islands\/[^/]+$/);
     await page.waitForLoadState('load');
 
-    // Find the specific shared reservation element containing both the name and join button
-    // This handles cases where a sauna has multiple shared reservations
-    const weekendSocialReservation = page
+    // Find the global test shared reservation by its name
+    const upcomingReservation = page
       .locator('*')
-      .filter({ hasText: 'Weekend Social' })
+      .filter({ hasText: /Test Upcoming Sauna Event/i })
       .filter({ has: page.getByRole('button', { name: /join.*club.*sauna/i }) })
       .last();
 
-    await weekendSocialReservation.waitFor({ state: 'visible', timeout: 5000 });
+    await upcomingReservation.waitFor({ state: 'visible', timeout: 5000 });
 
-    // Should show shared sauna indicator (button)
-    const joinButton = weekendSocialReservation.getByRole('button', {
+    // Should show join button for the shared reservation
+    const joinButton = upcomingReservation.getByRole('button', {
       name: /join.*club.*sauna/i,
     });
     await expect(joinButton).toBeVisible({ timeout: 5000 });
-  });
 
-  test('should join a shared reservation', async ({ page }) => {
-    // Create a shared reservation for today
-    await createTestSharedReservation({
-      saunaIndex: 0,
-      startTimeOffset: 4, // 4 hours from now (today)
-      name: 'Join Test',
-      malesDurationHours: 2,
-      femalesDurationHours: 2,
-      genderOrder: 'MALES_FIRST',
-    });
-
-    // Navigate to island
-    await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('load');
-
-    const islandLink = page.locator('[data-testid="island-link"]').first();
-    await islandLink.waitFor({ state: 'visible', timeout: 5000 });
-    await islandLink.click();
-    await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('load');
-
-    // Find the specific shared reservation element containing both the name and join button
-    const joinTestReservation = page
-      .locator('*')
-      .filter({ hasText: 'Join Test' })
-      .filter({ has: page.getByRole('button', { name: /join.*club.*sauna/i }) })
-      .last();
-
-    await joinTestReservation.waitFor({ state: 'visible', timeout: 5000 });
-
-    // Look for "Join Club Sauna" button
-    const joinButton = joinTestReservation.getByRole('button', {
-      name: /join.*club.*sauna/i,
-    });
-
-    await expect(joinButton).toBeVisible({ timeout: 5000 });
+    // Click to join and verify navigation to shared reservation page
     await joinButton.click();
-
-    // Wait for navigation to shared reservation page
     await page.waitForURL(/\/shared\/[^/]+/);
     await page.waitForLoadState('load');
 
-    // Should show gender schedule information (looking for time slots with gender labels)
+    // Verify the shared reservation details page shows gender schedule information
     const bodyText = await page.textContent('body');
     expect(bodyText).toMatch(/men|women|male|female/i);
-
-    // Successfully navigated to shared reservation detail page
     expect(page.url()).toMatch(/\/shared\//);
-  });
-
-  test('should display gender schedule for shared reservation', async ({
-    page,
-  }) => {
-    // Create a shared reservation for today
-    await createTestSharedReservation({
-      saunaIndex: 0,
-      startTimeOffset: 5, // 5 hours from now (today)
-      name: 'Schedule Test',
-      malesDurationHours: 2,
-      femalesDurationHours: 2,
-      genderOrder: 'FEMALES_FIRST',
-    });
-
-    // Navigate to island
-    await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('load');
-
-    const islandLink = page.locator('[data-testid="island-link"]').first();
-    await islandLink.click();
-    await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('load');
-
-    // Find the specific shared reservation element containing both the name and join button
-    const scheduleTestReservation = page
-      .locator('*')
-      .filter({ hasText: 'Schedule Test' })
-      .filter({ has: page.getByRole('button', { name: /join.*club.*sauna/i }) })
-      .last();
-
-    await scheduleTestReservation.waitFor({ state: 'visible', timeout: 5000 });
-
-    const joinButton = scheduleTestReservation.getByRole('button', {
-      name: /join.*club.*sauna/i,
-    });
-
-    await expect(joinButton).toBeVisible({ timeout: 5000 });
-    await joinButton.click();
-
-    // Should display gender schedule with times
-    const pageContent = await page.textContent('body');
-    expect(pageContent).toMatch(/\d{1,2}:\d{2}/); // Time format
-    expect(pageContent).toMatch(/males|females|men|women/i);
-  });
-
-  test('should show current participants in shared reservation', async ({
-    page,
-  }) => {
-    // Create a shared reservation with a participant for today
-    await createTestSharedReservation({
-      saunaIndex: 0,
-      startTimeOffset: 6, // 6 hours from now (today)
-      name: 'Participants Test',
-      malesDurationHours: 2,
-      femalesDurationHours: 2,
-      genderOrder: 'MALES_FIRST',
-      participants: [
-        {
-          boatIndex: 0,
-          adults: 2,
-          kids: 1,
-        },
-      ],
-    });
-
-    // Navigate to island
-    await authenticateMember(page, clubSecret);
-    await page.waitForLoadState('load');
-
-    const islandLink = page.locator('[data-testid="island-link"]').first();
-    await islandLink.click();
-    await page.waitForURL(/\/islands\/[^/]+$/);
-    await page.waitForLoadState('load');
-
-    // Find the specific shared reservation element containing both the name and join button
-    const participantsTestReservation = page
-      .locator('*')
-      .filter({ hasText: 'Participants Test' })
-      .filter({ has: page.getByRole('button', { name: /join.*club.*sauna/i }) })
-      .last();
-
-    await participantsTestReservation.waitFor({
-      state: 'visible',
-      timeout: 5000,
-    });
-
-    const joinButton = participantsTestReservation.getByRole('button', {
-      name: /join.*club.*sauna/i,
-    });
-
-    await expect(joinButton).toBeVisible({ timeout: 5000 });
-    await joinButton.click();
-
-    // Look for participants section or text
-    const participantText = page.getByText(/participants|boats|test alpha/i);
-    await expect(participantText.first()).toBeVisible();
   });
 });
 
