@@ -2,17 +2,15 @@
  * Helper functions and test data for e2e tests
  */
 
-export const TEST_ADMIN = {
-  username: 'admin',
-  password: 'admin123',
-};
+import { getTestAdminCredentials } from './test-fixtures';
 
 export async function loginAsAdmin(page: any) {
   await page.goto('/admin/login', { waitUntil: 'commit' });
 
-  // Fill in credentials
-  await page.getByLabel(/username/i).fill(TEST_ADMIN.username);
-  await page.getByLabel(/password/i).fill(TEST_ADMIN.password);
+  // Fill in credentials from test fixtures
+  const { username, password } = getTestAdminCredentials();
+  await page.getByLabel(/username/i).fill(username);
+  await page.getByLabel(/password/i).fill(password);
 
   // Wait for the login API call to complete after clicking submit
   const responsePromise = page.waitForResponse(
