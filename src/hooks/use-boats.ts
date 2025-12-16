@@ -144,9 +144,8 @@ export function useBoatDailyLimit(boatId: string | null, islandId: string) {
 
         if (isOffline) {
           // Check offline using IndexedDB
-          const { hasBoatReservedTodayOffline } = await import(
-            '@/lib/offline-availability'
-          );
+          const { hasBoatReservedTodayOffline } =
+            await import('@/lib/offline-availability');
           const hasReservation = await hasBoatReservedTodayOffline(
             boatId,
             islandId
