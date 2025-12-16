@@ -96,7 +96,11 @@ test.describe('Shared Reservation - Member Features', () => {
     await authenticateMember(page, clubSecret);
     await page.waitForLoadState('load');
 
-    const islandLink = page.locator('[data-testid="island-link"]').first();
+    // Navigate to Test North Island (where the shared reservation was created)
+    const islandLink = page
+      .locator('[data-testid="island-link"]')
+      .filter({ hasText: /Test North Island/i })
+      .first();
     await islandLink.waitFor({ state: 'visible', timeout: 5000 });
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
