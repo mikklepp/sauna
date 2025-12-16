@@ -30,6 +30,7 @@ export default function EditSaunaPage() {
   const [sauna, setSauna] = useState<Sauna | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     heatingTimeHours: 2,
@@ -82,7 +83,10 @@ export default function EditSaunaPage() {
         throw new Error(error.error || 'Failed to update sauna');
       }
 
-      router.push('/admin/saunas');
+      setSuccessMessage('Sauna updated successfully');
+      setTimeout(() => {
+        router.push('/admin/saunas');
+      }, 1000);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to update sauna');
       setSaving(false);
@@ -116,6 +120,15 @@ export default function EditSaunaPage() {
         <p className="mb-6 text-sm text-gray-500">
           Club: {sauna?.island?.club?.name || 'Loading...'}
         </p>
+
+        {successMessage && (
+          <div
+            data-testid="success-message"
+            className="mb-6 rounded-md bg-green-50 p-4 text-green-800"
+          >
+            {successMessage}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -159,6 +172,7 @@ export default function EditSaunaPage() {
             <input
               type="checkbox"
               id="autoClubSaunaEnabled"
+              data-testid="auto-club-sauna-checkbox"
               checked={formData.autoClubSaunaEnabled}
               onChange={(e) =>
                 setFormData({
@@ -169,7 +183,11 @@ export default function EditSaunaPage() {
               className="mt-1"
             />
             <div className="flex-1">
-              <Label htmlFor="autoClubSaunaEnabled" className="cursor-pointer">
+              <Label
+                htmlFor="autoClubSaunaEnabled"
+                data-testid="auto-club-sauna-label"
+                className="cursor-pointer"
+              >
                 Enable Auto Club Sauna
               </Label>
               <p className="mt-1 text-sm text-gray-600">
@@ -189,7 +207,12 @@ export default function EditSaunaPage() {
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={saving} className="flex-1">
+            <Button
+              type="submit"
+              data-testid="save-button"
+              disabled={saving}
+              className="flex-1"
+            >
               {saving ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
