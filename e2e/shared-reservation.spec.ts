@@ -11,6 +11,25 @@ test.describe('Shared Reservation - Admin Creation', () => {
   test.beforeAll(async () => {
     // Cleanup before suite to ensure clean state
     await cleanupTodaysReservations();
+
+    // Create test shared reservations using test fixtures
+    // Create one upcoming and one future reservation to test filtering
+    await createTestSharedReservation({
+      saunaIndex: 0, // North Main Sauna
+      startTimeOffset: 2, // 2 hours from now (upcoming)
+      name: 'Test Upcoming Sauna Event',
+      participants: [
+        { boatIndex: 0, adults: 2, kids: 0 },
+        { boatIndex: 1, adults: 1, kids: 1 },
+      ],
+    });
+
+    await createTestSharedReservation({
+      saunaIndex: 1, // North Small Sauna
+      startTimeOffset: 26, // Tomorrow (future)
+      name: 'Test Future Sauna Event',
+      participants: [{ boatIndex: 2, adults: 3, kids: 0 }],
+    });
   });
 
   test.beforeEach(async ({ page }) => {
@@ -24,9 +43,32 @@ test.describe('Shared Reservation - Admin Creation', () => {
     await cleanupTodaysReservations();
   });
 
-  test('should display shared reservations list', async ({ page }) => {
+  test('should display shared reservations list with test data', async ({
+    page,
+  }) => {
+    // Verify page header is visible
     await expect(
       page.getByRole('heading', { name: /shared.*reservations/i })
+    ).toBeVisible();
+
+    // Verify filter buttons are present (upcoming/past/all)
+    await expect(page.getByRole('button', { name: /upcoming/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /past/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /all/i })).toBeVisible();
+
+    // Verify create button is present
+    await expect(page.getByTestId('create-shared-button')).toBeVisible();
+
+    // Verify that test shared reservations are displayed in upcoming filter (default)
+    await expect(page.getByText(/Test Upcoming Sauna Event/i)).toBeVisible();
+    await expect(page.getByText(/Test Future Sauna Event/i)).toBeVisible();
+
+    // Verify participant count is shown
+    const upcomingReservation = page
+      .locator('text=/Test Upcoming Sauna Event/i')
+      .locator('..');
+    await expect(
+      upcomingReservation.getByText(/2 participants/i)
     ).toBeVisible();
   });
 
@@ -360,12 +402,23 @@ test.describe('Club Sauna Auto-creation', () => {
       timeout: 5000,
     });
 
-    // Verify the change persisted by re-opening edit form
-    await page.waitForTimeout(500);
-    await firstSauna.getByRole('button', { name: /edit/i }).click();
+    // Wait for redirect back to list
+    await page.waitForURL(/\/admin\/saunas$/);
+    await page.waitForLoadState('load');
+
+    // Verify the change persisted by re-opening the same sauna's edit form
+    // Need to refetch the element as it becomes stale after navigation
+    const refreshedFirstSauna = page
+      .locator('[data-testid="sauna-item"]')
+      .first();
+    await expect(refreshedFirstSauna).toBeVisible();
+
+    await refreshedFirstSauna.getByRole('button', { name: /edit/i }).click();
+    await page.waitForURL(/\/admin\/saunas\/.+\/edit/);
     await page.waitForLoadState('load');
 
     const newCheckbox = page.getByLabel(/auto.*club.*sauna|enable.*club/i);
+    await expect(newCheckbox).toBeVisible({ timeout: 10000 });
 
     // Should be opposite of what it was
     if (wasChecked) {

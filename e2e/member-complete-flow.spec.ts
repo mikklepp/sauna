@@ -261,8 +261,12 @@ test.describe('Member Complete User Journey - End to End', () => {
     page,
   }) => {
     // Try to access islands page without authentication
-    await page.goto('/islands');
-    await page.waitForLoadState('load');
+    await page.goto('/islands', { waitUntil: 'commit' });
+    await page
+      .waitForLoadState('domcontentloaded', { timeout: 15000 })
+      .catch(() => {
+        // Timeout is acceptable - page might be redirecting
+      });
 
     // Should redirect to auth page (or show "no islands" if session check happens client-side)
     // The current implementation might stay on /islands but show no content or redirect
