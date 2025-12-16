@@ -3,6 +3,20 @@ import { authenticateMember } from './helpers/auth-helper';
 import { getTestClubSecret } from './helpers/test-fixtures';
 import { loginAsAdmin } from './helpers/test-data';
 
+// Helper to find sauna by name
+const findSaunaByName = (page: any, name: string) =>
+  page
+    .getByTestId('sauna-item')
+    .filter({ hasText: new RegExp(name, 'i') })
+    .first();
+
+// Helper to find island by name
+const findIslandByName = (page: any, name: string) =>
+  page
+    .locator('[data-testid="island-link"]')
+    .filter({ hasText: new RegExp(name, 'i') })
+    .first();
+
 test.describe('Shared Reservation - Admin Creation', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
@@ -97,10 +111,7 @@ test.describe('Shared Reservation - Member Features', () => {
     await page.waitForLoadState('load');
 
     // Navigate to Test North Island (where the shared reservation was created)
-    const islandLink = page
-      .locator('[data-testid="island-link"]')
-      .filter({ hasText: /Test North Island/i })
-      .first();
+    const islandLink = findIslandByName(page, 'Test North Island');
     await islandLink.waitFor({ state: 'visible', timeout: 5000 });
     await islandLink.click();
     await page.waitForURL(/\/islands\/[^/]+$/);
@@ -110,7 +121,7 @@ test.describe('Shared Reservation - Member Features', () => {
     const saunaCard = page
       .getByTestId('sauna-card')
       .filter({ hasText: /North Main Sauna/i })
-      .first();
+      .first(); // Note: Different from sauna-item (admin), this is sauna-card (member view)
 
     // Find the global test shared reservation within that sauna
     const upcomingReservation = saunaCard
@@ -155,12 +166,11 @@ test.describe('Club Sauna Auto-creation', () => {
     await page.goto('/admin/saunas', { waitUntil: 'commit' });
     await page.waitForLoadState('load');
 
-    // Should have sauna items from test fixtures
-    const firstSauna = page.getByTestId('sauna-item').first();
-    await expect(firstSauna).toBeVisible({ timeout: 5000 });
+    const saunaItem = findSaunaByName(page, 'North Main Sauna');
+    await expect(saunaItem).toBeVisible({ timeout: 5000 });
 
     // Click edit button
-    await firstSauna.getByTestId('edit-sauna-button').click();
+    await saunaItem.getByTestId('edit-sauna-button').click();
 
     // Wait for navigation to edit page
     await page.waitForURL(/\/admin\/saunas\/.+\/edit/);
@@ -175,12 +185,11 @@ test.describe('Club Sauna Auto-creation', () => {
     await page.goto('/admin/saunas', { waitUntil: 'commit' });
     await page.waitForLoadState('load');
 
-    // Should have sauna items from test fixtures
-    const firstSauna = page.getByTestId('sauna-item').first();
-    await expect(firstSauna).toBeVisible({ timeout: 5000 });
+    let saunaItem = findSaunaByName(page, 'North Main Sauna');
+    await expect(saunaItem).toBeVisible({ timeout: 5000 });
 
     // Click edit button
-    await firstSauna.getByTestId('edit-sauna-button').click();
+    await saunaItem.getByTestId('edit-sauna-button').click();
 
     // Wait for navigation to edit page
     await page.waitForURL(/\/admin\/saunas\/.+\/edit/);
@@ -209,10 +218,10 @@ test.describe('Club Sauna Auto-creation', () => {
     await page.waitForLoadState('load');
 
     // Verify the change persisted by re-opening the same sauna's edit form
-    const refreshedFirstSauna = page.getByTestId('sauna-item').first();
-    await expect(refreshedFirstSauna).toBeVisible();
+    saunaItem = findSaunaByName(page, 'North Main Sauna');
+    await expect(saunaItem).toBeVisible();
 
-    await refreshedFirstSauna.getByTestId('edit-sauna-button').click();
+    await saunaItem.getByTestId('edit-sauna-button').click();
     await page.waitForURL(/\/admin\/saunas\/.+\/edit/);
     await page.waitForLoadState('load');
 
