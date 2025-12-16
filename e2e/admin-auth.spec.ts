@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { getTestAdminCredentials } from './helpers/test-fixtures';
 
 test.describe('Admin Authentication', () => {
   test.beforeEach(async ({ page }) => {
@@ -25,9 +26,10 @@ test.describe('Admin Authentication', () => {
   });
 
   test('should successfully login with valid credentials', async ({ page }) => {
-    // Use valid admin credentials (these should exist from seed data)
-    await page.getByLabel(/username/i).fill('admin');
-    await page.getByLabel(/password/i).fill('admin123');
+    // Use valid admin credentials from test fixtures
+    const { username, password } = getTestAdminCredentials();
+    await page.getByLabel(/username/i).fill(username);
+    await page.getByLabel(/password/i).fill(password);
 
     // Wait for the login API call
     const responsePromise = page.waitForResponse(
@@ -49,9 +51,10 @@ test.describe('Admin Authentication', () => {
   });
 
   test('should persist login across page reloads', async ({ page }) => {
-    // Login
-    await page.getByLabel(/username/i).fill('admin');
-    await page.getByLabel(/password/i).fill('admin123');
+    // Login with test admin credentials
+    const { username, password } = getTestAdminCredentials();
+    await page.getByLabel(/username/i).fill(username);
+    await page.getByLabel(/password/i).fill(password);
 
     const responsePromise = page.waitForResponse(
       (response) =>
@@ -86,9 +89,10 @@ test.describe('Admin Authentication', () => {
   });
 
   test('should logout successfully', async ({ page }) => {
-    // Login first
-    await page.getByLabel(/username/i).fill('admin');
-    await page.getByLabel(/password/i).fill('admin123');
+    // Login first with test admin credentials
+    const { username, password } = getTestAdminCredentials();
+    await page.getByLabel(/username/i).fill(username);
+    await page.getByLabel(/password/i).fill(password);
 
     const responsePromise = page.waitForResponse(
       (response) =>
