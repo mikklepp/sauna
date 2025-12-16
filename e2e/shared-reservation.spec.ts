@@ -106,12 +106,18 @@ test.describe('Shared Reservation - Member Features', () => {
     await page.waitForURL(/\/islands\/[^/]+$/);
     await page.waitForLoadState('load');
 
-    // Find the global test shared reservation by its name
-    const upcomingReservation = page
+    // Find North Main Sauna (where the shared reservation was created)
+    const saunaCard = page
+      .getByTestId('sauna-card')
+      .filter({ hasText: /North Main Sauna/i })
+      .first();
+
+    // Find the global test shared reservation within that sauna
+    const upcomingReservation = saunaCard
       .locator('*')
       .filter({ hasText: /Test Upcoming Sauna Event/i })
       .filter({ has: page.getByRole('button', { name: /join.*club.*sauna/i }) })
-      .last();
+      .first();
 
     await upcomingReservation.waitFor({ state: 'visible', timeout: 5000 });
 
