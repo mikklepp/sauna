@@ -99,7 +99,10 @@ export default function SharedReservationsPage() {
   }
 
   const filteredReservations = reservations.filter((r) => {
+    // Parse the date string and normalize to start of day for proper comparison
     const resDate = new Date(r.date);
+    resDate.setHours(0, 0, 0, 0);
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
